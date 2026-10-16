@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Fuse &amp; Fall</string>
+    <string name="title_activity_main">Fuse &amp; Fall</string>
+    <string name="package_name">com.fuseandfall.game</string>
+    <string name="custom_url_scheme">com.fuseandfall.game</string>
+</resources>

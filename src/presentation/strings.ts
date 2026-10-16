@@ -33,6 +33,7 @@ export const T = {
   rotate: 'Yatay modda oyna',
   sfx: 'Efekt sesi',
   testSound: 'Patlama sesini dinle',
+  skip: 'Atla',
   shake: 'Ekran sarsıntısı',
   flashes: 'Flaş ve parlama',
   haptics: 'Titreşim',

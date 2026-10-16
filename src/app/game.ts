@@ -23,9 +23,13 @@ import { JuiceDirector } from '../presentation/juice';
 import { Renderer } from '../presentation/renderer';
 import { T } from '../presentation/strings';
 import { Ui } from '../presentation/ui';
+import { Coach } from '../presentation/coach';
+import { TUTORIALS } from '../content/tutorials';
 import { FixedStepLoop } from './loop';
 
 const DRAG_THRESHOLD = 6;
+/** The delay timeline is taught in London (part 3); earlier parts are designed around the default sequence. */
+const TIMELINE_FROM_WORLD = 3;
 /** Finger-sized pick area for charges on touch screens, in CSS pixels. */
 const TOUCH_PICK_CSS_PX = 30;
 /** Pause after the level settles before the result panel slides in. */
@@ -46,6 +50,7 @@ export class Game {
   private readonly juice: JuiceDirector;
   private readonly sound: SoundDirector;
   private readonly ui: Ui;
+  private readonly coach: Coach;
   private readonly loop: FixedStepLoop;
   private progress: Progress;
   private session: LevelSession | undefined;
@@ -68,6 +73,7 @@ export class Game {
     this.juice = new JuiceDirector(this.events, settings);
     this.sound = new SoundDirector(this.events, settings);
     this.ui = new Ui(uiRoot, () => this.sound.unlock());
+    this.coach = new Coach(uiRoot);
     this.loop = new FixedStepLoop({
       timeScale: (dt) => this.juice.simDelta(dt),
       step: (dt) => this.session?.step(dt),
@@ -140,6 +146,7 @@ export class Game {
   private leaveLevel(): void {
     this.session = undefined;
     this.juice.reset();
+    this.coach.stop();
   }
 
   private showSettings(): void {
@@ -172,11 +179,17 @@ export class Game {
       () => this.startLevel(id),
       () => this.showLevels(),
       (chargeId, seconds) => {
-        if (this.session?.setChargeDelay(chargeId, seconds).ok) this.refreshHud();
+        if (this.session?.setChargeDelay(chargeId, seconds).ok) {
+          this.coach.notify('delay');
+          this.refreshHud();
+        }
       },
     );
     this.refreshHud();
-    if (this.progress.stars[id] === undefined) {
+    // New ideas are coached step by step until the mission is cleared once; otherwise a one-line hint.
+    const tutorial = this.progress.stars[id] ? undefined : TUTORIALS[id];
+    this.coach.start(tutorial ?? []);
+    if (!tutorial && this.progress.stars[id] === undefined) {
       const fallback = level.blocks.some((b) => b.protected)
         ? T.protectedHint
         : level.cars.length > 0
@@ -188,6 +201,7 @@ export class Game {
 
   private fire(): void {
     if (this.session?.fire().ok) {
+      this.coach.notify('fired');
       this.sound.fuse();
       this.ui.setFireVisible(false);
       this.refreshHud();
@@ -244,8 +258,10 @@ export class Game {
     if (this.session?.phase === 'running') this.refreshHud();
     const placing = this.session?.phase === 'placing';
     const ghostAt = this.pointer?.moved ? undefined : this.hover;
+    this.coach.refresh();
     this.renderer.draw(this.session, this.juice, {
       time: this.time,
+      coach: this.coach.worldMarker,
       ghost:
         placing && ghostAt && !this.session?.chargeAt(ghostAt) && this.session && this.session.chargesLeft > 0
           ? { position: ghostAt, valid: this.session.canPlaceAt(ghostAt).ok }
@@ -272,7 +288,7 @@ export class Game {
     });
     this.ui.updateTimeline(
       s.charges.map((c, i) => ({ id: c.id, label: i + 1, delay: c.delay })),
-      s.phase === 'placing',
+      s.phase === 'placing' && s.level.world >= TIMELINE_FROM_WORLD,
     );
   }
 
@@ -320,6 +336,8 @@ export class Game {
         if (!placed.ok) {
           this.sound.denied();
           this.ui.toast(T.placement[placed.error]);
+        } else {
+          this.coach.notify('placed', s.charges.length);
         }
       }
       this.refreshHud();

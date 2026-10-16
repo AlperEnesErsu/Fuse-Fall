@@ -5,6 +5,7 @@ import { TUNING } from '../core/tuning';
 import type { JuiceDirector } from './juice';
 import { MATERIAL_COLORS, PALETTE } from './palette';
 import { paintScene, SCENE_MARGIN, skyAt } from './scenery';
+import { flame, puff } from './sprites';
 
 export interface Overlay {
   /** Placement preview under the pointer. */
@@ -12,6 +13,8 @@ export interface Overlay {
   /** A charge being dragged: hidden at its old spot, drawn at `position`. */
   readonly drag: { readonly id: number; readonly position: Vec2 } | undefined;
   readonly time: number;
+  /** A tutorial spot to point at. */
+  readonly coach: { readonly world: Vec2; readonly radius: number } | undefined;
 }
 
 /** Draws the logical 960×540 world letterboxed into the canvas. */
@@ -31,7 +34,9 @@ export class Renderer {
   }
 
   resize(): void {
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    // Phones have tiny, dense screens: 1.5× is visually the same and needs ~45% fewer pixels than 2×.
+    const coarse = window.matchMedia('(pointer: coarse)').matches;
+    const dpr = Math.min(window.devicePixelRatio || 1, coarse ? 1.5 : 2);
     const { clientWidth: w, clientHeight: h } = this.canvas;
     this.canvas.width = Math.round(w * dpr);
     this.canvas.height = Math.round(h * dpr);
@@ -85,6 +90,7 @@ export class Renderer {
       this.charges(session, overlay);
     }
     this.effects(juice);
+    if (overlay.coach) this.coachMarker(overlay.coach.world, overlay.coach.radius, overlay.time);
 
     const flash = juice.flashAlpha();
     if (flash > 0) {
@@ -92,6 +98,27 @@ export class Renderer {
       c.fillStyle = `rgba(255, 226, 190, ${flash})`;
       c.fillRect(0, 0, this.canvas.width, this.canvas.height);
     }
+  }
+
+  /** Tutorial pointer: an amber ring that breathes, with a chevron above it. */
+  private coachMarker(p: Vec2, radius: number, time: number): void {
+    const c = this.ctx;
+    const pulse = (Math.sin(time * 5) + 1) / 2;
+    c.save();
+    c.strokeStyle = `rgba(242, 177, 52, ${0.6 + 0.4 * pulse})`;
+    c.lineWidth = 3;
+    c.beginPath();
+    c.arc(p.x, p.y, radius + pulse * 6, 0, Math.PI * 2);
+    c.stroke();
+    const y = p.y - radius - 14 - pulse * 6;
+    c.fillStyle = PALETTE.accent;
+    c.beginPath();
+    c.moveTo(p.x - 9, y - 10);
+    c.lineTo(p.x + 9, y - 10);
+    c.lineTo(p.x, y);
+    c.closePath();
+    c.fill();
+    c.restore();
   }
 
   private paintedBackdrop(): HTMLCanvasElement {
@@ -537,14 +564,12 @@ export class Renderer {
           const alpha = Math.min(1, t / 0.08) * Math.pow(1 - t, 1.3) * 0.75;
           const warmth = t < 0.18 ? 1 - t / 0.18 : 0;
           const radius = p.size * (0.6 + t * 1.7);
-          const g = c.createRadialGradient(p.x, p.y, 0, p.x, p.y, radius);
-          g.addColorStop(0, mixRgba(p.color, '#a4602c', warmth, alpha));
-          g.addColorStop(0.55, mixRgba(p.color, '#a4602c', warmth, alpha * 0.7));
-          g.addColorStop(1, mixRgba(p.color, '#a4602c', warmth, 0));
-          c.fillStyle = g;
-          c.beginPath();
-          c.arc(p.x, p.y, radius, 0, Math.PI * 2);
-          c.fill();
+          c.globalAlpha = alpha * (1 - warmth);
+          c.drawImage(puff(p.color), p.x - radius, p.y - radius, radius * 2, radius * 2);
+          if (warmth > 0) {
+            c.globalAlpha = alpha * warmth;
+            c.drawImage(puff('#a4602c'), p.x - radius, p.y - radius, radius * 2, radius * 2);
+          }
           break;
         }
         case 'smoke':
@@ -586,15 +611,10 @@ export class Renderer {
       const t = f.age / f.life;
       const r = f.radius * (0.7 + t * 0.9);
       const heat = 1 - t;
-      const g = c.createRadialGradient(f.x, f.y, 0, f.x, f.y, r);
-      g.addColorStop(0, `rgba(255, ${Math.round(200 + 50 * heat)}, ${Math.round(120 * heat * heat)}, ${0.9 * heat})`);
-      g.addColorStop(0.45, `rgba(255, ${Math.round(110 + 60 * heat)}, 30, ${0.6 * heat})`);
-      g.addColorStop(1, 'rgba(160, 40, 10, 0)');
-      c.fillStyle = g;
-      c.beginPath();
-      c.arc(f.x, f.y, r, 0, Math.PI * 2);
-      c.fill();
+      c.globalAlpha = heat;
+      c.drawImage(flame(heat), f.x - r, f.y - r, r * 2, r * 2);
     }
+    c.globalAlpha = 1;
     for (const p of juice.particles.alive()) {
       if (p.style !== 'spark') continue;
       const t = p.age / p.life;
@@ -620,11 +640,3 @@ export class Renderer {
     }
   }
 }
-
-/** Blends two #rrggbb colours (`t` = share of `b`) into an rgba() string. */
-const mixRgba = (a: string, b: string, t: number, alpha: number): string => {
-  const pa = parseInt(a.slice(1), 16);
-  const pb = parseInt(b.slice(1), 16);
-  const ch = (shift: number) => Math.round(((pa >> shift) & 255) * (1 - t) + ((pb >> shift) & 255) * t);
-  return `rgba(${ch(16)}, ${ch(8)}, ${ch(0)}, ${alpha})`;
-};

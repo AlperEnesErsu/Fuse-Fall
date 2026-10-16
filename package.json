@@ -16,9 +16,12 @@
     "check": "tsc --noEmit && eslint . && vitest run"
   },
   "dependencies": {
+    "@capacitor/android": "8.5.3",
+    "@capacitor/core": "8.5.3",
     "matter-js": "0.20.0"
   },
   "devDependencies": {
+    "@capacitor/cli": "8.5.3",
     "@eslint/js": "10.0.1",
     "@types/matter-js": "0.20.2",
     "@types/node": "24.19.2",

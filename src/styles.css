@@ -851,3 +851,63 @@ h2,
     margin: -9px 0 0 -9px;
   }
 }
+
+/* ---- tutorial coach ---- */
+.coach {
+  pointer-events: auto;
+  /* Top-left under the info card: sky only, never over the charge zones near the ground. */
+  position: absolute;
+  left: max(16px, env(safe-area-inset-left));
+  top: calc(max(12px, env(safe-area-inset-top)) + 64px);
+  width: min(270px, 30vw);
+  background: rgba(15, 17, 20, 0.94);
+  border: 1px solid var(--edge);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 12px;
+  align-items: center;
+  animation: rise 200ms ease-out;
+}
+.coach p {
+  grid-column: 1 / span 2;
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.35;
+}
+.coach.tap {
+  cursor: pointer;
+}
+.coach-step {
+  grid-column: 1;
+  font-family: var(--font-display);
+  color: var(--accent);
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+}
+.coach-skip {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
+  font: 700 0.75rem var(--font-display);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: none;
+  border: 1px solid var(--edge);
+  border-radius: var(--radius);
+  padding: 3px 8px;
+  cursor: pointer;
+}
+.coach-target {
+  outline: 3px solid var(--accent);
+  outline-offset: 4px;
+  animation: coach-pulse 1.1s ease-in-out infinite;
+}
+@keyframes coach-pulse {
+  50% {
+    outline-color: rgba(242, 177, 52, 0.25);
+  }
+}

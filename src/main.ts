@@ -1,4 +1,5 @@
 import './styles.css';
+import { Capacitor } from '@capacitor/core';
 import { Game } from './app/game';
 import { loadCampaign } from './content/levels';
 import { LocalSaveRepository, type KeyValueStore } from './infrastructure/local-save';
@@ -25,8 +26,8 @@ new Game(canvas, uiRoot, loadCampaign(), new LocalSaveRepository(deviceStore()),
   navigator.vibrate?.(ms);
 }).start();
 
-// Offline support (NFR-02): the service worker is generated at build time.
-if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+// Offline support (NFR-02) for the web build. The native app already ships its files, so it needs none.
+if (import.meta.env.PROD && 'serviceWorker' in navigator && !Capacitor.isNativePlatform()) {
   window.addEventListener('load', () => {
     void navigator.serviceWorker.register('./sw.js');
   });
