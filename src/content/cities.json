@@ -1,0 +1,7 @@
+[
+  { "world": 1, "key": "ankara", "city": "Ankara", "country": "Türkiye", "unlockStars": 0 },
+  { "world": 2, "key": "paris", "city": "Paris", "country": "Fransa", "unlockStars": 18 },
+  { "world": 3, "key": "london", "city": "Londra", "country": "Birleşik Krallık", "unlockStars": 40 },
+  { "world": 4, "key": "rome", "city": "Roma", "country": "İtalya", "unlockStars": 62 },
+  { "world": 5, "key": "tokyo", "city": "Tokyo", "country": "Japonya", "unlockStars": 84 }
+]

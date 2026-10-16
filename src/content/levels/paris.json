@@ -1,0 +1,898 @@
+[
+ {
+  "id": "w2-01",
+  "name": "Cam Cephe",
+  "world": 2,
+  "order": 1,
+  "charges": {
+   "max": 1,
+   "par": 1
+  },
+  "bonusCollapse": 0.6,
+  "zones": [
+   {
+    "x": 440,
+    "y": 390,
+    "w": 300,
+    "h": 90
+   }
+  ],
+  "blocks": [
+   {
+    "x": 555.0,
+    "y": 415.0,
+    "w": 20,
+    "h": 130,
+    "material": "glass"
+   },
+   {
+    "x": 645.0,
+    "y": 415.0,
+    "w": 20,
+    "h": 130,
+    "material": "glass"
+   },
+   {
+    "x": 600,
+    "y": 340.0,
+    "w": 130,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 600,
+    "y": 310.0,
+    "w": 40,
+    "h": 40,
+    "material": "wood",
+    "target": true
+   }
+  ],
+  "barrels": [],
+  "cars": [],
+  "solution": {
+   "charges": [
+    {
+     "x": 560,
+     "y": 470
+    }
+   ],
+   "fireAt": 0
+  },
+  "hint": "Cam kolonlar kırılgandır; şarjı yakın tutma gereği yok."
+ },
+ {
+  "id": "w2-02",
+  "name": "Komşu Duvar",
+  "world": 2,
+  "order": 2,
+  "charges": {
+   "max": 2,
+   "par": 1
+  },
+  "bonusCollapse": 0.6,
+  "zones": [
+   {
+    "x": 440,
+    "y": 380,
+    "w": 160,
+    "h": 100
+   }
+  ],
+  "blocks": [
+   {
+    "x": 520,
+    "y": 448.0,
+    "w": 44,
+    "h": 64,
+    "material": "concrete"
+   },
+   {
+    "x": 520,
+    "y": 384.0,
+    "w": 44,
+    "h": 64,
+    "material": "concrete"
+   },
+   {
+    "x": 520,
+    "y": 320.0,
+    "w": 44,
+    "h": 64,
+    "material": "concrete"
+   },
+   {
+    "x": 520,
+    "y": 256.0,
+    "w": 44,
+    "h": 64,
+    "material": "concrete"
+   },
+   {
+    "x": 520,
+    "y": 192.0,
+    "w": 44,
+    "h": 64,
+    "material": "concrete"
+   },
+   {
+    "x": 520,
+    "y": 128.0,
+    "w": 44,
+    "h": 64,
+    "material": "concrete"
+   },
+   {
+    "x": 520,
+    "y": 78.0,
+    "w": 36,
+    "h": 36,
+    "material": "wood",
+    "target": true
+   },
+   {
+    "x": 280,
+    "y": 440.0,
+    "w": 60,
+    "h": 80,
+    "material": "concrete",
+    "protected": true
+   }
+  ],
+  "barrels": [],
+  "cars": [],
+  "solution": {
+   "charges": [
+    {
+     "x": 530,
+     "y": 470
+    }
+   ],
+   "fireAt": 0
+  },
+  "hint": "Soldaki bina korunuyor. Bacayı doğru taraftan kes."
+ },
+ {
+  "id": "w2-03",
+  "name": "Cam Teras",
+  "world": 2,
+  "order": 3,
+  "charges": {
+   "max": 1,
+   "par": 1
+  },
+  "bonusCollapse": 0.6,
+  "zones": [
+   {
+    "x": 440,
+    "y": 400,
+    "w": 120,
+    "h": 80
+   }
+  ],
+  "blocks": [
+   {
+    "x": 605.0,
+    "y": 430.0,
+    "w": 20,
+    "h": 100,
+    "material": "glass"
+   },
+   {
+    "x": 695.0,
+    "y": 430.0,
+    "w": 20,
+    "h": 100,
+    "material": "glass"
+   },
+   {
+    "x": 650,
+    "y": 370.0,
+    "w": 130,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 615.0,
+    "y": 315.0,
+    "w": 20,
+    "h": 90,
+    "material": "glass"
+   },
+   {
+    "x": 685.0,
+    "y": 315.0,
+    "w": 20,
+    "h": 90,
+    "material": "glass"
+   },
+   {
+    "x": 650,
+    "y": 260.0,
+    "w": 110,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 650,
+    "y": 232.0,
+    "w": 36,
+    "h": 36,
+    "material": "wood",
+    "target": true
+   },
+   {
+    "x": 300,
+    "y": 440.0,
+    "w": 80,
+    "h": 80,
+    "material": "concrete",
+    "protected": true
+   }
+  ],
+  "barrels": [],
+  "cars": [],
+  "solution": {
+   "charges": [
+    {
+     "x": 540,
+     "y": 470
+    }
+   ],
+   "fireAt": 0
+  },
+  "hint": "Soldaki dükkân korunuyor. Şarjı ondan uzak tut."
+ },
+ {
+  "id": "w2-04",
+  "name": "Hareketli Hedef",
+  "world": 2,
+  "order": 4,
+  "charges": {
+   "max": 1,
+   "par": 1
+  },
+  "bonusCollapse": 0.4,
+  "zones": [
+   {
+    "x": 540,
+    "y": 300.0,
+    "w": 80,
+    "h": 38
+   }
+  ],
+  "blocks": [
+   {
+    "x": 380,
+    "y": 420.0,
+    "w": 30,
+    "h": 120,
+    "material": "concrete"
+   },
+   {
+    "x": 780,
+    "y": 420.0,
+    "w": 30,
+    "h": 120,
+    "material": "concrete"
+   },
+   {
+    "x": 580.0,
+    "y": 350.0,
+    "w": 450,
+    "h": 20,
+    "material": "metal"
+   }
+  ],
+  "barrels": [],
+  "cars": [
+   {
+    "x": 420,
+    "y": 328.0,
+    "w": 56,
+    "h": 24,
+    "from": 410,
+    "to": 750,
+    "speed": 90,
+    "target": true
+   }
+  ],
+  "solution": {
+   "charges": [
+    {
+     "x": 580,
+     "y": 328.0
+    }
+   ],
+   "fireAt": 1.5
+  },
+  "hint": "Araç şarjın üstünden geçerken ateşle. Zamanlama kritik."
+ },
+ {
+  "id": "w2-05",
+  "name": "Ahşap Köprü",
+  "world": 2,
+  "order": 5,
+  "charges": {
+   "max": 1,
+   "par": 1
+  },
+  "bonusCollapse": 0.6,
+  "zones": [
+   {
+    "x": 360,
+    "y": 400,
+    "w": 120,
+    "h": 80
+   }
+  ],
+  "blocks": [
+   {
+    "x": 420,
+    "y": 420.0,
+    "w": 24,
+    "h": 120,
+    "material": "wood"
+   },
+   {
+    "x": 700,
+    "y": 420.0,
+    "w": 24,
+    "h": 120,
+    "material": "wood"
+   },
+   {
+    "x": 560,
+    "y": 352.0,
+    "w": 320,
+    "h": 16,
+    "material": "wood"
+   }
+  ],
+  "barrels": [],
+  "cars": [
+   {
+    "x": 500,
+    "y": 332.0,
+    "w": 56,
+    "h": 24,
+    "from": 450,
+    "to": 670,
+    "speed": 60,
+    "target": true
+   }
+  ],
+  "solution": {
+   "charges": [
+    {
+     "x": 420,
+     "y": 470
+    }
+   ],
+   "fireAt": 0
+  },
+  "hint": "Köprü çökerse araç da düşer."
+ },
+ {
+  "id": "w2-06",
+  "name": "Kavşak",
+  "world": 2,
+  "order": 6,
+  "charges": {
+   "max": 2,
+   "par": 2
+  },
+  "bonusCollapse": 0.4,
+  "zones": [
+   {
+    "x": 330,
+    "y": 320.0,
+    "w": 140,
+    "h": 38
+   },
+   {
+    "x": 660,
+    "y": 250.0,
+    "w": 160,
+    "h": 38
+   }
+  ],
+  "blocks": [
+   {
+    "x": 260,
+    "y": 430.0,
+    "w": 30,
+    "h": 100,
+    "material": "concrete"
+   },
+   {
+    "x": 520,
+    "y": 430.0,
+    "w": 30,
+    "h": 100,
+    "material": "concrete"
+   },
+   {
+    "x": 390.0,
+    "y": 370.0,
+    "w": 310,
+    "h": 20,
+    "material": "metal"
+   },
+   {
+    "x": 600,
+    "y": 395.0,
+    "w": 30,
+    "h": 170,
+    "material": "concrete"
+   },
+   {
+    "x": 880,
+    "y": 395.0,
+    "w": 30,
+    "h": 170,
+    "material": "concrete"
+   },
+   {
+    "x": 740.0,
+    "y": 300.0,
+    "w": 330,
+    "h": 20,
+    "material": "metal"
+   }
+  ],
+  "barrels": [],
+  "cars": [
+   {
+    "x": 300,
+    "y": 348.0,
+    "w": 56,
+    "h": 24,
+    "from": 290,
+    "to": 490,
+    "speed": 70,
+    "target": true
+   },
+   {
+    "x": 840,
+    "y": 278.0,
+    "w": 56,
+    "h": 24,
+    "from": 630,
+    "to": 850,
+    "speed": 100,
+    "target": true
+   }
+  ],
+  "solution": {
+   "charges": [
+    {
+     "x": 384.0,
+     "y": 348.0
+    },
+    {
+     "x": 706.7,
+     "y": 278.0
+    }
+   ],
+   "fireAt": 1.2
+  },
+  "hint": "İki araç, iki şarj. Şarjlar sırayla patlar; ikinci gecikmeyi hesaba kat."
+ },
+ {
+  "id": "w2-07",
+  "name": "Konvoy",
+  "world": 2,
+  "order": 7,
+  "charges": {
+   "max": 3,
+   "par": 2
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 300,
+    "y": 310.0,
+    "w": 200,
+    "h": 38
+   },
+   {
+    "x": 600,
+    "y": 400,
+    "w": 240,
+    "h": 80
+   }
+  ],
+  "blocks": [
+   {
+    "x": 220,
+    "y": 425.0,
+    "w": 30,
+    "h": 110,
+    "material": "concrete"
+   },
+   {
+    "x": 520,
+    "y": 425.0,
+    "w": 30,
+    "h": 110,
+    "material": "concrete"
+   },
+   {
+    "x": 370.0,
+    "y": 360.0,
+    "w": 350,
+    "h": 20,
+    "material": "metal"
+   },
+   {
+    "x": 680.0,
+    "y": 420.0,
+    "w": 20,
+    "h": 120,
+    "material": "wood"
+   },
+   {
+    "x": 760.0,
+    "y": 420.0,
+    "w": 20,
+    "h": 120,
+    "material": "wood"
+   },
+   {
+    "x": 720,
+    "y": 350.0,
+    "w": 120,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 720,
+    "y": 322.0,
+    "w": 36,
+    "h": 36,
+    "material": "wood",
+    "target": true
+   }
+  ],
+  "barrels": [],
+  "cars": [
+   {
+    "x": 260,
+    "y": 338.0,
+    "w": 56,
+    "h": 24,
+    "from": 250,
+    "to": 490,
+    "speed": 80,
+    "target": true
+   }
+  ],
+  "solution": {
+   "charges": [
+    {
+     "x": 460.0,
+     "y": 338.0
+    },
+    {
+     "x": 720,
+     "y": 470
+    }
+   ],
+   "fireAt": 2.5
+  },
+  "hint": "Önce aracı yakala, ardından kuleyi indir."
+ },
+ {
+  "id": "w2-08",
+  "name": "Varil Yolu",
+  "world": 2,
+  "order": 8,
+  "charges": {
+   "max": 1,
+   "par": 1
+  },
+  "bonusCollapse": 0.4,
+  "zones": [
+   {
+    "x": 640,
+    "y": 310.0,
+    "w": 50,
+    "h": 38
+   }
+  ],
+  "blocks": [
+   {
+    "x": 300,
+    "y": 425.0,
+    "w": 30,
+    "h": 110,
+    "material": "concrete"
+   },
+   {
+    "x": 820,
+    "y": 425.0,
+    "w": 30,
+    "h": 110,
+    "material": "concrete"
+   },
+   {
+    "x": 560.0,
+    "y": 360.0,
+    "w": 570,
+    "h": 20,
+    "material": "metal"
+   }
+  ],
+  "barrels": [
+   {
+    "x": 720,
+    "y": 334.0
+   },
+   {
+    "x": 760,
+    "y": 334.0
+   }
+  ],
+  "cars": [
+   {
+    "x": 340,
+    "y": 338.0,
+    "w": 56,
+    "h": 24,
+    "from": 330,
+    "to": 790,
+    "speed": 110,
+    "target": true
+   }
+  ],
+  "solution": {
+   "charges": [
+    {
+     "x": 660,
+     "y": 338.0
+    }
+   ],
+   "fireAt": 3.4
+  },
+  "hint": "Araç varillerin yanına gelince zinciri başlat."
+ },
+ {
+  "id": "w2-09",
+  "name": "Piramit Kaidesi",
+  "world": 2,
+  "order": 9,
+  "charges": {
+   "max": 3,
+   "par": 2
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 420,
+    "y": 400,
+    "w": 100,
+    "h": 80
+   },
+   {
+    "x": 680,
+    "y": 400,
+    "w": 100,
+    "h": 80
+   }
+  ],
+  "blocks": [
+   {
+    "x": 510.0,
+    "y": 435.0,
+    "w": 20,
+    "h": 90,
+    "material": "wood"
+   },
+   {
+    "x": 690.0,
+    "y": 435.0,
+    "w": 20,
+    "h": 90,
+    "material": "wood"
+   },
+   {
+    "x": 600,
+    "y": 380.0,
+    "w": 220,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 600,
+    "y": 355.0,
+    "w": 200,
+    "h": 30,
+    "material": "glass"
+   },
+   {
+    "x": 600,
+    "y": 325.0,
+    "w": 150,
+    "h": 30,
+    "material": "glass"
+   },
+   {
+    "x": 600,
+    "y": 295.0,
+    "w": 100,
+    "h": 30,
+    "material": "glass"
+   },
+   {
+    "x": 600,
+    "y": 265.0,
+    "w": 60,
+    "h": 30,
+    "material": "glass"
+   },
+   {
+    "x": 600,
+    "y": 232.0,
+    "w": 36,
+    "h": 36,
+    "material": "wood",
+    "target": true
+   }
+  ],
+  "barrels": [],
+  "cars": [],
+  "solution": {
+   "charges": [
+    {
+     "x": 500,
+     "y": 470
+    },
+    {
+     "x": 700,
+     "y": 470
+    }
+   ],
+   "fireAt": 0
+  },
+  "hint": "Kaideyi iki yandan kes; piramit kendi ağırlığıyla iner."
+ },
+ {
+  "id": "w2-10",
+  "name": "Seine Operasyonu",
+  "world": 2,
+  "order": 10,
+  "charges": {
+   "max": 3,
+   "par": 2
+  },
+  "bonusCollapse": 0.45,
+  "zones": [
+   {
+    "x": 180,
+    "y": 300.0,
+    "w": 170,
+    "h": 38
+   },
+   {
+    "x": 480,
+    "y": 400,
+    "w": 160,
+    "h": 80
+   }
+  ],
+  "blocks": [
+   {
+    "x": 120,
+    "y": 420.0,
+    "w": 30,
+    "h": 120,
+    "material": "concrete"
+   },
+   {
+    "x": 400,
+    "y": 420.0,
+    "w": 30,
+    "h": 120,
+    "material": "concrete"
+   },
+   {
+    "x": 260.0,
+    "y": 350.0,
+    "w": 330,
+    "h": 20,
+    "material": "metal"
+   },
+   {
+    "x": 525.0,
+    "y": 420.0,
+    "w": 20,
+    "h": 120,
+    "material": "glass"
+   },
+   {
+    "x": 595.0,
+    "y": 420.0,
+    "w": 20,
+    "h": 120,
+    "material": "glass"
+   },
+   {
+    "x": 560,
+    "y": 350.0,
+    "w": 110,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 560,
+    "y": 322.0,
+    "w": 36,
+    "h": 36,
+    "material": "wood",
+    "target": true
+   },
+   {
+    "x": 720.0,
+    "y": 420.0,
+    "w": 20,
+    "h": 120,
+    "material": "wood"
+   },
+   {
+    "x": 800.0,
+    "y": 420.0,
+    "w": 20,
+    "h": 120,
+    "material": "wood"
+   },
+   {
+    "x": 760,
+    "y": 350.0,
+    "w": 120,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 760,
+    "y": 322.0,
+    "w": 36,
+    "h": 36,
+    "material": "wood",
+    "target": true
+   }
+  ],
+  "barrels": [
+   {
+    "x": 660,
+    "y": 464
+   }
+  ],
+  "cars": [
+   {
+    "x": 160,
+    "y": 328.0,
+    "w": 56,
+    "h": 24,
+    "from": 150,
+    "to": 370,
+    "speed": 80,
+    "target": true
+   }
+  ],
+  "solution": {
+   "charges": [
+    {
+     "x": 264.0,
+     "y": 328.0
+    },
+    {
+     "x": 580,
+     "y": 470
+    }
+   ],
+   "fireAt": 1.3
+  },
+  "hint": "Trafik, cam ve ahşap. Üç hedefi de indir."
+ }
+]
