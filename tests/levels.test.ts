@@ -3,6 +3,7 @@ import { EventBus, type GameEvents } from '../src/core/events';
 import { WORLD, type LevelDefinition } from '../src/core/level';
 import { levelsOf } from '../src/core/progress';
 import { LevelSession } from '../src/core/session';
+import { TUNING } from '../src/core/tuning';
 import { loadCampaign } from '../src/content/levels';
 import { MatterPhysicsWorld } from '../src/infrastructure/matter-physics';
 
@@ -23,7 +24,7 @@ export const playSolution = (
 ): LevelSession => {
   const session = new LevelSession(level, new MatterPhysicsWorld(), new EventBus<GameEvents>());
   for (const p of charges) {
-    const placed = session.placeCharge(p);
+    const placed = session.placeCharge(p, 'delay' in p ? p.delay : undefined);
     if (!placed.ok) throw new Error(`${level.id}: solution charge rejected (${placed.error})`);
   }
   for (let t = 0; t + STEP / 2 < fireAt; t += STEP) session.step(STEP);
@@ -34,7 +35,7 @@ export const playSolution = (
 
 describe('campaign content', () => {
   it('ships ten ordered levels for each playable city', () => {
-    for (const world of [1, 2]) {
+    for (const world of [1, 2, 3]) {
       expect(levelsOf(campaign, world).map((l) => l.order)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
     }
   });
@@ -74,17 +75,28 @@ describe('campaign content', () => {
   });
 
   // Timing must matter on car levels: firing at the start with the same placement should not win.
-  it.each(cases.filter(([, l]) => l.cars.some((c) => c.target) && l.solution.fireAt > 0))(
+  // (One-way traffic loops forever, so "too early" there is a delay question, covered below.)
+  it.each(cases.filter(([, l]) => l.cars.some((c) => c.target && c.mode === 'patrol') && l.solution.fireAt > 0))(
     '%s needs good timing',
     (_id, level) => {
       expect(playSolution(level, 0).result?.success).toBe(false);
     },
   );
 
+  // Timeline puzzles: the same placement with the default delay sequence must not win.
+  it.each(
+    cases.filter(([, l]) =>
+      l.solution.charges.some((c, i) => c.delay !== undefined && Math.abs(c.delay - i * TUNING.charge.delay.defaultStep) > 0.1),
+    ),
+  )('%s needs the delay timeline', (_id, level) => {
+    const defaults = level.solution.charges.map((c) => ({ ...c, delay: undefined }));
+    expect(playSolution(level, level.solution.fireAt, defaults).result?.success).toBe(false);
+  });
+
   // Protected-building puzzles: the obvious placement on the wrong side must break the contract.
   it.each([
-    ['w1-06', { x: 560, y: 470 }],
-    ['w2-02', { x: 500, y: 470 }],
+    ['w1-06', { x: 560, y: 470, delay: undefined }],
+    ['w2-02', { x: 500, y: 470, delay: undefined }],
   ] as const)('%s breaks the contract from the wrong side', (id, wrong) => {
     const level = levels.find((l) => l.id === id);
     if (!level) throw new Error(`missing ${id}`);

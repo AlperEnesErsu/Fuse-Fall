@@ -9,8 +9,8 @@ export const TUNING = {
     lift: 0.3,
     placementSpacing: 26,
     pickRadius: 24,
-    /** Delay between consecutive charges after "Fire". */
-    fuseDelay: 0.35,
+    /** Detonation delays, as on a real blasting machine: new charges default to one step after the last. */
+    delay: { defaultStep: 0.35, step: 0.05, max: 2 },
   },
   barrel: {
     radius: 16,

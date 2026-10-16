@@ -14,7 +14,17 @@ export type EntityKind = 'block' | 'debris' | 'barrel' | 'car';
 export interface Charge {
   readonly id: number;
   readonly position: Vec2;
+  /** Seconds after Fire that this charge detonates. */
+  readonly delay: number;
 }
+
+/** Snaps a delay to the blasting machine's step and range. */
+export const quantizeDelay = (seconds: number): number => {
+  const { step, max } = TUNING.charge.delay;
+  // Round to whole milliseconds so 7 × 0.05 is exactly 0.35, as the player reads it.
+  const snapped = Math.round(Math.round(seconds / step) * step * 1000) / 1000;
+  return Math.min(max, Math.max(0, snapped));
+};
 
 export interface EntityView {
   readonly id: string;
@@ -26,6 +36,7 @@ export interface EntityView {
   readonly protected: boolean;
   /** A protected building that has been damaged. */
   readonly compromised: boolean;
+  readonly anchored: boolean;
   /** 0 = intact, 1 = about to break. */
   readonly damage: number;
   readonly state: BodyState;
@@ -37,7 +48,7 @@ export interface CarView {
   readonly driving: boolean;
   readonly wrecked: boolean;
   readonly direction: 1 | -1;
-  readonly route: { readonly from: number; readonly to: number; readonly y: number };
+  readonly route: { readonly from: number; readonly to: number; readonly y: number; readonly oneWay: boolean };
 }
 
 interface Driver {
@@ -59,6 +70,7 @@ interface Entity {
   /** Counts toward the collapse ratio (an original block to demolish, not debris, a barrel or a protected building). */
   readonly structural: boolean;
   readonly guarded: boolean;
+  readonly anchored: boolean;
   compromised: boolean;
   readonly origin: { readonly position: Vec2; readonly angle: number };
   hp: number;
@@ -71,6 +83,21 @@ interface Detonation {
   readonly at: number;
   readonly position: Vec2;
   readonly source: BlastSource;
+}
+
+/** Everything needed to create an entity; roles are explicit, never inferred from each other. */
+interface SpawnSpec {
+  readonly kind: EntityKind;
+  readonly shape: Shape;
+  readonly position: Vec2;
+  readonly angle: number;
+  readonly material: MaterialId;
+  readonly target?: boolean;
+  readonly structural?: boolean;
+  readonly guarded?: boolean;
+  readonly anchored?: boolean;
+  readonly motion?: { readonly velocity: Vec2; readonly angularVelocity: number };
+  readonly driver?: Driver;
 }
 
 const BLASTS: Readonly<Record<BlastSource, { radius: number; pressure: number; damage: number }>> = {
@@ -128,16 +155,34 @@ export class LevelSession {
       isStatic: true,
     });
     for (const b of level.blocks) {
-      this.spawn('block', { kind: 'rect', w: b.w, h: b.h }, vec(b.x, b.y), b.angle, b.material, b.target, !b.protected);
+      this.spawn({
+        kind: 'block',
+        shape: { kind: 'rect', w: b.w, h: b.h },
+        position: vec(b.x, b.y),
+        angle: b.angle,
+        material: b.material,
+        target: b.target,
+        guarded: b.protected,
+        anchored: b.anchored,
+        structural: !b.protected && !b.anchored,
+      });
     }
     for (const p of level.barrels) {
-      this.spawn('barrel', { kind: 'circle', r: TUNING.barrel.radius }, p, 0, 'metal', false, false);
+      this.spawn({ kind: 'barrel', shape: { kind: 'circle', r: TUNING.barrel.radius }, position: p, angle: 0, material: 'metal' });
     }
     for (const c of level.cars) {
-      const driver: Driver = { def: c, direction: c.x >= c.to ? -1 : 1, engine: c.speed > 0, wrecked: false };
-      this.spawn('car', { kind: 'rect', w: c.w, h: c.h }, vec(c.x, c.y), 0, 'vehicle', c.target, false, undefined, driver);
+      const direction = c.mode === 'flow' || c.x < c.to ? 1 : -1;
+      this.spawn({
+        kind: 'car',
+        shape: { kind: 'rect', w: c.w, h: c.h },
+        position: vec(c.x, c.y),
+        angle: 0,
+        material: 'vehicle',
+        target: c.target,
+        driver: { def: c, direction, engine: c.speed > 0, wrecked: false },
+      });
     }
-    this.structuralTotal = level.blocks.filter((b) => !b.protected).length;
+    this.structuralTotal = level.blocks.filter((b) => !b.protected && !b.anchored).length;
     this.targetTotal = level.blocks.filter((b) => b.target).length + level.cars.filter((c) => c.target).length;
   }
 
@@ -185,13 +230,14 @@ export class LevelSession {
         down: e.down,
         protected: e.guarded,
         compromised: e.compromised,
+        anchored: e.anchored,
         damage: Number.isFinite(e.maxHp) ? 1 - Math.max(0, e.hp) / e.maxHp : 0,
         state,
         car: e.driver && {
           driving: e.driver.engine,
           wrecked: e.driver.wrecked,
           direction: e.driver.direction,
-          route: { from: e.driver.def.from, to: e.driver.def.to, y: e.driver.def.y },
+          route: { from: e.driver.def.from, to: e.driver.def.to, y: e.driver.def.y, oneWay: e.driver.def.mode === 'flow' },
         },
       };
     }
@@ -222,11 +268,17 @@ export class LevelSession {
     return crowded ? err('too-close') : ok(undefined);
   }
 
-  placeCharge(position: Vec2): Result<Charge, PlacementError> {
+  /** Without an explicit delay, a new charge fires one step after the latest one. */
+  placeCharge(position: Vec2, delay?: number): Result<Charge, PlacementError> {
     if (this.currentPhase === 'placing' && this.chargesLeft <= 0) return err('no-charges-left');
     const allowed = this.canPlaceAt(position);
     if (!allowed.ok) return allowed;
-    const charge = { id: this.nextChargeId++, position };
+    const latest = this.chargeList.reduce((m, c) => Math.max(m, c.delay), -TUNING.charge.delay.defaultStep);
+    const charge = {
+      id: this.nextChargeId++,
+      position,
+      delay: quantizeDelay(delay ?? latest + TUNING.charge.delay.defaultStep),
+    };
     this.chargeList.push(charge);
     this.events.emit('chargePlaced', { position });
     return ok(charge);
@@ -234,12 +286,23 @@ export class LevelSession {
 
   moveCharge(id: number, position: Vec2): Result<Charge, PlacementError> {
     const index = this.chargeList.findIndex((c) => c.id === id);
-    if (index < 0) return err('unknown-charge');
+    const current = this.chargeList[index];
+    if (!current) return err('unknown-charge');
     const allowed = this.canPlaceAt(position, id);
     if (!allowed.ok) return allowed;
-    const moved = { id, position };
+    const moved = { ...current, position };
     this.chargeList[index] = moved;
     return ok(moved);
+  }
+
+  setChargeDelay(id: number, seconds: number): Result<Charge, PlacementError> {
+    if (this.currentPhase !== 'placing') return err('not-placing');
+    const index = this.chargeList.findIndex((c) => c.id === id);
+    const current = this.chargeList[index];
+    if (!current) return err('unknown-charge');
+    const updated = { ...current, delay: quantizeDelay(seconds) };
+    this.chargeList[index] = updated;
+    return ok(updated);
   }
 
   removeCharge(id: number): void {
@@ -254,9 +317,9 @@ export class LevelSession {
     if (this.chargeList.length === 0) return err('no-charges');
     this.currentPhase = 'running';
     this.firedAt = this.time;
-    this.chargeList.forEach((c, i) =>
-      this.pending.push({ at: this.time + i * TUNING.charge.fuseDelay, position: c.position, source: 'charge' }),
-    );
+    for (const c of this.chargeList) {
+      this.pending.push({ at: this.time + c.delay, position: c.position, source: 'charge' });
+    }
     return ok(undefined);
   }
 
@@ -367,9 +430,13 @@ export class LevelSession {
     });
     if (e.target) this.markDown(e, state.position);
     for (const s of shards) {
-      this.spawn('debris', { kind: 'rect', w: s.w, h: s.h }, s.position, s.angle, e.material, false, false, {
-        velocity: s.velocity,
-        angularVelocity: s.angularVelocity,
+      this.spawn({
+        kind: 'debris',
+        shape: { kind: 'rect', w: s.w, h: s.h },
+        position: s.position,
+        angle: s.angle,
+        material: e.material,
+        motion: { velocity: s.velocity, angularVelocity: s.angularVelocity },
       });
     }
   }
@@ -383,7 +450,9 @@ export class LevelSession {
       const s = this.physics.state(e.id);
       if (!d?.engine || !s) continue;
       let x = s.position.x + d.direction * d.def.speed * dt;
-      if (x >= d.def.to || x <= d.def.from) {
+      if (d.def.mode === 'flow') {
+        if (x >= d.def.to) x = d.def.from + (x - d.def.to);
+      } else if (x >= d.def.to || x <= d.def.from) {
         x = Math.min(d.def.to, Math.max(d.def.from, x));
         d.direction = d.direction === 1 ? -1 : 1;
       }
@@ -401,10 +470,15 @@ export class LevelSession {
         d.engine = false;
         continue;
       }
+      if (d.def.mode === 'flow' && s.position.x >= d.def.to) {
+        this.physics.setPose(e.id, vec(d.def.from, d.def.y), vec(d.def.speed, 0));
+        continue;
+      }
       if ((d.direction === 1 && s.position.x >= d.def.to) || (d.direction === -1 && s.position.x <= d.def.from)) {
         d.direction = d.direction === 1 ? -1 : 1;
       }
-      this.physics.kick(e.id, vec(d.direction * d.def.speed - s.velocity.x, 0), 0);
+      // Hold cruising speed and keep the body level, as a driver would.
+      this.physics.kick(e.id, vec(d.direction * d.def.speed - s.velocity.x, 0), -s.angularVelocity);
     }
   }
 
@@ -551,42 +625,38 @@ export class LevelSession {
     this.events.emit('targetDown', { position, remaining: this.targetsRemaining });
   }
 
-  private spawn(
-    kind: EntityKind,
-    shape: Shape,
-    position: Vec2,
-    angle: number,
-    material: MaterialId,
-    target: boolean,
-    structural: boolean,
-    motion?: { velocity: Vec2; angularVelocity: number },
-    driver?: Driver,
-  ): void {
-    const id = `${kind}-${this.nextEntityId++}`;
-    const maxHp = kind === 'barrel' ? TUNING.barrel.trigger : kind === 'debris' ? Infinity : MATERIALS[material].strength;
+  private spawn(spec: SpawnSpec): void {
+    const id = `${spec.kind}-${this.nextEntityId++}`;
+    const maxHp =
+      spec.kind === 'barrel'
+        ? TUNING.barrel.trigger
+        : spec.kind === 'debris' || spec.anchored
+          ? Infinity
+          : MATERIALS[spec.material].strength;
     this.entities.set(id, {
       id,
-      kind,
-      shape,
-      material,
-      target,
-      structural,
-      guarded: kind === 'block' && !structural,
+      kind: spec.kind,
+      shape: spec.shape,
+      material: spec.material,
+      target: spec.target ?? false,
+      structural: spec.structural ?? false,
+      guarded: spec.guarded ?? false,
+      anchored: spec.anchored ?? false,
       compromised: false,
-      origin: { position, angle },
+      origin: { position: spec.position, angle: spec.angle },
       hp: maxHp,
       maxHp,
       down: false,
-      driver,
+      driver: spec.driver,
     });
     this.physics.add({
       id,
-      shape,
-      position,
-      angle,
-      material,
-      isStatic: false,
-      ...(motion ? { velocity: motion.velocity, angularVelocity: motion.angularVelocity } : {}),
+      shape: spec.shape,
+      position: spec.position,
+      angle: spec.angle,
+      material: spec.material,
+      isStatic: spec.anchored ?? false,
+      ...(spec.motion ? { velocity: spec.motion.velocity, angularVelocity: spec.motion.angularVelocity } : {}),
     });
   }
 

@@ -41,10 +41,13 @@ export const MATERIALS: Readonly<Record<MaterialId, MaterialSpec>> = {
     strength: Number.POSITIVE_INFINITY,
     shards: { cols: 1, rows: 1 },
   },
-  /** A car body: mostly hollow, grippy tyres. It is wrecked rather than shattered. */
+  /**
+   * A car body: mostly hollow, on rolling wheels (low sliding friction, or the
+   * engine's push would tip it over). It is wrecked rather than shattered.
+   */
   vehicle: {
     density: 0.0022,
-    friction: 0.9,
+    friction: 0.08,
     restitution: 0.1,
     strength: 60,
     shards: { cols: 1, rows: 1 },

@@ -167,7 +167,14 @@ export class Game {
     // Each city runs from dawn (first level) to night (last level).
     this.renderer.setScene(city.key, cityLevels.length > 1 ? (level.order - 1) / (cityLevels.length - 1) : 0);
     this.session = new LevelSession(level, new MatterPhysicsWorld(), this.events);
-    this.ui.showHud(() => this.fire(), () => this.startLevel(id), () => this.showLevels());
+    this.ui.showHud(
+      () => this.fire(),
+      () => this.startLevel(id),
+      () => this.showLevels(),
+      (chargeId, seconds) => {
+        if (this.session?.setChargeDelay(chargeId, seconds).ok) this.refreshHud();
+      },
+    );
     this.refreshHud();
     if (this.progress.stars[id] === undefined) {
       const fallback = level.blocks.some((b) => b.protected)
@@ -263,6 +270,10 @@ export class Game {
       targetsLeft: s.targetsRemaining,
       canFire: s.phase === 'placing' && s.charges.length > 0,
     });
+    this.ui.updateTimeline(
+      s.charges.map((c, i) => ({ id: c.id, label: i + 1, delay: c.delay })),
+      s.phase === 'placing',
+    );
   }
 
   // ---- input ---------------------------------------------------------------

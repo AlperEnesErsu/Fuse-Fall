@@ -19,6 +19,8 @@ export interface BlockDef {
   readonly target: boolean;
   /** A neighbouring building that must come through the job undamaged. */
   readonly protected: boolean;
+  /** Fixed infrastructure (road decks, bridge piers): immovable, indestructible, not part of the job. */
+  readonly anchored: boolean;
 }
 
 /** A car that drives back and forth between `from` and `to` (centre x) at `speed` px/s. */
@@ -32,10 +34,17 @@ export interface CarDef {
   readonly to: number;
   readonly speed: number;
   readonly target: boolean;
+  /** `patrol` drives back and forth; `flow` is one-way traffic that re-enters at `from` after reaching `to`. */
+  readonly mode: 'patrol' | 'flow';
+}
+
+export interface SolutionCharge extends Vec2 {
+  /** Detonation delay in seconds; omitted means the default sequence. */
+  readonly delay: number | undefined;
 }
 
 export interface LevelSolution {
-  readonly charges: readonly Vec2[];
+  readonly charges: readonly SolutionCharge[];
   /** Seconds after the level starts to press Fire (matters when cars move). */
   readonly fireAt: number;
 }
@@ -117,7 +126,11 @@ const block = (v: unknown, path: string): BlockDef => {
   const target = o.target === undefined ? false : o.target === true || fail(`${path}.target`, 'expected boolean');
   const guarded =
     o.protected === undefined ? false : o.protected === true || fail(`${path}.protected`, 'expected boolean');
-  if (target && guarded) fail(path, 'a block cannot be both a target and protected');
+  const anchored =
+    o.anchored === undefined ? false : o.anchored === true || fail(`${path}.anchored`, 'expected boolean');
+  if (Number(target) + Number(guarded) + Number(anchored) > 1) {
+    fail(path, 'a block is at most one of target, protected or anchored');
+  }
   const def: BlockDef = {
     x: num(o.x, `${path}.x`, 0, WORLD.width),
     y: num(o.y, `${path}.y`, 0, WORLD.groundY),
@@ -127,6 +140,7 @@ const block = (v: unknown, path: string): BlockDef => {
     material,
     target,
     protected: guarded,
+    anchored,
   };
   if (def.target && !startsClear(def.y, def.w, def.h)) fail(path, 'target must start clear of the ground');
   return def;
@@ -146,6 +160,7 @@ const car = (v: unknown, path: string): CarDef => {
     to: num(o.to, `${path}.to`, 0, WORLD.width),
     speed: num(o.speed, `${path}.speed`, 0, 400),
     target: o.target === undefined ? false : o.target === true || fail(`${path}.target`, 'expected boolean'),
+    mode: o.mode === undefined || o.mode === 'patrol' ? 'patrol' : o.mode === 'flow' ? 'flow' : fail(`${path}.mode`, 'expected patrol or flow'),
   };
   if (def.from > def.to) fail(path, 'from must not exceed to');
   if (def.x < def.from || def.x > def.to) fail(`${path}.x`, 'car must start on its route');
@@ -155,7 +170,11 @@ const car = (v: unknown, path: string): CarDef => {
 
 const solution = (v: unknown, path: string, maxCharges: number): LevelSolution => {
   const o = obj(v, path);
-  const charges = arr(o.charges, `${path}.charges`).map((s, i) => point(s, `${path}.charges[${i}]`));
+  const charges = arr(o.charges, `${path}.charges`).map((s, i): SolutionCharge => {
+    const at = `${path}.charges[${i}]`;
+    const delay = obj(s, at).delay;
+    return { ...point(s, at), delay: delay === undefined ? undefined : num(delay, `${at}.delay`, 0, 2) };
+  });
   if (charges.length === 0 || charges.length > maxCharges) fail(`${path}.charges`, 'solution must use 1..max charges');
   return { charges, fireAt: o.fireAt === undefined ? 0 : num(o.fireAt, `${path}.fireAt`, 0, 30) };
 };

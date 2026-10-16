@@ -15,12 +15,12 @@ const level = (patch: Partial<LevelDefinition> = {}): LevelDefinition => ({
   bonusCollapse: 0.5,
   zones: [{ x: 0, y: 400, w: 300, h: 80 }],
   blocks: [
-    { x: 500, y: 300, w: 40, h: 40, angle: 0, material: 'wood', target: true, protected: false },
-    { x: 700, y: 455, w: 40, h: 50, angle: 0, material: 'concrete', target: false, protected: false },
+    { x: 500, y: 300, w: 40, h: 40, angle: 0, material: 'wood', target: true, protected: false, anchored: false },
+    { x: 700, y: 455, w: 40, h: 50, angle: 0, material: 'concrete', target: false, protected: false, anchored: false },
   ],
   barrels: [],
   cars: [],
-  solution: { charges: [{ x: 100, y: 450 }], fireAt: 0 },
+  solution: { charges: [{ x: 100, y: 450, delay: undefined }], fireAt: 0 },
   ...patch,
 });
 
@@ -64,6 +64,32 @@ describe('placement', () => {
     expect(session.charges).toHaveLength(0);
   });
 
+  it('gives new charges the next delay step, and lets the player retime them', () => {
+    const { session } = setup();
+    const a = session.placeCharge({ x: 100, y: 450 });
+    const b = session.placeCharge({ x: 200, y: 450 });
+    if (!a.ok || !b.ok) throw new Error('placement failed');
+    expect([a.value.delay, b.value.delay]).toEqual([0, TUNING.charge.delay.defaultStep]);
+    expect(session.setChargeDelay(b.value.id, 0.123).ok && session.charges[1]?.delay).toBeCloseTo(0.1);
+    expect(session.setChargeDelay(b.value.id, 9).ok && session.charges[1]?.delay).toBe(TUNING.charge.delay.max);
+    expect(session.setChargeDelay(99, 0)).toEqual({ ok: false, error: 'unknown-charge' });
+    expect(session.moveCharge(b.value.id, { x: 250, y: 450 }).ok && session.charges[1]?.delay).toBe(2);
+  });
+
+  it('detonates by delay, not by placement order', () => {
+    const { session, log, run } = setup();
+    session.placeCharge({ x: 100, y: 450 }, 0.5);
+    session.placeCharge({ x: 200, y: 450 }, 0);
+    session.fire();
+    run(0.1);
+    const first = log.filter((e) => e.type === 'explosion').map((e) => (e.payload as { position: { x: number } }).position.x);
+    expect(first).toEqual([200]);
+    run(0.5);
+    expect(log.filter((e) => e.type === 'explosion')).toHaveLength(2);
+    expect(() => session.setChargeDelay(1, 0)).not.toThrow();
+    expect(session.setChargeDelay(1, 0)).toEqual({ ok: false, error: 'not-placing' });
+  });
+
   it('cannot fire without charges, and freezes placement after firing', () => {
     const { session } = setup();
     expect(session.fire()).toEqual({ ok: false, error: 'no-charges' });
@@ -81,7 +107,7 @@ describe('detonation', () => {
     session.fire();
     run(1 / 60);
     expect(log.filter((e) => e.type === 'explosion')).toHaveLength(1);
-    run(TUNING.charge.fuseDelay);
+    run(TUNING.charge.delay.defaultStep);
     expect(log.filter((e) => e.type === 'explosion')).toHaveLength(2);
   });
 
@@ -170,7 +196,7 @@ describe('outcome', () => {
 });
 
 describe('cars', () => {
-  const road = { x: 600, y: 300, w: 56, h: 24, from: 560, to: 700, speed: 60, target: true } as const;
+  const road = { x: 600, y: 300, w: 56, h: 24, from: 560, to: 700, speed: 60, target: true, mode: 'patrol' } as const;
   const carLevel = (patch: Partial<LevelDefinition> = {}) =>
     setup({ blocks: [], cars: [road], zones: [{ x: 0, y: 250, w: 960, h: 230 }], ...patch });
 
@@ -183,6 +209,14 @@ describe('cars', () => {
     expect(physics.state('car-1')?.position.x).toBeLessThan(700);
     expect(physics.state('car-1')?.velocity.x).toBeLessThan(0);
     expect(session.phase).toBe('placing');
+  });
+
+  it('in flow mode, re-enter at the start of the route instead of turning back', () => {
+    const { physics, run } = carLevel({ cars: [{ ...road, mode: 'flow' }] });
+    run(1.8); // 600 → 700 in 1.67 s, then back to 560 and onwards
+    const s = physics.state('car-1');
+    expect(s?.velocity.x).toBeGreaterThan(0);
+    expect(s?.position.x).toBeLessThan(580);
   });
 
   it('stall when caught in a blast and are wrecked by a close one', () => {
@@ -209,7 +243,7 @@ describe('cars', () => {
 });
 
 describe('protected buildings', () => {
-  const house = { x: 860, y: 450, w: 60, h: 60, angle: 0, material: 'concrete', target: false, protected: true } as const;
+  const house = { x: 860, y: 450, w: 60, h: 60, angle: 0, material: 'concrete', target: false, protected: true, anchored: false } as const;
 
   it('do not count toward the collapse ratio', () => {
     const { session, physics, run } = setup({ blocks: [...level().blocks, house] });
@@ -244,5 +278,19 @@ describe('protected buildings', () => {
     session.fire();
     run(TUNING.settle.hold + 0.2);
     expect(session.result).toMatchObject({ success: false, failure: 'collateral-damage' });
+  });
+});
+
+describe('anchored infrastructure', () => {
+  const deck = { x: 150, y: 400, w: 200, h: 20, angle: 0, material: 'metal', target: false, protected: false, anchored: true } as const;
+
+  it('is static, indestructible and outside the job', () => {
+    const { session, physics, run } = setup({ blocks: [...level().blocks, deck] });
+    expect(physics.bodies.get('block-3')?.spec.isStatic).toBe(true);
+    session.placeCharge({ x: 150, y: 420 });
+    session.fire();
+    run(TUNING.settle.hold + 0.2);
+    expect(physics.state('block-3')).toBeDefined();
+    expect(session.result).toMatchObject({ blocksTotal: 2, protectedTotal: 0 });
   });
 });

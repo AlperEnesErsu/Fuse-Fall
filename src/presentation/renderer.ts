@@ -127,7 +127,8 @@ export class Renderer {
       c.moveTo(from, y);
       c.lineTo(to, y);
       c.stroke();
-      for (const [x, dir] of [[from, -1], [to, 1]] as const) {
+      const ends = e.car.route.oneWay ? ([[to, 1]] as const) : ([[from, -1], [to, 1]] as const);
+      for (const [x, dir] of ends) {
         c.beginPath();
         c.moveTo(x, y);
         c.lineTo(x - dir * 8, y - 5);
@@ -236,6 +237,8 @@ export class Renderer {
     c.fillRect(-w / 2, -h / 2, w, h);
     if (e.protected) {
       this.facade(w, h, e.compromised || threatened);
+    } else if (e.anchored) {
+      this.girder(w, h);
     } else if (!debris) {
       this.pattern(e.material, w, h, colors.detail);
     }
@@ -244,6 +247,32 @@ export class Renderer {
     c.lineWidth = 1.5;
     c.strokeRect(-w / 2, -h / 2, w, h);
     if (e.target) this.targetMark(Math.min(w, h), e.down);
+  }
+
+  /** Fixed infrastructure: dark steel with cross bracing, visibly not part of the job. */
+  private girder(w: number, h: number): void {
+    const c = this.ctx;
+    c.fillStyle = '#2f353d';
+    c.fillRect(-w / 2, -h / 2, w, h);
+    c.strokeStyle = '#4a525c';
+    c.lineWidth = 1.5;
+    c.beginPath();
+    const long = w >= h;
+    const span = long ? h : w;
+    for (let t = -(long ? w : h) / 2; t < (long ? w : h) / 2; t += span) {
+      if (long) {
+        c.moveTo(t, -h / 2);
+        c.lineTo(t + span, h / 2);
+        c.moveTo(t + span, -h / 2);
+        c.lineTo(t, h / 2);
+      } else {
+        c.moveTo(-w / 2, t);
+        c.lineTo(w / 2, t + span);
+        c.moveTo(w / 2, t);
+        c.lineTo(-w / 2, t + span);
+      }
+    }
+    c.stroke();
   }
 
   /** Surveyor-style target mark: a ring with crosshair ticks, greyed out once down. */
@@ -407,6 +436,7 @@ export class Renderer {
       session.charges.forEach((ch, i) => {
         if (overlay.drag?.id === ch.id) return;
         this.charge(ch.position, i + 1, false, overlay.time);
+        this.delayTag(ch.position, ch.delay);
       });
       if (overlay.drag) this.charge(overlay.drag.position, 0, false, overlay.time, 0.7);
       if (overlay.ghost && !overlay.drag) this.ghost(overlay.ghost.position, overlay.ghost.valid);
@@ -449,6 +479,22 @@ export class Renderer {
       c.textBaseline = 'middle';
       c.fillText(String(index), 0, 3);
     }
+    c.restore();
+  }
+
+  /** Firing delay under a placed charge, as a blaster would chalk it on. */
+  private delayTag(p: Vec2, delay: number): void {
+    const c = this.ctx;
+    const text = `+${Math.round(delay * 1000)}`;
+    c.save();
+    c.font = '700 10px Bahnschrift, system-ui, sans-serif';
+    c.textAlign = 'center';
+    c.textBaseline = 'top';
+    const w = c.measureText(text).width + 8;
+    c.fillStyle = 'rgba(15, 17, 20, 0.85)';
+    c.fillRect(p.x - w / 2, p.y + 11, w, 13);
+    c.fillStyle = PALETTE.accent;
+    c.fillText(text, p.x, p.y + 12.5);
     c.restore();
   }
 

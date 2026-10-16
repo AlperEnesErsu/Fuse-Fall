@@ -3,6 +3,8 @@ import type { Settings, WorldStatus } from '../core/progress';
 import type { LevelResult, Stars } from '../core/scoring';
 import type { WorldDefinition } from '../core/world';
 import { ICONS } from './icons';
+import { DelayTimeline, type TimelineCharge } from './timeline';
+import { TUNING } from '../core/tuning';
 import { paintScene, skyAt } from './scenery';
 import { T } from './strings';
 
@@ -93,7 +95,14 @@ export class Ui {
   private readonly screen: HTMLElement;
   private readonly toastEl: HTMLElement;
   private hudParts:
-    | { name: HTMLElement; charges: HTMLElement; targets: HTMLElement; guarded: HTMLElement; fire: HTMLButtonElement }
+    | {
+        name: HTMLElement;
+        charges: HTMLElement;
+        targets: HTMLElement;
+        guarded: HTMLElement;
+        fire: HTMLButtonElement;
+        timeline: DelayTimeline;
+      }
     | undefined;
   private toastTimer = 0;
 
@@ -253,7 +262,12 @@ export class Ui {
     );
   }
 
-  showHud(onFire: () => void, onRetry: () => void, onMenu: () => void): void {
+  showHud(
+    onFire: () => void,
+    onRetry: () => void,
+    onMenu: () => void,
+    onDelay: (chargeId: number, seconds: number) => void,
+  ): void {
     this.hideScreen();
     const name = h('div', { class: 'hud-name' });
     const charges = h('div', { class: 'stat' });
@@ -265,6 +279,7 @@ export class Ui {
       ICONS.detonator(30),
       h('span', {}, T.fire),
     ) as HTMLButtonElement;
+    const timeline = new DelayTimeline(TUNING.charge.delay.max, onDelay);
     this.hud.replaceChildren(
       h(
         'div',
@@ -277,9 +292,10 @@ export class Ui {
           this.iconButton(ICONS.menu(), onMenu, T.menu),
         ),
       ),
+      timeline.element,
       fire,
     );
-    this.hudParts = { name, charges, targets, guarded, fire };
+    this.hudParts = { name, charges, targets, guarded, fire, timeline };
     this.hud.classList.remove('hidden');
   }
 
@@ -296,6 +312,11 @@ export class Ui {
     this.hudParts.guarded.replaceChildren(h('span', { class: 'label' }, T.protectedLabel), String(s.protectedTotal));
     this.hudParts.guarded.classList.toggle('hidden', s.protectedTotal === 0);
     this.hudParts.fire.disabled = !s.canFire;
+  }
+
+  /** The delay timeline shows while placing whenever there is a charge to time. */
+  updateTimeline(charges: readonly TimelineCharge[], placing: boolean): void {
+    this.hudParts?.timeline.update(charges, placing);
   }
 
   setFireVisible(visible: boolean): void {

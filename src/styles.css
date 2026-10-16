@@ -759,3 +759,95 @@ h2,
     transition: none !important;
   }
 }
+
+/* ---- delay timeline (blasting machine) ---- */
+.timeline {
+  pointer-events: auto;
+  /* Top centre, between the info card and the buttons: the sky is the one area missions never use. */
+  position: absolute;
+  top: max(12px, env(safe-area-inset-top));
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(340px, 40vw);
+  background: rgba(15, 17, 20, 0.86);
+  border: 1px solid var(--edge);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 6px 10px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.timeline-head .label {
+  color: var(--muted);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.timeline-scale {
+  position: relative;
+  height: 12px;
+  margin-right: 62px;
+  font-size: 0.6rem;
+  color: var(--muted);
+}
+.timeline-scale span {
+  position: absolute;
+  transform: translateX(-50%);
+}
+.timeline-scale span:first-child {
+  transform: none;
+}
+.timeline-scale span:last-child {
+  transform: translateX(-100%);
+}
+.timeline-lanes {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.timeline-lane {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.timeline-track {
+  position: relative;
+  flex: 1;
+  height: 22px;
+  touch-action: none;
+  cursor: ew-resize;
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.12) 0 1px, transparent 1px 10%) 0 50% / 100% 8px no-repeat,
+    linear-gradient(#2a2e35, #2a2e35) 0 50% / 100% 2px no-repeat;
+}
+.timeline-marker {
+  position: absolute;
+  top: 50%;
+  width: 22px;
+  height: 22px;
+  margin: -11px 0 0 -11px;
+  border-radius: 3px;
+  border: 1px solid #1c1f14;
+  background: #5f6a3e;
+  color: #e9e3cf;
+  font: 700 0.72rem var(--font-display);
+  padding: 0;
+  pointer-events: none;
+}
+.timeline-value {
+  width: 54px;
+  text-align: right;
+  font-size: 0.75rem;
+  color: var(--accent);
+}
+@media (max-height: 420px) {
+  .timeline-track {
+    height: 18px;
+  }
+  .timeline-marker {
+    width: 18px;
+    height: 18px;
+    margin: -9px 0 0 -9px;
+  }
+}

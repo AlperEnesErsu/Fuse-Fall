@@ -17,6 +17,8 @@ export const T = {
   next: 'Sonraki görev',
   menu: 'Menü',
   charges: 'Şarj',
+  delayTitle: 'Ateşleme gecikmesi (ms)',
+  ms: (seconds: number) => `+${Math.round(seconds * 1000)} ms`,
   targets: 'Hedef',
   protectedLabel: 'Korunan',
   offline: 'Çevrimdışı çalışır',

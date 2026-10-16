@@ -1,0 +1,995 @@
+[
+ {
+  "id": "w3-01",
+  "name": "Çift Kolon",
+  "world": 3,
+  "order": 1,
+  "charges": {
+   "max": 2,
+   "par": 2
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 440,
+    "y": 380,
+    "w": 60,
+    "h": 100
+   },
+   {
+    "x": 560,
+    "y": 380,
+    "w": 60,
+    "h": 100
+   }
+  ],
+  "blocks": [
+   {
+    "x": 470,
+    "y": 420.0,
+    "w": 24,
+    "h": 120,
+    "material": "concrete"
+   },
+   {
+    "x": 590,
+    "y": 420.0,
+    "w": 24,
+    "h": 120,
+    "material": "concrete"
+   },
+   {
+    "x": 530.0,
+    "y": 351.0,
+    "w": 160,
+    "h": 18,
+    "material": "concrete"
+   },
+   {
+    "x": 470,
+    "y": 292.0,
+    "w": 24,
+    "h": 100,
+    "material": "concrete"
+   },
+   {
+    "x": 590,
+    "y": 292.0,
+    "w": 24,
+    "h": 100,
+    "material": "concrete"
+   },
+   {
+    "x": 530.0,
+    "y": 233.0,
+    "w": 160,
+    "h": 18,
+    "material": "concrete"
+   },
+   {
+    "x": 530,
+    "y": 206.0,
+    "w": 36,
+    "h": 36,
+    "material": "wood",
+    "target": true
+   },
+   {
+    "x": 840,
+    "y": 435.0,
+    "w": 60,
+    "h": 90,
+    "material": "concrete",
+    "protected": true
+   }
+  ],
+  "barrels": [],
+  "cars": [],
+  "solution": {
+   "charges": [
+    {
+     "x": 470,
+     "y": 440
+    },
+    {
+     "x": 590,
+     "y": 440
+    }
+   ],
+   "fireAt": 0
+  },
+  "hint": "Sağdaki bina korunuyor. Patlama çemberini ondan uzak tut."
+ },
+ {
+  "id": "w3-02",
+  "name": "Üç Kolon",
+  "world": 3,
+  "order": 2,
+  "charges": {
+   "max": 2,
+   "par": 1
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 395,
+    "y": 380,
+    "w": 250,
+    "h": 100
+   }
+  ],
+  "blocks": [
+   {
+    "x": 420,
+    "y": 425.0,
+    "w": 24,
+    "h": 110,
+    "material": "concrete"
+   },
+   {
+    "x": 520,
+    "y": 425.0,
+    "w": 24,
+    "h": 110,
+    "material": "concrete"
+   },
+   {
+    "x": 620,
+    "y": 425.0,
+    "w": 24,
+    "h": 110,
+    "material": "concrete"
+   },
+   {
+    "x": 520.0,
+    "y": 361.0,
+    "w": 240,
+    "h": 18,
+    "material": "concrete"
+   },
+   {
+    "x": 520,
+    "y": 334.0,
+    "w": 36,
+    "h": 36,
+    "material": "wood",
+    "target": true
+   },
+   {
+    "x": 810,
+    "y": 435.0,
+    "w": 60,
+    "h": 90,
+    "material": "concrete",
+    "protected": true
+   }
+  ],
+  "barrels": [],
+  "cars": [],
+  "solution": {
+   "charges": [
+    {
+     "x": 520,
+     "y": 440
+    }
+   ],
+   "fireAt": 0
+  },
+  "hint": "Orta kolon yükün çoğunu taşır."
+ },
+ {
+  "id": "w3-03",
+  "name": "Konvoy",
+  "world": 3,
+  "order": 3,
+  "charges": {
+   "max": 2,
+   "par": 2
+  },
+  "bonusCollapse": 0.4,
+  "zones": [
+   {
+    "x": 400,
+    "y": 310.0,
+    "w": 80,
+    "h": 38
+   }
+  ],
+  "blocks": [
+   {
+    "x": 60,
+    "y": 425.0,
+    "w": 30,
+    "h": 110,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 560,
+    "y": 425.0,
+    "w": 30,
+    "h": 110,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 310.0,
+    "y": 360.0,
+    "w": 550,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   }
+  ],
+  "barrels": [],
+  "cars": [
+   {
+    "x": 260,
+    "y": 338.0,
+    "w": 56,
+    "h": 24,
+    "from": 40,
+    "to": 580,
+    "speed": 130,
+    "target": true,
+    "mode": "flow"
+   },
+   {
+    "x": 40,
+    "y": 338.0,
+    "w": 56,
+    "h": 24,
+    "from": 40,
+    "to": 580,
+    "speed": 130,
+    "target": true,
+    "mode": "flow"
+   }
+  ],
+  "solution": {
+   "charges": [
+    {
+     "x": 420,
+     "y": 338.0,
+     "delay": 0
+    },
+    {
+     "x": 455,
+     "y": 338.0,
+     "delay": 1.95
+    }
+   ],
+   "fireAt": 1.3666666666666667
+  },
+  "hint": "İki araç aynı noktadan geçecek. İkinci şarjın gecikmesini ikinci araca göre ayarla."
+ },
+ {
+  "id": "w3-04",
+  "name": "Kule Vinci",
+  "world": 3,
+  "order": 4,
+  "charges": {
+   "max": 2,
+   "par": 1
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 440,
+    "y": 400,
+    "w": 160,
+    "h": 80
+   }
+  ],
+  "blocks": [
+   {
+    "x": 470,
+    "y": 410.0,
+    "w": 24,
+    "h": 140,
+    "material": "wood"
+   },
+   {
+    "x": 570,
+    "y": 410.0,
+    "w": 24,
+    "h": 140,
+    "material": "wood"
+   },
+   {
+    "x": 520,
+    "y": 332.0,
+    "w": 140,
+    "h": 16,
+    "material": "metal"
+   },
+   {
+    "x": 520,
+    "y": 264.0,
+    "w": 20,
+    "h": 120,
+    "material": "metal"
+   },
+   {
+    "x": 520,
+    "y": 186.0,
+    "w": 36,
+    "h": 36,
+    "material": "wood",
+    "target": true
+   }
+  ],
+  "barrels": [],
+  "cars": [],
+  "solution": {
+   "charges": [
+    {
+     "x": 520,
+     "y": 470
+    }
+   ],
+   "fireAt": 0
+  },
+  "hint": "Çelik kırılmaz; vinci devirmek için ahşap ayaklarını kes."
+ },
+ {
+  "id": "w3-05",
+  "name": "İki Şerit",
+  "world": 3,
+  "order": 5,
+  "charges": {
+   "max": 2,
+   "par": 2
+  },
+  "bonusCollapse": 0.4,
+  "zones": [
+   {
+    "x": 280,
+    "y": 330.0,
+    "w": 80,
+    "h": 38
+   },
+   {
+    "x": 700,
+    "y": 230.0,
+    "w": 80,
+    "h": 38
+   }
+  ],
+  "blocks": [
+   {
+    "x": 100,
+    "y": 435.0,
+    "w": 30,
+    "h": 90,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 440,
+    "y": 435.0,
+    "w": 30,
+    "h": 90,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 270.0,
+    "y": 380.0,
+    "w": 390,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 520,
+    "y": 385.0,
+    "w": 30,
+    "h": 190,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 900,
+    "y": 385.0,
+    "w": 30,
+    "h": 190,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 710.0,
+    "y": 280.0,
+    "w": 430,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   }
+  ],
+  "barrels": [],
+  "cars": [
+   {
+    "x": 130,
+    "y": 358.0,
+    "w": 56,
+    "h": 24,
+    "from": 120,
+    "to": 420,
+    "speed": 70,
+    "target": true,
+    "mode": "flow"
+   },
+   {
+    "x": 550,
+    "y": 258.0,
+    "w": 56,
+    "h": 24,
+    "from": 540,
+    "to": 880,
+    "speed": 150,
+    "target": true,
+    "mode": "flow"
+   }
+  ],
+  "solution": {
+   "charges": [
+    {
+     "x": 740,
+     "y": 258.0,
+     "delay": 0
+    },
+    {
+     "x": 340,
+     "y": 358.0,
+     "delay": 1.85
+    }
+   ],
+   "fireAt": 1.3833333333333333
+  },
+  "hint": "Üst şerit hızlı, alt şerit yavaş. Tek ateşlemeyle iki aracı da yakala."
+ },
+ {
+  "id": "w3-06",
+  "name": "Saat Kulesi",
+  "world": 3,
+  "order": 6,
+  "charges": {
+   "max": 2,
+   "par": 1
+  },
+  "bonusCollapse": 0.6,
+  "zones": [
+   {
+    "x": 440,
+    "y": 380,
+    "w": 160,
+    "h": 100
+   }
+  ],
+  "blocks": [
+   {
+    "x": 520,
+    "y": 448.0,
+    "w": 44,
+    "h": 64,
+    "material": "concrete"
+   },
+   {
+    "x": 520,
+    "y": 384.0,
+    "w": 44,
+    "h": 64,
+    "material": "concrete"
+   },
+   {
+    "x": 520,
+    "y": 320.0,
+    "w": 44,
+    "h": 64,
+    "material": "concrete"
+   },
+   {
+    "x": 520,
+    "y": 256.0,
+    "w": 44,
+    "h": 64,
+    "material": "concrete"
+   },
+   {
+    "x": 520,
+    "y": 192.0,
+    "w": 44,
+    "h": 64,
+    "material": "concrete"
+   },
+   {
+    "x": 520,
+    "y": 128.0,
+    "w": 44,
+    "h": 64,
+    "material": "concrete"
+   },
+   {
+    "x": 520,
+    "y": 78.0,
+    "w": 36,
+    "h": 36,
+    "material": "wood",
+    "target": true
+   },
+   {
+    "x": 280,
+    "y": 440.0,
+    "w": 60,
+    "h": 80,
+    "material": "concrete",
+    "protected": true
+   }
+  ],
+  "barrels": [],
+  "cars": [],
+  "solution": {
+   "charges": [
+    {
+     "x": 530,
+     "y": 470
+    }
+   ],
+   "fireAt": 0
+  },
+  "hint": "Soldaki bina korunuyor. Kuleyi doğru taraftan kes."
+ },
+ {
+  "id": "w3-07",
+  "name": "Kule Köprüsü",
+  "world": 3,
+  "order": 7,
+  "charges": {
+   "max": 3,
+   "par": 3
+  },
+  "bonusCollapse": 0.45,
+  "zones": [
+   {
+    "x": 140,
+    "y": 400,
+    "w": 120,
+    "h": 80
+   },
+   {
+    "x": 700,
+    "y": 400,
+    "w": 120,
+    "h": 80
+   },
+   {
+    "x": 560,
+    "y": 320.0,
+    "w": 60,
+    "h": 38
+   }
+  ],
+  "blocks": [
+   {
+    "x": 170.0,
+    "y": 415.0,
+    "w": 22,
+    "h": 130,
+    "material": "wood"
+   },
+   {
+    "x": 230.0,
+    "y": 415.0,
+    "w": 22,
+    "h": 130,
+    "material": "wood"
+   },
+   {
+    "x": 200,
+    "y": 340.0,
+    "w": 102,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 200,
+    "y": 312.0,
+    "w": 36,
+    "h": 36,
+    "material": "wood",
+    "target": true
+   },
+   {
+    "x": 730.0,
+    "y": 415.0,
+    "w": 22,
+    "h": 130,
+    "material": "wood"
+   },
+   {
+    "x": 790.0,
+    "y": 415.0,
+    "w": 22,
+    "h": 130,
+    "material": "wood"
+   },
+   {
+    "x": 760,
+    "y": 340.0,
+    "w": 102,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 760,
+    "y": 312.0,
+    "w": 36,
+    "h": 36,
+    "material": "wood",
+    "target": true
+   },
+   {
+    "x": 300,
+    "y": 430.0,
+    "w": 30,
+    "h": 100,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 660,
+    "y": 430.0,
+    "w": 30,
+    "h": 100,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 480.0,
+    "y": 370.0,
+    "w": 410,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   }
+  ],
+  "barrels": [],
+  "cars": [
+   {
+    "x": 330,
+    "y": 348.0,
+    "w": 56,
+    "h": 24,
+    "from": 320,
+    "to": 640,
+    "speed": 160,
+    "target": true
+   }
+  ],
+  "solution": {
+   "charges": [
+    {
+     "x": 200,
+     "y": 470,
+     "delay": 0
+    },
+    {
+     "x": 760,
+     "y": 470,
+     "delay": 0.35
+    },
+    {
+     "x": 590,
+     "y": 348.0,
+     "delay": 1.75
+    }
+   ],
+   "fireAt": 0
+  },
+  "hint": "Kuleler ve köprüdeki araç. Kuleleri hemen, aracı geldiğinde vur."
+ },
+ {
+  "id": "w3-08",
+  "name": "Gece Konvoyu",
+  "world": 3,
+  "order": 8,
+  "charges": {
+   "max": 3,
+   "par": 3
+  },
+  "bonusCollapse": 0.4,
+  "zones": [
+   {
+    "x": 380,
+    "y": 310.0,
+    "w": 110,
+    "h": 38
+   }
+  ],
+  "blocks": [
+   {
+    "x": 60,
+    "y": 425.0,
+    "w": 30,
+    "h": 110,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 600,
+    "y": 425.0,
+    "w": 30,
+    "h": 110,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 330.0,
+    "y": 360.0,
+    "w": 590,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   }
+  ],
+  "barrels": [],
+  "cars": [
+   {
+    "x": 410,
+    "y": 338.0,
+    "w": 56,
+    "h": 24,
+    "from": 40,
+    "to": 620,
+    "speed": 230,
+    "target": true,
+    "mode": "flow"
+   },
+   {
+    "x": 225,
+    "y": 338.0,
+    "w": 56,
+    "h": 24,
+    "from": 40,
+    "to": 620,
+    "speed": 230,
+    "target": true,
+    "mode": "flow"
+   },
+   {
+    "x": 40,
+    "y": 338.0,
+    "w": 56,
+    "h": 24,
+    "from": 40,
+    "to": 620,
+    "speed": 230,
+    "target": true,
+    "mode": "flow"
+   }
+  ],
+  "solution": {
+   "charges": [
+    {
+     "x": 400,
+     "y": 338.0,
+     "delay": 0
+    },
+    {
+     "x": 432,
+     "y": 338.0,
+     "delay": 0.95
+    },
+    {
+     "x": 464,
+     "y": 338.0,
+     "delay": 1.9
+    }
+   ],
+   "fireAt": 0.03333333333333333
+  },
+  "hint": "Üç araç arka arkaya. Gecikmeleri araç aralıklarına göre ayarla."
+ },
+ {
+  "id": "w3-09",
+  "name": "Cam Kule",
+  "world": 3,
+  "order": 9,
+  "charges": {
+   "max": 2,
+   "par": 1
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 300,
+    "y": 400,
+    "w": 120,
+    "h": 80
+   }
+  ],
+  "blocks": [
+   {
+    "x": 520,
+    "y": 450.0,
+    "w": 120,
+    "h": 60,
+    "material": "glass"
+   },
+   {
+    "x": 520,
+    "y": 390.0,
+    "w": 100,
+    "h": 60,
+    "material": "glass"
+   },
+   {
+    "x": 520,
+    "y": 330.0,
+    "w": 80,
+    "h": 60,
+    "material": "glass"
+   },
+   {
+    "x": 520,
+    "y": 270.0,
+    "w": 60,
+    "h": 60,
+    "material": "glass"
+   },
+   {
+    "x": 520,
+    "y": 210.0,
+    "w": 44,
+    "h": 60,
+    "material": "glass"
+   },
+   {
+    "x": 520,
+    "y": 165.0,
+    "w": 30,
+    "h": 30,
+    "material": "wood",
+    "target": true
+   }
+  ],
+  "barrels": [],
+  "cars": [],
+  "solution": {
+   "charges": [
+    {
+     "x": 400,
+     "y": 470
+    }
+   ],
+   "fireAt": 0
+  },
+  "hint": "Cam kırılgandır; şarjı uzaktan kullan."
+ },
+ {
+  "id": "w3-10",
+  "name": "Londra Finali",
+  "world": 3,
+  "order": 10,
+  "charges": {
+   "max": 3,
+   "par": 3
+  },
+  "bonusCollapse": 0.4,
+  "zones": [
+   {
+    "x": 340,
+    "y": 300.0,
+    "w": 90,
+    "h": 38
+   },
+   {
+    "x": 660,
+    "y": 400,
+    "w": 160,
+    "h": 80
+   }
+  ],
+  "blocks": [
+   {
+    "x": 60,
+    "y": 420.0,
+    "w": 30,
+    "h": 120,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 500,
+    "y": 420.0,
+    "w": 30,
+    "h": 120,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 280.0,
+    "y": 350.0,
+    "w": 490,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 690,
+    "y": 425.0,
+    "w": 24,
+    "h": 110,
+    "material": "wood"
+   },
+   {
+    "x": 790,
+    "y": 425.0,
+    "w": 24,
+    "h": 110,
+    "material": "wood"
+   },
+   {
+    "x": 740.0,
+    "y": 361.0,
+    "w": 140,
+    "h": 18,
+    "material": "wood"
+   },
+   {
+    "x": 740,
+    "y": 334.0,
+    "w": 36,
+    "h": 36,
+    "material": "wood",
+    "target": true
+   }
+  ],
+  "barrels": [],
+  "cars": [
+   {
+    "x": 240,
+    "y": 328.0,
+    "w": 56,
+    "h": 24,
+    "from": 40,
+    "to": 520,
+    "speed": 120,
+    "target": true,
+    "mode": "flow"
+   },
+   {
+    "x": 40,
+    "y": 328.0,
+    "w": 56,
+    "h": 24,
+    "from": 40,
+    "to": 520,
+    "speed": 120,
+    "target": true,
+    "mode": "flow"
+   }
+  ],
+  "solution": {
+   "charges": [
+    {
+     "x": 360,
+     "y": 328.0,
+     "delay": 0
+    },
+    {
+     "x": 395,
+     "y": 328.0,
+     "delay": 1.95
+    },
+    {
+     "x": 700,
+     "y": 440,
+     "delay": 0
+    }
+   ],
+   "fireAt": 1.1333333333333333
+  },
+  "hint": "Konvoy ve bina. Üç gecikmeyi tek ateşlemede kur."
+ }
+]
