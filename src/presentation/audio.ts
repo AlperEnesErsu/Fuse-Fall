@@ -19,6 +19,8 @@ export class SoundDirector {
   private synth: SoundSynth | undefined;
   private tap: MediaStreamAudioDestinationNode | undefined;
   private lastHit = 0;
+  /** Targets down so far in this attempt: each ding is pitched a step higher. */
+  private targetsDown = 0;
   private lastCrack = 0;
   private lastCreak = 0;
   private lastCollapse = 0;
@@ -33,6 +35,8 @@ export class SoundDirector {
     events.on('blockShattered', (e) => this.synth?.shatter(e.material, e.size / 60, panOf(e.position)));
     events.on('blockHit', (e) => this.hit(e));
     events.on('jointBroken', (e) => this.jointBroken(e.position));
+    events.on('targetDown', (e) => this.synth?.targetDown(this.targetsDown++, panOf(e.position)));
+    events.on('chargePlaced', () => (this.targetsDown = 0));
     events.on('carWrecked', (e) => this.synth?.carWreck(panOf(e.position)));
     events.on('bombReleased', (e) => this.synth?.whistle(panOf(e.position)));
     events.on('chargePlaced', () => this.synth?.arm());

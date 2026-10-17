@@ -229,11 +229,29 @@ export class SoundSynth {
   }
 
   /** Understated result stings: a low resolved interval, or a single dull note. */
+  /** A target down: a woody knock and a bright, rising ding; each next one a step higher. */
+  targetDown(index: number, pan = 0): void {
+    const at = this.ctx.currentTime;
+    const out = this.voice(pan, 0.35);
+    const f = 660 * Math.pow(2, Math.min(index, 6) / 12) * 1.12;
+    this.noise(out, at, { color: 'brown', filter: 'bandpass', from: 900, to: 600, attack: 0.001, decay: 0.05, gain: 0.25, q: 2 });
+    this.tone(out, at + 0.02, { type: 'triangle', from: f, to: f * 1.01, attack: 0.003, decay: 0.35, gain: 0.07 });
+  }
+
+  /** One bright chime per star as they land on the report; a full chord for three. */
   success(stars: number): void {
-    const at = this.ctx.currentTime + 0.2;
-    const out = this.voice(0, 0.4);
-    const notes = [196, 294, 392].slice(0, Math.max(1, stars));
-    notes.forEach((f, i) => this.tone(out, at + i * 0.09, { type: 'sine', from: f, to: f, attack: 0.02, decay: 1.2, gain: 0.07 }));
+    const at = this.ctx.currentTime + REPORT_LANDS;
+    const out = this.voice(0, 0.45);
+    const notes = [523, 659, 784].slice(0, Math.max(1, stars));
+    notes.forEach((f, i) => {
+      const t = at + i * STAR_STEP;
+      this.tone(out, t, { type: 'triangle', from: f, to: f, attack: 0.004, decay: 0.5, gain: 0.09 });
+      this.tone(out, t, { type: 'sine', from: f * 2, to: f * 2, attack: 0.002, decay: 0.25, gain: 0.04 });
+    });
+    if (stars === 3) {
+      const t = at + 3 * STAR_STEP;
+      for (const f of [523, 659, 784, 1047]) this.tone(out, t, { type: 'sine', from: f, to: f, attack: 0.01, decay: 1.4, gain: 0.05 });
+    }
   }
 
   failure(): void {
@@ -358,6 +376,10 @@ export class SoundSynth {
     return buffer;
   }
 }
+
+/** Seconds from the level settling to the report appearing, and between its stars (matches the CSS). */
+const REPORT_LANDS = 0.6;
+const STAR_STEP = 0.25;
 
 /** tanh-style soft clipper. */
 const softClip = (drive: number): Float32Array<ArrayBuffer> => {

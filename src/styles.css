@@ -260,13 +260,24 @@ h2,
   font-size: 2.2rem;
 }
 .stars-lg .star.on {
-  animation: settle 300ms ease-out both;
+  animation: star-pop 420ms cubic-bezier(0.3, 1.6, 0.5, 1) both;
+  animation-delay: 150ms;
 }
 .stars-lg .star:nth-child(2) {
-  animation-delay: 120ms;
+  animation-delay: 400ms;
 }
 .stars-lg .star:nth-child(3) {
-  animation-delay: 240ms;
+  animation-delay: 650ms;
+}
+@keyframes star-pop {
+  from {
+    opacity: 0;
+    transform: scale(2.2) rotate(-25deg);
+    text-shadow: 0 0 18px var(--accent);
+  }
+  60% {
+    text-shadow: 0 0 14px var(--accent);
+  }
 }
 @keyframes settle {
   from {
@@ -348,6 +359,41 @@ h2,
 }
 .report.lose .stamp {
   color: var(--danger);
+}
+.report.partial .stamp {
+  color: var(--accent);
+}
+.report.perfect .stamp {
+  color: var(--accent);
+  text-shadow: 0 0 12px rgba(242, 177, 52, 0.55);
+}
+.report.perfect {
+  box-shadow: 0 0 0 1px var(--accent), 0 0 42px rgba(242, 177, 52, 0.35), 0 18px 40px rgba(0, 0, 0, 0.45);
+}
+/* Confetti for a perfect job. */
+.confetti {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.confetti span {
+  position: absolute;
+  top: -12px;
+  width: 8px;
+  height: 12px;
+  border-radius: 2px;
+  animation: confetti-fall linear both;
+}
+@keyframes confetti-fall {
+  to {
+    transform: translate(var(--drift), 110vh) rotate(var(--spin));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .confetti {
+    display: none;
+  }
 }
 @keyframes stamp {
   from {
@@ -1258,6 +1304,15 @@ h2,
 .swatch.style-neon {
   background: radial-gradient(circle at 40% 40%, #e8ffff 0 18%, #36e3f0 36%, #4a2a6e 70%);
 }
+.swatch.style-theme-standard {
+  background: linear-gradient(135deg, #b9844f 0 33%, #a8553c 33% 66%, #8f9399 66%);
+}
+.swatch.style-theme-cardboard {
+  background: repeating-linear-gradient(90deg, #c9a46b 0 3px, #b48d55 3px 5px);
+}
+.swatch.style-theme-ice {
+  background: linear-gradient(135deg, #e8f7ff, #9ccbe4 60%, #86b9d8);
+}
 .swatch.style-confetti {
   background: conic-gradient(#f2b134 0 20%, #e5484d 0 40%, #3fb6a8 0 60%, #7c6cf0 0 80%, #4cb36a 0);
 }
@@ -1333,4 +1388,24 @@ h2,
   letter-spacing: 0;
   text-transform: none;
   opacity: 0.8;
+}
+
+/* Free Site setup on short landscape phones: tighter, with the start button in view. */
+@media (max-height: 420px) {
+  .panel.freesite-setup {
+    gap: 5px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+  .panel.freesite-setup > .meta:first-of-type {
+    display: none;
+  }
+  .panel.freesite-setup .chip {
+    padding: 4px 10px;
+    font-size: 0.76rem;
+  }
+  .panel.freesite-setup .btn.big {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
 }

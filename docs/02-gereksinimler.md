@@ -134,7 +134,7 @@ Yapıyı incele → Patlayıcı yerleştir → Ateşle → Yıkımı izle → Pu
 
 ### Yıkım mühendisi yönü (v0.3)
 
-**Hedef kitle:** 16–40 yaş arası; bulmaca ve simülasyon seven, kısa ama düşündüren oturumlar arayan oyuncular. Ton profesyonel bir yıkım ekibinin tonudur: kısa, olgusal, hafif kuru. Çizgi film parlaklığı, emoji ve ödül konfetisi yok.
+**Hedef kitle:** geniş, casual kitle; kısa oturumda tatmin edici kaos arayan oyuncular, ustalığı da bulmaca severler için. Arayüz dili sade ve endüstriyel kalır (yıkım raporu, şantiye), ama oyun cezalandırmaz: yapının çoğunu indiren her zaman bir yıldızla geçer, mükemmel iş kutlanır (konfeti, damga), hedeflerin ve kuşların küçük yaşam belirtileri vardır. Emoji yok.
 
 | ID | Gereksinim | Öncelik |
 |---|---|---|
@@ -221,6 +221,16 @@ Yapıyı incele → Patlayıcı yerleştir → Ateşle → Yıkımı izle → Pu
 | FR-70 | İçe çöken şarjın eğitimi (Roma 03); eğitimdeki yerleşimin görevi kazandığı testle doğrulanır. | S |
 | FR-71 | Cisimlerin zemine yumuşak temas gölgesi düşer; yükseldikçe solar ve genişler. | S |
 | FR-72 | İstanbul'da 5 görev (02, 04, 05, 08, 10) PATLAT gerektirir: fitile bırakılan bomba korunan yapıya zarar verir ya da hedefi indiremez (testle doğrulanır). | M |
+
+### Herkes için: kısmi zafer, kutlama, canlılık ve hızlı modlar (v1.1)
+
+| ID | Gereksinim | Öncelik |
+|---|---|---|
+| FR-73 | **Kısmi zafer:** hedef ayakta kalsa ya da enkaz taşsa bile, korunan yapıya zarar verilmeden yapının en az %50'si çöktüyse görev 1 yıldızla geçilir ("KISMİ BAŞARI"); ilerleme açılır. Tarz yıldızları, tarz/ilk iş hurda bonusları ve başarımlar tam galibiyet ister. Bulmaca testleri tam galibiyeti (`cleared`) ölçer. | M |
+| FR-74 | **Kutlama:** kademeli damga (MÜKEMMEL ÇÖKÜŞ / BAŞARILI / KISMİ BAŞARI / BAŞARISIZ), tek tek beliren yıldızlar ve her yıldızla çan sesi; 3 yıldızda konfeti ve parlayan rapor (azaltılmış harekette konfeti yok). Her hedef düştüğünde yükselen bir "ding". | M |
+| FR-75 | **Canlılık:** hedef blokların yüzü vardır: gözler yerleştirilen şarja ya da son patlamaya bakar, sarsılınca büyür, devrilince çarpı olur. Yapıların tepesindeki güvercinler ilk patlamada havalanır. Fiziği etkilemez. | S |
+| FR-76 | **Serbest Şantiye modları:** *Anında Patlat* (dokunulan yer hemen patlar, bitiş yok, şarj sınırı yok) ve *Tek Atış* (tek şarj; yapı başına en iyi çöküş yüzdesi kaydedilir). | M |
+| FR-77 | **Blok temaları (atölye):** Karton Şehir ve Buz Kuleleri, yapıların yüzeyini değiştirir; araçlar ve cam olduğu gibi kalır, fizik değişmez. | S |
 
 ## 6. MVP kapsamı (Sürüm 0.1)
 

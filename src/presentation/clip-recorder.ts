@@ -10,8 +10,11 @@ export interface ClipCaption {
   readonly title: string;
   /** The verdict stamp, e.g. "CLEAN DEMOLITION · 100%". */
   readonly stamp: string;
-  readonly success: boolean;
+  /** Stamp colour: green for a win, amber for a partial win, red for a void contract. */
+  readonly tone: 'win' | 'partial' | 'fail';
 }
+
+const STAMP_COLOURS = { win: '#4cb36a', partial: '#f2b134', fail: '#e5484d' } as const;
 
 const WIDTH = 720;
 const HEIGHT = 1280;
@@ -131,7 +134,7 @@ export class ClipRecorder {
     if (elapsed >= STAMP_AT_MS) {
       const t = Math.min(1, (elapsed - STAMP_AT_MS) / 180);
       const scale = 1.6 - 0.6 * t;
-      const colour = this.caption.success ? '#4cb36a' : '#e5484d';
+      const colour = STAMP_COLOURS[this.caption.tone];
       c.save();
       c.translate(WIDTH / 2, Math.min(HEIGHT - 110, top + h + 160));
       c.rotate(-0.07);

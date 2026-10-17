@@ -22,11 +22,13 @@ export interface Overlay {
   readonly coach: { readonly world: Vec2; readonly radius: number } | undefined;
 }
 
-/** Draws the logical 960×540 world letterboxed into the canvas. */
 /** Bodies higher than this above the ground cast no visible shadow. */
 const SHADOW_REACH = 240;
 
+/** Draws the logical 960×540 world letterboxed into the canvas. */
 export class Renderer {
+  /** What the targets' eyes follow: the charge being placed, the last charge, or the last blast. */
+  private lookAt: Vec2 | undefined;
   private readonly ctx: CanvasRenderingContext2D;
   private scale = 1;
   private offsetX = 0;
@@ -103,7 +105,11 @@ export class Renderer {
       }
       const threatened = session.phase === 'placing' ? this.blastRadii(session, overlay) : new Set<string>();
       this.groundShadows(session);
+      const charges = session.charges;
+      const light = juice.lights[juice.lights.length - 1];
+      this.lookAt = overlay.ghost?.position ?? charges[charges.length - 1]?.position ?? (light && { x: light.x, y: light.y }) ?? this.lookAt;
       for (const e of session.view()) this.entity(e, overlay.time, threatened.has(e.id));
+      this.birds(session, juice, overlay.time);
       this.charges(session, overlay);
     }
     this.effects(juice);
@@ -380,7 +386,7 @@ export class Renderer {
     c.strokeStyle = 'rgba(0,0,0,0.45)';
     c.lineWidth = 1.2;
     c.strokeRect(-w / 2, -h / 2, w, h);
-    if (e.target) this.targetMark(Math.min(w, h), e.down);
+    if (e.target) this.targetFace(e, Math.min(w, h));
   }
 
   /** A broken-off fragment: same surface as its parent, with darker fracture edges. */
@@ -426,19 +432,109 @@ export class Renderer {
     c.stroke();
   }
 
-  /** Surveyor-style target mark: a ring with crosshair ticks, greyed out once down. */
-  private targetMark(size: number, down: boolean): void {
+  /**
+   * A target has a face: crosshair ticks say what it is, the eyes say how it
+   * feels. Calm eyes watch the charge being placed or the last blast; they go
+   * wide when the block shakes or cracks, and turn to crosses once it is down.
+   * Drawn in the body's own (rotated) frame.
+   */
+  private targetFace(e: EntityView, size: number): void {
     const c = this.ctx;
-    const r = size * 0.3;
-    c.strokeStyle = down ? PALETTE.targetDown : PALETTE.target;
-    c.lineWidth = 2.5;
+    const speed = Math.hypot(e.state.velocity.x, e.state.velocity.y);
+    const mood = e.down ? 'down' : speed > 70 || e.damage > 0.3 ? 'scared' : 'calm';
+    const r = size * 0.42;
+    c.strokeStyle = e.down ? PALETTE.targetDown : PALETTE.target;
+    c.lineWidth = 2;
     c.beginPath();
-    c.arc(0, 0, r, 0, Math.PI * 2);
     for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
-      c.moveTo(dx * r * 0.45, dy * r * 0.45);
-      c.lineTo(dx * r * 1.45, dy * r * 1.45);
+      c.moveTo(dx * r * 0.95, dy * r * 0.95);
+      c.lineTo(dx * r * 1.25, dy * r * 1.25);
     }
     c.stroke();
+    // Where to look, turned into the body's frame.
+    let lx = 0;
+    let ly = 0.4;
+    if (this.lookAt) {
+      const dx = this.lookAt.x - e.state.position.x;
+      const dy = this.lookAt.y - e.state.position.y;
+      const a = -e.state.angle;
+      const rx = dx * Math.cos(a) - dy * Math.sin(a);
+      const ry = dx * Math.sin(a) + dy * Math.cos(a);
+      const d = Math.hypot(rx, ry) || 1;
+      lx = rx / d;
+      ly = ry / d;
+    }
+    const eye = size * (mood === 'scared' ? 0.15 : 0.12);
+    for (const side of [-1, 1]) {
+      const x = side * size * 0.17;
+      const y = -size * 0.06;
+      if (mood === 'down') {
+        c.strokeStyle = '#2a2320';
+        c.lineWidth = 1.8;
+        c.beginPath();
+        c.moveTo(x - eye * 0.7, y - eye * 0.7);
+        c.lineTo(x + eye * 0.7, y + eye * 0.7);
+        c.moveTo(x + eye * 0.7, y - eye * 0.7);
+        c.lineTo(x - eye * 0.7, y + eye * 0.7);
+        c.stroke();
+        continue;
+      }
+      c.fillStyle = '#f7f3ea';
+      c.beginPath();
+      c.ellipse(x, y, eye, eye * 1.15, 0, 0, Math.PI * 2);
+      c.fill();
+      c.strokeStyle = 'rgba(30, 24, 20, 0.6)';
+      c.lineWidth = 1;
+      c.stroke();
+      const pupil = eye * (mood === 'scared' ? 0.38 : 0.55);
+      c.fillStyle = '#1d1a18';
+      c.beginPath();
+      c.arc(x + lx * (eye - pupil) * 0.8, y + ly * (eye - pupil) * 0.8, pupil, 0, Math.PI * 2);
+      c.fill();
+    }
+    if (mood === 'scared') {
+      c.fillStyle = '#2a2320';
+      c.beginPath();
+      c.ellipse(0, size * 0.2, size * 0.06, size * 0.08, 0, 0, Math.PI * 2);
+      c.fill();
+    }
+  }
+
+  /** Pigeons: perched on their roof until the first blast, then flapping away. */
+  private birds(session: LevelSession, juice: JuiceDirector, time: number): void {
+    if (juice.birds.length === 0) return;
+    const c = this.ctx;
+    const bodies = new Map<string, EntityView>();
+    for (const e of session.view()) bodies.set(e.id, e);
+    c.fillStyle = '#2b2a30';
+    c.strokeStyle = '#2b2a30';
+    c.lineWidth = 1.6;
+    for (const b of juice.birds) {
+      if (!b.flying && b.perch) {
+        const e = bodies.get(b.perch.id);
+        if (e) {
+          const a = e.state.angle;
+          const top = e.shape.kind === 'rect' ? e.shape.h / 2 : 0;
+          b.x = e.state.position.x + b.perch.dx * Math.cos(a) + top * Math.sin(a);
+          b.y = e.state.position.y + b.perch.dx * Math.sin(a) - top * Math.cos(a);
+        }
+        // Body, head and now and then a little bob.
+        const bob = Math.sin(time * 3 + b.flap) > 0.92 ? 1 : 0;
+        c.beginPath();
+        c.ellipse(b.x, b.y - 3.5, 4.5, 3.2, 0, 0, Math.PI * 2);
+        c.fill();
+        c.beginPath();
+        c.arc(b.x + 3.6, b.y - 7 + bob, 2.1, 0, Math.PI * 2);
+        c.fill();
+        continue;
+      }
+      const wing = Math.sin(b.flap) * 4;
+      c.beginPath();
+      c.moveTo(b.x - 6, b.y - wing);
+      c.quadraticCurveTo(b.x - 2, b.y - 1, b.x, b.y);
+      c.quadraticCurveTo(b.x + 2, b.y - 1, b.x + 6, b.y - wing);
+      c.stroke();
+    }
   }
 
   /** A protected building: lit windows, a teal roof line and corner marks; red once damaged. */

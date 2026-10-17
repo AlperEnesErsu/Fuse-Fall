@@ -140,19 +140,27 @@ export const SANDBOX_TEMPLATES: readonly SandboxTemplate[] = [
   },
 ];
 
+/**
+ * Ways to play the Free Site: free (place charges, fire), smash (every tap is a
+ * blast, no end) and one shot (a single charge: how much can it bring down?).
+ */
+export const SANDBOX_VARIANTS = ['free', 'smash', 'one-shot'] as const;
+export type SandboxVariant = (typeof SANDBOX_VARIANTS)[number];
+
 /** Charges for a Free Site: generous, but bounded so performance stays predictable. */
 export const SANDBOX_CHARGES = 12;
 
 /** Builds a playable, rule-free level from a template in a city. */
-export const sandboxLevel = (template: SandboxTemplate, world: number): LevelDefinition => {
+export const sandboxLevel = (template: SandboxTemplate, world: number, variant: SandboxVariant = 'free'): LevelDefinition => {
   const b = template.build();
+  const charges = variant === 'one-shot' ? 1 : SANDBOX_CHARGES;
   return {
-    id: `sandbox-${template.id}`,
+    id: `sandbox-${variant}-${template.id}`,
     name: template.name.tr,
     world,
     order: 1,
     hint: undefined,
-    charges: { max: SANDBOX_CHARGES, par: SANDBOX_CHARGES },
+    charges: { max: charges, par: charges },
     bonusCollapse: 1,
     zones: [{ x: 20, y: 120, w: WORLD.width - 40, h: G - 120 }],
     dropZones: [{ x: 20, y: 20, w: WORLD.width - 40, h: 100 }],
@@ -161,6 +169,7 @@ export const sandboxLevel = (template: SandboxTemplate, world: number): LevelDef
     cars: b.cars,
     chargeKinds: ['standard', 'precision', 'implosion', 'bomb'],
     footprint: undefined,
+    ...(variant === 'smash' ? { instantBlasts: true as const } : {}),
     solution: { charges: [], fireAt: 0, detonateAt: [] },
   };
 };

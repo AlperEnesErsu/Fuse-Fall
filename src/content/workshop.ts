@@ -1,5 +1,5 @@
 import type { ShopItem } from '../core/economy';
-import { DEFAULT_BLAST_STYLE } from '../core/progress';
+import { DEFAULT_BLAST_STYLE, DEFAULT_BLOCK_THEME } from '../core/progress';
 import type { Language } from '../presentation/strings';
 import { SANDBOX_TEMPLATES } from './sandbox';
 
@@ -11,8 +11,11 @@ import { SANDBOX_TEMPLATES } from './sandbox';
 
 type Text = Readonly<Record<Language, string>>;
 
+/** Blast styles and block themes are looks one of which is in use; structures are simply owned. */
+export type WorkshopKind = 'blast-style' | 'block-theme' | 'structure';
+
 export interface WorkshopItem extends ShopItem {
-  readonly kind: 'blast-style' | 'structure';
+  readonly kind: WorkshopKind;
   readonly name: Text;
   readonly description: Text;
 }
@@ -56,6 +59,31 @@ const BLAST_STYLES: readonly WorkshopItem[] = [
   },
 ];
 
+/** Block themes: the surface every structure is drawn with. Physics is unchanged. */
+const BLOCK_THEMES: readonly WorkshopItem[] = [
+  {
+    id: DEFAULT_BLOCK_THEME,
+    kind: 'block-theme',
+    cost: 0,
+    name: { tr: 'Gerçek Malzeme', en: 'Real Materials' },
+    description: { tr: 'Ahşap, tuğla, beton ve çelik.', en: 'Timber, brick, concrete and steel.' },
+  },
+  {
+    id: 'theme:cardboard',
+    kind: 'block-theme',
+    cost: 350,
+    name: { tr: 'Karton Şehir', en: 'Cardboard City' },
+    description: { tr: 'Oluklu mukavva ve koli bandı.', en: 'Corrugated card and packing tape.' },
+  },
+  {
+    id: 'theme:ice',
+    kind: 'block-theme',
+    cost: 550,
+    name: { tr: 'Buz Kuleleri', en: 'Ice Towers' },
+    description: { tr: 'Işığı geçiren buz blokları.', en: 'Blocks of glassy ice.' },
+  },
+];
+
 /** The first Free Site structures are open to everyone; the rest are bought. */
 const STRUCTURE_COST: Readonly<Record<string, number>> = {
   bridge: 200,
@@ -74,15 +102,16 @@ const STRUCTURES: readonly WorkshopItem[] = SANDBOX_TEMPLATES.map((t) => ({
   description: { tr: 'Serbest Şantiye yapısı', en: 'Free Site structure' },
 }));
 
-export const WORKSHOP: readonly WorkshopItem[] = [...BLAST_STYLES, ...STRUCTURES];
+export const WORKSHOP: readonly WorkshopItem[] = [...BLAST_STYLES, ...BLOCK_THEMES, ...STRUCTURES];
 
 /** Free items are everyone's from the start. */
 export const isOwned = (owned: readonly string[], item: WorkshopItem): boolean => item.cost === 0 || owned.includes(item.id);
 
 export const workshopItem = (id: string): WorkshopItem | undefined => WORKSHOP.find((i) => i.id === id);
 
-/** The style to show: the chosen one if it exists and is owned, otherwise the default. */
-export const activeBlastStyle = (owned: readonly string[], chosen: string): string => {
+/** The look to show for a kind: the chosen one if it exists, is of that kind and is owned; otherwise the default. */
+export const activeLook = (owned: readonly string[], chosen: string, kind: 'blast-style' | 'block-theme'): string => {
   const item = workshopItem(chosen);
-  return item?.kind === 'blast-style' && isOwned(owned, item) ? item.id : DEFAULT_BLAST_STYLE;
+  if (item?.kind === kind && isOwned(owned, item)) return item.id;
+  return kind === 'blast-style' ? DEFAULT_BLAST_STYLE : DEFAULT_BLOCK_THEME;
 };

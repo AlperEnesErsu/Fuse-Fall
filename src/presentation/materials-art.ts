@@ -84,11 +84,76 @@ const metal: Paint = (c, s, rng) => {
 
 const PAINTS: Partial<Record<MaterialId, Paint>> = { wood, concrete, brick, metal, vehicle: metal };
 
-const patterns = new Map<MaterialId, CanvasPattern | null>();
+/** Corrugated card in the material's own shade, with a strip of packing tape. */
+const cardboard =
+  (base: string): Paint =>
+  (c, s, rng) => {
+    c.fillStyle = base;
+    c.fillRect(0, 0, s, s);
+    for (let x = 0; x < s; x += 4) {
+      c.fillStyle = `rgba(80, 55, 25, ${0.1 + rng() * 0.06})`;
+      c.fillRect(x, 0, 1.5, s);
+    }
+    c.fillStyle = 'rgba(240, 225, 190, 0.45)';
+    c.fillRect(0, s * 0.42, s, s * 0.16);
+  };
+
+/** Glassy ice: pale blue, frosted streaks and a few cracks. */
+const ice =
+  (base: string): Paint =>
+  (c, s, rng) => {
+    c.fillStyle = base;
+    c.fillRect(0, 0, s, s);
+    for (let i = 0; i < 10; i++) {
+      c.fillStyle = `rgba(255, 255, 255, ${0.08 + rng() * 0.12})`;
+      c.fillRect(rng() * s, 0, 2 + rng() * 5, s);
+    }
+    c.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+    c.lineWidth = 0.8;
+    for (let i = 0; i < 3; i++) {
+      let x = rng() * s;
+      let y = rng() * s;
+      c.beginPath();
+      c.moveTo(x, y);
+      for (let k = 0; k < 4; k++) {
+        x += (rng() - 0.5) * 18;
+        y += (rng() - 0.5) * 18;
+        c.lineTo(x, y);
+      }
+      c.stroke();
+    }
+  };
+
+/** Theme surfaces for structural materials; vehicles and glass keep their real look. */
+const THEMES: Readonly<Record<string, Partial<Record<MaterialId, Paint>>>> = {
+  'theme:cardboard': {
+    wood: cardboard('#c9a46b'),
+    brick: cardboard('#b98a62'),
+    concrete: cardboard('#a99f8f'),
+    metal: cardboard('#8d8476'),
+  },
+  'theme:ice': {
+    wood: ice('#bfe3f2'),
+    brick: ice('#a9d6ec'),
+    concrete: ice('#9ccbe4'),
+    metal: ice('#86b9d8'),
+  },
+};
+
+let theme = 'theme:standard';
+
+/** Selects the block theme used for every fill from now on. Unknown themes draw real materials. */
+export const setBlockTheme = (id: string): void => {
+  theme = id;
+};
+
+const patterns = new Map<string, CanvasPattern | null>();
 
 const patternFor = (c: CanvasRenderingContext2D, material: MaterialId): CanvasPattern | null => {
-  if (patterns.has(material)) return patterns.get(material) ?? null;
-  const paint = PAINTS[material];
+  const themed = THEMES[theme]?.[material];
+  const key = themed ? `${theme}:${material}` : material;
+  if (patterns.has(key)) return patterns.get(key) ?? null;
+  const paint = themed ?? PAINTS[material];
   let pattern: CanvasPattern | null = null;
   if (paint) {
     const canvas = document.createElement('canvas');
@@ -101,7 +166,7 @@ const patternFor = (c: CanvasRenderingContext2D, material: MaterialId): CanvasPa
       pattern?.setTransform(new DOMMatrix().scale(1 / SUPERSAMPLE));
     }
   }
-  patterns.set(material, pattern);
+  patterns.set(key, pattern);
   return pattern;
 };
 

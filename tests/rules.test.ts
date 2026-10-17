@@ -14,7 +14,7 @@ import {
   worldStatus,
 } from '../src/core/progress';
 import { parseWorlds } from '../src/core/world';
-import { scoreLevel } from '../src/core/scoring';
+import { SCORE, scoreLevel } from '../src/core/scoring';
 import { shatter } from '../src/core/shatter';
 import { circleTouches, polygonArea, polygonCentroid, rectVertices, splitConvex } from '../src/core/shapes';
 import { MATERIALS } from '../src/core/materials';
@@ -111,8 +111,16 @@ describe('scoring', () => {
     expect(scoreLevel({ ...base, dominoes: 2 }, rules).stars).toBe(3);
   });
 
-  it('gives no bonus stars when the level is lost', () => {
-    const r = scoreLevel({ ...base, targetsDown: 0 }, { par: 1, bonusCollapse: 0.5 });
+  it('gives a partial win one star when most of the structure came down', () => {
+    const r = scoreLevel({ ...base, targetsDown: 0, dominoes: 1 }, { par: 1, bonusCollapse: 0.5 });
+    expect(r).toMatchObject({ success: true, cleared: false, partial: true, stars: 1, failure: 'target-standing' });
+    expect(r.score).toBe(SCORE.base / 2 + Math.round(SCORE.collapse * 0.6));
+    const harmed = scoreLevel({ ...base, targetsDown: 0, protectedDamaged: 1 }, { par: 1, bonusCollapse: 0.5 });
+    expect(harmed).toMatchObject({ success: false, partial: false, stars: 0 });
+  });
+
+  it('gives no stars when too little came down', () => {
+    const r = scoreLevel({ ...base, targetsDown: 0, blocksCollapsed: 2 }, { par: 1, bonusCollapse: 0.5 });
     expect(r).toMatchObject({ success: false, failure: 'target-standing', stars: 0, score: 0, underPar: true });
   });
 

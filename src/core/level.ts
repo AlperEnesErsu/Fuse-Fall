@@ -88,6 +88,8 @@ export interface LevelDefinition {
   /** Charge types the player may use here. */
   readonly chargeKinds: readonly ChargeKind[];
   readonly footprint: Footprint | undefined;
+  /** Smash play (Free Site only): a tap sets off a blast at once, and the job never ends by itself. */
+  readonly instantBlasts?: true;
   /** A known winning placement and timing, used by tests to prove the level is solvable. */
   readonly solution: LevelSolution;
 }

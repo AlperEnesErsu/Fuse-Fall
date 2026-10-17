@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { PAYOUT, RANK_THRESHOLDS, payout, rankOf, salvageOf } from '../src/core/economy';
-import { buyItem, earnScrap, emptyProgress, parseProgress } from '../src/core/progress';
+import { buyItem, earnScrap, emptyProgress, parseProgress, recordOneShot } from '../src/core/progress';
 import { scoreLevel } from '../src/core/scoring';
 import { loadCampaign } from '../src/content/levels';
-import { WORKSHOP, activeBlastStyle, isOwned, structureItemId, workshopItem } from '../src/content/workshop';
+import { WORKSHOP, activeLook, isOwned, structureItemId, workshopItem } from '../src/content/workshop';
 import { SANDBOX_TEMPLATES } from '../src/content/sandbox';
 import { playSolution } from './play';
 
@@ -24,7 +24,7 @@ const outcome = {
 };
 const rules = { par: 1, bonusCollapse: 0.5 };
 const won = scoreLevel(outcome, rules);
-const lost = scoreLevel({ ...outcome, targetsDown: 0 }, rules);
+const lost = scoreLevel({ ...outcome, targetsDown: 0, blocksCollapsed: 2 }, rules);
 
 describe('payout', () => {
   it('pays salvage by material, a bonus per play style and one for the first clear', () => {
@@ -69,11 +69,15 @@ describe('career and workshop', () => {
     expect(buyItem(emptyProgress(), item)).toEqual({ ok: false, error: 'insufficient' });
   });
 
-  it('only shows blast styles that exist and are owned', () => {
-    expect(activeBlastStyle([], 'thermite')).toBe('classic');
-    expect(activeBlastStyle(['thermite'], 'thermite')).toBe('thermite');
-    expect(activeBlastStyle(['nonsense'], 'nonsense')).toBe('classic');
-    expect(activeBlastStyle([structureItemId('bridge')], structureItemId('bridge'))).toBe('classic');
+  it('only shows looks that exist, are of the right kind and are owned', () => {
+    expect(activeLook([], 'thermite', 'blast-style')).toBe('classic');
+    expect(activeLook(['thermite'], 'thermite', 'blast-style')).toBe('thermite');
+    expect(activeLook(['nonsense'], 'nonsense', 'blast-style')).toBe('classic');
+    expect(activeLook([structureItemId('bridge')], structureItemId('bridge'), 'blast-style')).toBe('classic');
+    // A theme id is not a blast style, and themes fall back to real materials.
+    expect(activeLook(['theme:ice'], 'theme:ice', 'blast-style')).toBe('classic');
+    expect(activeLook(['theme:ice'], 'theme:ice', 'block-theme')).toBe('theme:ice');
+    expect(activeLook([], 'theme:ice', 'block-theme')).toBe('theme:standard');
   });
 
   it('lists every Free Site structure, with some free from the start', () => {
@@ -90,15 +94,25 @@ describe('saved economy', () => {
     delete old.workshop;
     const parsed = parseProgress(JSON.parse(JSON.stringify(old)));
     expect(parsed.ok && parsed.value.wallet).toEqual({ balance: 0, earned: 0 });
-    expect(parsed.ok && parsed.value.workshop).toEqual({ owned: [], blastStyle: 'classic' });
+    expect(parsed.ok && parsed.value.workshop).toEqual({ owned: [], blastStyle: 'classic', blockTheme: 'theme:standard' });
   });
 
   it('round-trips the wallet and workshop and drops malformed values', () => {
-    const saved = { ...emptyProgress(), wallet: { balance: 120, earned: 900 }, workshop: { owned: ['neon', 7], blastStyle: 'neon' } };
+    const saved = { ...emptyProgress(), wallet: { balance: 120, earned: 900 }, workshop: { owned: ['neon', 7], blastStyle: 'neon', blockTheme: 'theme:ice' } };
     const parsed = parseProgress(JSON.parse(JSON.stringify(saved)));
     expect(parsed.ok && parsed.value.wallet).toEqual({ balance: 120, earned: 900 });
-    expect(parsed.ok && parsed.value.workshop).toEqual({ owned: ['neon'], blastStyle: 'neon' });
+    expect(parsed.ok && parsed.value.workshop).toEqual({ owned: ['neon'], blastStyle: 'neon', blockTheme: 'theme:ice' });
     const bad = parseProgress({ ...saved, wallet: { balance: -5, earned: 'lots' } });
     expect(bad.ok && bad.value.wallet).toEqual({ balance: 0, earned: 0 });
+  });
+});
+
+describe('One Shot records', () => {
+  it('keeps the best whole-percent collapse per structure and survives a save', () => {
+    let p = recordOneShot(emptyProgress(), 'chimney', 62.4);
+    p = recordOneShot(p, 'chimney', 40);
+    expect(p.oneShot).toEqual({ chimney: 62 });
+    const parsed = parseProgress(JSON.parse(JSON.stringify({ ...p, oneShot: { chimney: 62, bad: 140, worse: 'x' } })));
+    expect(parsed.ok && parsed.value.oneShot).toEqual({ chimney: 62 });
   });
 });

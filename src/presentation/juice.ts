@@ -40,6 +40,20 @@ export interface BlastLight {
   color: Rgb;
 }
 
+/** A pigeon on a rooftop: perched on a body until the first blast, then off and away. */
+export interface Bird {
+  /** The body it sits on, and where along its top (body-local, unrotated). */
+  readonly perch: { readonly id: string; readonly dx: number } | undefined;
+  /** While perched, the renderer keeps this on the moving roof; in flight it is integrated here. */
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  flying: boolean;
+  /** Wing-beat phase. */
+  flap: number;
+}
+
 /** A burn mark left behind on the ground or a wall. */
 export interface Scorch {
   readonly x: number;
@@ -80,6 +94,7 @@ export class JuiceDirector {
   readonly flames: Flame[] = [];
   readonly lights: BlastLight[] = [];
   readonly scorches: Scorch[] = [];
+  readonly birds: Bird[] = [];
   private hitStop = 0;
   private slowMoLeft = 0;
   private criticalSlowLeft = 0;
@@ -149,6 +164,15 @@ export class JuiceDirector {
       f.y += f.vy * simDt;
     }
     advance(this.flames, simDt);
+    for (let i = this.birds.length - 1; i >= 0; i--) {
+      const b = this.birds[i];
+      if (!b?.flying) continue;
+      b.flap += simDt * 22;
+      b.vy = Math.max(-260, b.vy - 40 * simDt);
+      b.x += b.vx * simDt;
+      b.y += b.vy * simDt;
+      if (b.y < -60 || b.x < -60 || b.x > WORLD.width + 60) this.birds.splice(i, 1);
+    }
     this.trauma = Math.max(0, this.trauma - FEEL.trauma.decay * realDt);
     this.shakeTime += realDt;
     this.flash = decay(this.flash, FEEL.flash.decay, realDt);
@@ -194,6 +218,7 @@ export class JuiceDirector {
     this.flames.length = 0;
     this.lights.length = 0;
     this.scorches.length = 0;
+    this.birds.length = 0;
     this.hitStop = 0;
     this.slowMoLeft = 0;
     this.criticalSlowLeft = 0;
@@ -211,8 +236,38 @@ export class JuiceDirector {
     this.trauma = Math.min(1, this.trauma + amount);
   }
 
+  /**
+   * Sits a few pigeons on the highest rooftops of a fresh site. Purely for
+   * show: they never touch the physics.
+   */
+  perchBirds(bodies: readonly { id: string; x: number; top: number; width: number }[]): void {
+    this.birds.length = 0;
+    const r = Math.random;
+    const roofs = [...bodies].filter((b) => b.width >= 24).sort((a, b) => a.top - b.top).slice(0, 2);
+    for (const roof of roofs) {
+      const count = 1 + Math.floor(r() * 2);
+      for (let i = 0; i < count; i++) {
+        const dx = (r() - 0.5) * roof.width * 0.6;
+        this.birds.push({ perch: { id: roof.id, dx }, x: roof.x + dx, y: roof.top, vx: 0, vy: 0, flying: false, flap: r() * 6 });
+      }
+    }
+  }
+
+  /** Startled: every perched bird takes off, away from the blast. */
+  private scatterBirds(from: Vec2): void {
+    const r = Math.random;
+    for (const b of this.birds) {
+      if (b.flying) continue;
+      b.flying = true;
+      const away = b.x >= from.x ? 1 : -1;
+      b.vx = away * (90 + r() * 90);
+      b.vy = -(140 + r() * 80);
+    }
+  }
+
   private onExplosion(p: Vec2, radius: number, power: number, source: BlastSource): void {
     const r = Math.random;
+    this.scatterBirds(p);
     this.hitStop = Math.max(this.hitStop, FEEL.hitStop[source]);
     if (source === 'implosion') {
       this.onImplosion(p, radius, power);

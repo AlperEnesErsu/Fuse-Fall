@@ -29,12 +29,15 @@ export interface Progress {
   /** Scrap: spendable balance and lifetime earnings (the career rank). */
   readonly wallet: Wallet;
   /** Workshop items bought, and the blast style in use. */
-  readonly workshop: { readonly owned: readonly string[]; readonly blastStyle: string };
+  readonly workshop: { readonly owned: readonly string[]; readonly blastStyle: string; readonly blockTheme: string };
+  /** One Shot: the best collapse (whole percent) per Free Site structure. */
+  readonly oneShot: Readonly<Record<string, number>>;
   readonly settings: Settings;
 }
 
-/** The blast style everyone starts with. */
+/** The blast style and block theme everyone starts with. */
 export const DEFAULT_BLAST_STYLE = 'classic';
+export const DEFAULT_BLOCK_THEME = 'theme:standard';
 
 export const DEFAULT_SETTINGS: Settings = {
   language: 'auto',
@@ -51,7 +54,8 @@ export const emptyProgress = (): Progress => ({
   achievements: [],
   daily: { lastWon: undefined, streak: 0 },
   wallet: { balance: 0, earned: 0 },
-  workshop: { owned: [], blastStyle: DEFAULT_BLAST_STYLE },
+  workshop: { owned: [], blastStyle: DEFAULT_BLAST_STYLE, blockTheme: DEFAULT_BLOCK_THEME },
+  oneShot: {},
   settings: DEFAULT_SETTINGS,
 });
 
@@ -107,7 +111,17 @@ export const parseProgress = (input: unknown): Result<Progress, ProgressError> =
   const ws = isRecord(input.workshop) ? input.workshop : {};
   const owned = Array.isArray(ws.owned) ? ws.owned.filter((id): id is string => typeof id === 'string') : [];
   // Whether a saved style id still exists is the catalogue's call, made where it is applied.
-  const workshop = { owned, blastStyle: typeof ws.blastStyle === 'string' ? ws.blastStyle : DEFAULT_BLAST_STYLE };
+  const workshop = {
+    owned,
+    blastStyle: typeof ws.blastStyle === 'string' ? ws.blastStyle : DEFAULT_BLAST_STYLE,
+    blockTheme: typeof ws.blockTheme === 'string' ? ws.blockTheme : DEFAULT_BLOCK_THEME,
+  };
+  const oneShot: Record<string, number> = {};
+  if (isRecord(input.oneShot)) {
+    for (const [id, value] of Object.entries(input.oneShot)) {
+      if (typeof value === 'number' && Number.isInteger(value) && value >= 0 && value <= 100) oneShot[id] = value;
+    }
+  }
   const s = isRecord(input.settings) ? input.settings : {};
   return ok({
     version: PROGRESS_VERSION,
@@ -117,6 +131,7 @@ export const parseProgress = (input: unknown): Result<Progress, ProgressError> =
     daily,
     wallet,
     workshop,
+    oneShot,
     settings: {
       language: s.language === 'tr' || s.language === 'en' || s.language === 'auto' ? s.language : DEFAULT_SETTINGS.language,
       sfxVolume: volume(s.sfxVolume, DEFAULT_SETTINGS.sfxVolume),
@@ -178,8 +193,18 @@ export const buyItem = (progress: Progress, item: ShopItem): Result<Progress, Pu
   return ok({ ...progress, wallet: bought.value.wallet, workshop: { ...progress.workshop, owned: bought.value.owned } });
 };
 
-export const chooseBlastStyle = (progress: Progress, style: string): Progress =>
-  ({ ...progress, workshop: { ...progress.workshop, blastStyle: style } });
+/** Keeps the best One Shot collapse for a structure; never lowers it. */
+export const recordOneShot = (progress: Progress, structure: string, percent: number): Progress => {
+  const pct = Math.max(0, Math.min(100, Math.round(percent)));
+  if (pct <= (progress.oneShot[structure] ?? -1)) return progress;
+  return { ...progress, oneShot: { ...progress.oneShot, [structure]: pct } };
+};
+
+/** Puts a workshop look into use: a blast style or a block theme. */
+export const equip = (progress: Progress, slot: 'blastStyle' | 'blockTheme', id: string): Progress => ({
+  ...progress,
+  workshop: { ...progress.workshop, [slot]: id },
+});
 
 export const updateSettings = (progress: Progress, patch: Partial<Settings>): Progress => ({
   ...progress,

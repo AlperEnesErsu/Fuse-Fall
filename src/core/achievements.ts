@@ -55,7 +55,7 @@ export const ACHIEVEMENTS: readonly AchievementDef[] = [
   { id: 'first-job', earned: (c) => c.result.success },
   {
     id: 'lean',
-    earned: (c) => c.result.success && c.result.chargesMax > 1 && c.result.chargesUsed === 1,
+    earned: (c) => c.result.cleared && c.result.chargesMax > 1 && c.result.chargesUsed === 1,
   },
   {
     id: 'chain',
@@ -63,22 +63,22 @@ export const ACHIEVEMENTS: readonly AchievementDef[] = [
   },
   {
     id: 'traffic',
-    earned: (c) => c.result.success && c.stats.carsWrecked >= 2,
+    earned: (c) => c.result.cleared && c.stats.carsWrecked >= 2,
   },
   {
     id: 'clean',
-    earned: (c) => c.result.success && c.result.protectedTotal > 0 && c.result.stars === 3,
+    earned: (c) => c.result.cleared && c.result.protectedTotal > 0 && c.result.stars === 3,
   },
   {
     id: 'total',
-    earned: (c) => c.result.success && c.result.blocksTotal > 0 && c.result.collapseRatio >= 1,
+    earned: (c) => c.result.cleared && c.result.blocksTotal > 0 && c.result.collapseRatio >= 1,
   },
   { id: 'perfect-city', earned: cityPerfect },
   { id: 'streak-3', earned: (c) => c.streak >= 3 },
   { id: 'streak-7', earned: (c) => c.streak >= 7 },
-  { id: 'domino', earned: (c) => c.result.success && c.result.styles.domino },
-  { id: 'implosion', earned: (c) => c.result.success && c.stats.implosions > 0 },
-  { id: 'airburst', earned: (c) => c.result.success && c.stats.detonations > 0 },
+  { id: 'domino', earned: (c) => c.result.cleared && c.result.styles.domino },
+  { id: 'implosion', earned: (c) => c.result.cleared && c.stats.implosions > 0 },
+  { id: 'airburst', earned: (c) => c.result.cleared && c.stats.detonations > 0 },
   { id: 'foreman', earned: (c) => rankOf(c.progress.wallet.earned).index >= FOREMAN_RANK },
 ];
 

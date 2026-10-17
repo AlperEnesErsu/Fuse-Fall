@@ -58,8 +58,9 @@ export const payout = (result: LevelResult, context: PayoutContext): Payout => {
   const multiplier = context.daily ? PAYOUT.daily : 1;
   const styleCount = Number(result.styles.surgical) + Number(result.styles.demolition) + Number(result.styles.domino);
   const salvage = Math.round(raw * share * multiplier);
-  const styles = result.success ? Math.round(styleCount * PAYOUT.perStyle * share * multiplier) : 0;
-  const firstClear = result.success && context.firstClear && !context.daily ? PAYOUT.firstClear : 0;
+  // Style and first-clear bonuses reward the full contract; a partial win pays its salvage.
+  const styles = result.cleared ? Math.round(styleCount * PAYOUT.perStyle * share * multiplier) : 0;
+  const firstClear = result.cleared && context.firstClear && !context.daily ? PAYOUT.firstClear : 0;
   return { salvage, styles, firstClear, total: salvage + styles + firstClear };
 };
 

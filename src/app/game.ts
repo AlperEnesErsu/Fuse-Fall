@@ -6,12 +6,13 @@ import type { SaveRepository } from '../core/ports';
 import { payout, rankOf } from '../core/economy';
 import {
   buyItem,
-  chooseBlastStyle,
+  equip,
   earnScrap,
   isLevelUnlocked,
   levelsOf,
   currentStreak,
   recordDailyWin,
+  recordOneShot,
   recordScore,
   recordStars,
   unlockAchievements,
@@ -35,8 +36,9 @@ import { T, language, resolveLanguage, setLanguage } from '../presentation/strin
 import { Ui } from '../presentation/ui';
 import { Coach } from '../presentation/coach';
 import { tutorialFor } from '../content/tutorials';
-import { SANDBOX_TEMPLATES, sandboxLevel } from '../content/sandbox';
-import { WORKSHOP, activeBlastStyle, isOwned, structureItemId, workshopItem } from '../content/workshop';
+import { SANDBOX_TEMPLATES, sandboxLevel, type SandboxVariant } from '../content/sandbox';
+import { WORKSHOP, activeLook, isOwned, structureItemId, workshopItem } from '../content/workshop';
+import { setBlockTheme } from '../presentation/materials-art';
 import { contentText, type ContentText } from '../content/text';
 import { ACHIEVEMENTS } from '../core/achievements';
 import { FIXED_STEP, FixedStepLoop } from './loop';
@@ -62,7 +64,7 @@ const UNLOCK_ALL = import.meta.env.VITE_UNLOCK_ALL === '1';
 type Mode =
   | { readonly kind: 'campaign' }
   | { readonly kind: 'daily'; readonly day: string; readonly baseId: string }
-  | { readonly kind: 'sandbox'; readonly template: string };
+  | { readonly kind: 'sandbox'; readonly template: string; readonly variant: SandboxVariant };
 
 /** One go at a mission: what it is, what the player did, and how to show it again. */
 interface Attempt {
@@ -129,7 +131,7 @@ export class Game {
     const settings = (): Settings => this.progress.settings;
     this.renderer = new Renderer(canvas);
     this.juice = new JuiceDirector(this.events, settings, () =>
-      activeBlastStyle(this.progress.workshop.owned, this.progress.workshop.blastStyle),
+      activeLook(this.progress.workshop.owned, this.progress.workshop.blastStyle, 'blast-style'),
     );
     this.sound = new SoundDirector(this.events, settings);
     this.ui = new Ui(uiRoot, () => this.sound.unlock());
@@ -207,7 +209,10 @@ export class Game {
   private showWorkshop(): void {
     this.leaveLevel();
     const { owned } = this.progress.workshop;
-    const active = activeBlastStyle(owned, this.progress.workshop.blastStyle);
+    const active = [
+      activeLook(owned, this.progress.workshop.blastStyle, 'blast-style'),
+      activeLook(owned, this.progress.workshop.blockTheme, 'block-theme'),
+    ];
     this.ui.workshop(
       {
         scrap: this.progress.wallet.balance,
@@ -219,7 +224,7 @@ export class Game {
           description: item.description[language],
           cost: item.cost,
           owned: isOwned(owned, item),
-          active: item.id === active,
+          active: active.includes(item.id),
         })),
       },
       {
@@ -232,12 +237,16 @@ export class Game {
             this.ui.toast(T.workshop.errors[bought.error]);
             return;
           }
-          this.progress = item.kind === 'blast-style' ? chooseBlastStyle(bought.value, item.id) : bought.value;
+          // A new look goes straight into use.
+          this.progress =
+            item.kind === 'structure' ? bought.value : equip(bought.value, item.kind === 'blast-style' ? 'blastStyle' : 'blockTheme', item.id);
           this.saves.save(this.progress);
           this.showWorkshop();
         },
         onEquip: (id) => {
-          this.progress = chooseBlastStyle(this.progress, id);
+          const item = workshopItem(id);
+          if (!item || item.kind === 'structure') return;
+          this.progress = equip(this.progress, item.kind === 'blast-style' ? 'blastStyle' : 'blockTheme', id);
           this.saves.save(this.progress);
           this.showWorkshop();
         },
@@ -256,8 +265,8 @@ export class Game {
     return UNLOCK_ALL || isLevelUnlocked(this.progress, this.campaign, levelId);
   }
 
-  /** Free Site setup: pick an opened city and a structure. */
-  private showFreeSite(world = this.currentWorld, template = SANDBOX_TEMPLATES[0]?.id ?? ''): void {
+  /** Free Site setup: pick an opened city, a structure and a way to play. */
+  private showFreeSite(world = this.currentWorld, template = SANDBOX_TEMPLATES[0]?.id ?? '', variant: SandboxVariant = 'free'): void {
     this.leaveLevel();
     const cities = this.campaign.worlds
       .filter((w) => this.worldStatus(w.world).kind === 'open')
@@ -271,11 +280,12 @@ export class Game {
       cities,
       templates.map((t) => ({ id: t.id, name: t.name[language] })),
       templates.length < SANDBOX_TEMPLATES.length,
-      { world: chosen, template },
-      (pick) => this.showFreeSite(pick.world, pick.template),
+      { world: chosen, template, variant },
+      this.progress.oneShot[template],
+      (pick) => this.showFreeSite(pick.world, pick.template, pick.variant),
       () => {
         const t = SANDBOX_TEMPLATES.find((x) => x.id === template);
-        if (t) this.play(sandboxLevel(t, chosen), { kind: 'sandbox', template });
+        if (t) this.play(sandboxLevel(t, chosen, variant), { kind: 'sandbox', template, variant });
       },
       () => this.showMenu(),
     );
@@ -371,6 +381,16 @@ export class Game {
     return undefined;
   }
 
+  /** Pigeons on the highest roofs of the job's structure (not on protected buildings). */
+  private perchBirds(session: LevelSession): void {
+    const roofs: { id: string; x: number; top: number; width: number }[] = [];
+    for (const e of session.view()) {
+      if (e.kind !== 'block' || e.anchored || e.protected || e.shape.kind !== 'rect' || Math.abs(e.state.angle) > 0.05) continue;
+      roofs.push({ id: e.id, x: e.state.position.x, top: e.state.position.y - e.shape.h / 2, width: e.shape.w });
+    }
+    this.juice.perchBirds(roofs);
+  }
+
   /** Takes back the most recently placed charge. */
   private undoCharge(): void {
     const s = this.session;
@@ -401,7 +421,9 @@ export class Game {
       city.key,
       cityLevels.length > 1 ? (level.order - 1) / (cityLevels.length - 1) : 0,
     );
+    setBlockTheme(activeLook(this.progress.workshop.owned, this.progress.workshop.blockTheme, 'block-theme'));
     this.session = new LevelSession(level, new MatterPhysicsWorld(), this.events);
+    this.perchBirds(this.session);
     this.attempt = {
       level,
       mode,
@@ -418,7 +440,7 @@ export class Game {
       onDetonate: () => this.detonate(),
       onRetry: () => this.play(level, mode),
       onUndo: () => this.undoCharge(),
-      onMenu: () => (mode.kind === 'campaign' ? this.showLevels() : mode.kind === 'sandbox' ? this.showFreeSite(level.world, mode.template) : this.showMenu()),
+      onMenu: () => (mode.kind === 'campaign' ? this.showLevels() : mode.kind === 'sandbox' ? this.showFreeSite(level.world, mode.template, mode.variant) : this.showMenu()),
       onDelay: (chargeId, seconds) => {
         if (this.session?.setChargeDelay(chargeId, seconds).ok) {
           this.coach.notify('delay');
@@ -440,7 +462,8 @@ export class Game {
     const tutorial = cleared || mode.kind === 'daily' ? undefined : tutorialFor(level.id, language);
     this.coach.start(tutorial ?? []);
     if (mode.kind === 'sandbox') {
-      this.ui.toast(T.freeSiteHint, 3600);
+      this.ui.toast(T.freeSiteModes[mode.variant].hint, 3600);
+      if (mode.variant === 'smash') this.ui.setFireVisible(false);
     } else if (mode.kind === 'daily') {
       this.ui.toast(T.dailyRule(level.charges.par), 3200);
     } else if (!tutorial && !cleared) {
@@ -468,6 +491,7 @@ export class Game {
     for (const c of a.plan.charges) session.placeCharge(c.position, c.delay, c.kind);
     // Cars cruise while placing, so fast-forward to the exact step the player fired on.
     for (let i = 0; i < a.plan.fireSteps; i++) session.step(FIXED_STEP);
+    this.perchBirds(session);
     session.fire();
     this.session = session;
     this.attempt = { ...a, replaying: true };
@@ -505,8 +529,14 @@ export class Game {
       title: sandbox
         ? `${T.freeSite} · ${template?.name[language] ?? ''} · ${place}`
         : `${place} ${String(a.level.order).padStart(2, '0')} · ${this.displayName(a.level)}`,
-      stamp: sandbox ? T.clip.sandbox(pct) : a.result.success ? T.clip.win(pct) : T.clip.fail,
-      success: sandbox || a.result.success,
+      stamp: sandbox
+        ? T.clip.sandbox(pct)
+        : a.result.cleared
+          ? T.clip.win(pct)
+          : a.result.partial
+            ? T.clip.partial(pct)
+            : T.clip.fail,
+      tone: sandbox || a.result.cleared ? 'win' : a.result.partial ? 'partial' : 'fail',
     });
     this.replay();
     this.clip.start(this.sound.captureStream());
@@ -574,13 +604,26 @@ export class Game {
     attempt.result = result;
     if (attempt.mode.kind === 'sandbox') {
       const mode = attempt.mode;
+      // One Shot keeps a best collapse per structure.
+      let record: { best: number; isNew: boolean } | undefined;
+      if (mode.variant === 'one-shot') {
+        const before = this.progress.oneShot[mode.template];
+        this.progress = recordOneShot(this.progress, mode.template, result.collapseRatio * 100);
+        this.saves.save(this.progress);
+        const best = this.progress.oneShot[mode.template] ?? 0;
+        record = { best, isNew: best !== before };
+      }
       attempt.report = () =>
-        this.ui.freeSiteDone(result, {
-          onReset: () => this.play(attempt.level, mode),
-          onReplay: () => this.replay(),
-          onShare: () => this.recordClip(),
-          onSetup: () => this.showFreeSite(attempt.level.world, mode.template),
-        });
+        this.ui.freeSiteDone(
+          result,
+          {
+            onReset: () => this.play(attempt.level, mode),
+            onReplay: () => this.replay(),
+            onShare: () => this.recordClip(),
+            onSetup: () => this.showFreeSite(attempt.level.world, mode.template, mode.variant),
+          },
+          record,
+        );
       window.setTimeout(() => {
         if (this.session === session) attempt.report?.();
       }, RESULT_DELAY_MS);
@@ -734,8 +777,9 @@ export class Game {
       levelName: this.displayName(s.level),
       chargesUsed: s.charges.length,
       protectedTotal: s.protectedTotal,
-      chargesMax: s.level.charges.max,
-      par: s.level.charges.par,
+      // Smash play has no charge budget to show.
+      chargesMax: s.level.instantBlasts ? 0 : s.level.charges.max,
+      par: s.level.instantBlasts ? 0 : s.level.charges.par,
       targetsLeft: s.targetsRemaining,
       showTargets: s.level.blocks.some((b) => b.target) || s.level.cars.some((c) => c.target),
       canFire: s.phase === 'placing' && s.charges.length > 0,
@@ -787,7 +831,14 @@ export class Game {
       const s = this.session;
       const ptr = this.pointer;
       this.pointer = undefined;
-      if (!s || !ptr || s.phase !== 'placing') return;
+      if (!s || !ptr) return;
+      // Smash play: every tap is a blast, before and after the first.
+      if (s.level.instantBlasts && !ptr.moved && !this.attempt?.replaying) {
+        const kind = this.chargeKind === 'bomb' ? 'standard' : this.chargeKind;
+        if (s.strike(this.renderer.toWorld(e.clientX, e.clientY), kind).ok) this.refreshHud();
+        return;
+      }
+      if (s.phase !== 'placing') return;
       const p = this.renderer.toWorld(e.clientX, e.clientY);
       if (ptr.chargeId !== undefined) {
         if (!ptr.moved) s.removeCharge(ptr.chargeId);

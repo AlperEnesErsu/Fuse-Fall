@@ -1,5 +1,6 @@
 import { WORLD, type LevelDefinition } from '../core/level';
 import type { Payout, Rank } from '../core/economy';
+import { SANDBOX_VARIANTS, type SandboxVariant } from '../content/sandbox';
 import type { Settings, WorldStatus } from '../core/progress';
 import type { LevelResult, Stars } from '../core/scoring';
 import type { WorldDefinition } from '../core/world';
@@ -98,7 +99,7 @@ export interface WorkshopView {
   readonly rank: Rank;
   readonly items: readonly {
     readonly id: string;
-    readonly kind: 'blast-style' | 'structure';
+    readonly kind: 'blast-style' | 'block-theme' | 'structure';
     readonly name: string;
     readonly description: string;
     readonly cost: number;
@@ -257,7 +258,7 @@ export class Ui {
             { class: `btn small${v.scrap >= item.cost ? ' primary' : ' short'}`, click: () => this.tap(() => a.onBuy(item.id)) },
             W.buy(item.cost),
           )
-        : item.kind === 'blast-style'
+        : item.kind !== 'structure'
           ? item.active
             ? h('span', { class: 'tag active' }, W.inUse)
             : h('button', { class: 'btn small', click: () => this.tap(() => a.onEquip(item.id)) }, W.use)
@@ -265,12 +266,12 @@ export class Ui {
       return h(
         'li',
         { class: `shop-item${item.owned ? ' owned' : ''}${item.active ? ' active' : ''}` },
-        item.kind === 'blast-style' ? h('span', { class: `swatch style-${item.id}` }) : undefined,
+        item.kind !== 'structure' ? h('span', { class: `swatch style-${item.id.replace(':', '-')}` }) : undefined,
         h('div', { class: 'shop-text' }, h('strong', {}, item.name), h('small', {}, item.description)),
         action,
       );
     };
-    const section = (title: string, kind: 'blast-style' | 'structure') =>
+    const section = (title: string, kind: WorkshopView['items'][number]['kind']) =>
       h(
         'section',
         {},
@@ -285,6 +286,7 @@ export class Ui {
         this.career(v.rank, v.scrap),
         h('p', { class: 'meta' }, `${T.career(v.rank.next)} · ${W.tagline}`),
         section(W.styles, 'blast-style'),
+        section(W.themes, 'block-theme'),
         section(W.structures, 'structure'),
       ),
     );
@@ -319,8 +321,10 @@ export class Ui {
     cities: readonly { world: number; name: string }[],
     templates: readonly { id: string; name: string }[],
     moreInWorkshop: boolean,
-    chosen: { world: number; template: string },
-    onPick: (pick: { world: number; template: string }) => void,
+    chosen: { world: number; template: string; variant: SandboxVariant },
+    /** One Shot best for the chosen structure, if any. */
+    oneShotBest: number | undefined,
+    onPick: (pick: { world: number; template: string; variant: SandboxVariant }) => void,
     onStart: () => void,
     onBack: () => void,
   ): void {
@@ -342,18 +346,43 @@ export class Ui {
           ...templates.map((t) => chip(t.name, t.id === chosen.template, () => onPick({ ...chosen, template: t.id }))),
         ),
         moreInWorkshop ? h('p', { class: 'meta' }, T.freeSiteMore) : undefined,
+        h('span', { class: 'label section' }, T.modeLabel),
+        h(
+          'div',
+          { class: 'chips' },
+          ...SANDBOX_VARIANTS.map((v) => chip(T.freeSiteModes[v].name, v === chosen.variant, () => onPick({ ...chosen, variant: v }))),
+        ),
+        h(
+          'p',
+          { class: 'meta' },
+          T.freeSiteModes[chosen.variant].hint,
+          chosen.variant === 'one-shot' && oneShotBest !== undefined ? ` ${T.oneShotBest(oneShotBest)}` : '',
+        ),
         this.button(T.start, onStart, 'primary big'),
       ),
     );
   }
 
   /** End of a Free Site run: a short summary and quick ways to go again. */
-  freeSiteDone(r: LevelResult, a: { onReset: () => void; onReplay: () => void; onShare: () => void; onSetup: () => void }): void {
+  freeSiteDone(
+    r: LevelResult,
+    a: { onReset: () => void; onReplay: () => void; onShare: () => void; onSetup: () => void },
+    record?: { readonly best: number; readonly isNew: boolean },
+  ): void {
     this.show(
       h(
         'div',
         { class: 'panel freesite-done' },
         h('h2', {}, T.freeSiteDone),
+        record
+          ? h(
+              'div',
+              { class: 'payout' },
+              h('span', { class: 'label' }, T.freeSiteModes['one-shot'].name.toUpperCase()),
+              h('span', { class: 'value' }, `%${Math.round(r.collapseRatio * 100)}`),
+              record.isNew ? h('span', { class: 'badge' }, T.report.newBest) : h('small', {}, T.oneShotBest(record.best)),
+            )
+          : undefined,
         h(
           'div',
           { class: 'stats' },
@@ -588,6 +617,7 @@ export class Ui {
         h('span', { class: `pip${i < s.chargesUsed ? ' used' : ''}${i < s.par ? ' par' : ''}` }),
       ),
     );
+    this.hudParts.charges.classList.toggle('hidden', s.chargesMax === 0);
     this.hudParts.targets.replaceChildren(h('span', { class: 'label' }, T.targets), String(s.targetsLeft));
     this.hudParts.targets.classList.toggle('hidden', !s.showTargets);
     this.hudParts.guarded.replaceChildren(h('span', { class: 'label' }, T.protectedLabel), String(s.protectedTotal));
@@ -632,11 +662,19 @@ export class Ui {
       h('li', { class: met ? 'met' : '' }, met ? ICONS.check(14) : ICONS.cross(14), h('span', {}, ...label));
     const protectedValue =
       r.protectedTotal === 0 ? R.none : r.protectedDamaged === 0 ? R.intact : R.damaged(r.protectedDamaged);
-    const reason = r.failure ? R.reasons[r.failure] : info.cityComplete ? R.cityComplete(info.city) : '';
+    const perfect = r.cleared && r.stars === 3;
+    const tier = perfect ? 'perfect' : r.cleared ? 'win' : r.partial ? 'partial' : 'lose';
+    const reason = r.partial
+      ? R.partialReason
+      : r.failure
+        ? R.reasons[r.failure]
+        : info.cityComplete
+          ? R.cityComplete(info.city)
+          : '';
     this.show(
       h(
         'div',
-        { class: `panel report ${r.success ? 'win' : 'lose'}` },
+        { class: `panel report ${tier}` },
         h('header', {}, h('span', { class: 'title' }, R.title), h('span', { class: 'meta' }, R.heading(info.city, info.order))),
         h(
           'div',
@@ -644,7 +682,7 @@ export class Ui {
           h(
             'div',
             { class: 'verdict' },
-            h('div', { class: 'stamp' }, r.success ? R.success : R.failure),
+            h('div', { class: 'stamp' }, perfect ? R.perfect : r.cleared ? R.success : r.partial ? R.partialWin : R.failure),
             reason ? h('p', { class: 'reason' }, reason) : undefined,
             starRow(r.stars, 'lg'),
             h(
@@ -683,9 +721,9 @@ export class Ui {
             h(
               'ul',
               { class: 'criteria' },
-              criterion(r.success, R.goal),
+              criterion(r.cleared, R.goal),
               ...styleKeys.map((k) =>
-                criterion(r.success && r.styles[k], h('strong', {}, R.styles[k].name), ` · ${R.styles[k].how}`),
+                criterion(r.cleared && r.styles[k], h('strong', {}, R.styles[k].name), ` · ${R.styles[k].how}`),
               ),
             ),
             h('p', { class: 'styles-note' }, R.stylesNote),
@@ -694,7 +732,7 @@ export class Ui {
         h(
           'div',
           { class: 'actions' },
-          this.button(T.retry, actions.onRetry, r.success ? '' : 'primary'),
+          this.button(T.retry, actions.onRetry, r.cleared ? '' : 'primary'),
           this.button(T.replay, actions.onReplay),
           this.iconButton(ICONS.share(), actions.onShare, T.clip.share),
           actions.onNext && this.button(actions.nextLabel, actions.onNext, 'primary'),
@@ -702,6 +740,25 @@ export class Ui {
         ),
       ),
     );
+    if (perfect) this.confetti();
+  }
+
+  /** A burst of confetti over the screen for a perfect job (skipped with reduced motion, in CSS). */
+  private confetti(): void {
+    const colours = ['#f2b134', '#e5484d', '#3fb6a8', '#7c6cf0', '#4cb36a', '#ebe8e2'];
+    const layer = h('div', { class: 'confetti' });
+    for (let i = 0; i < 48; i++) {
+      const piece = h('span', {});
+      piece.style.left = `${Math.random() * 100}%`;
+      piece.style.background = colours[i % colours.length] ?? '#ffffff';
+      piece.style.animationDelay = `${Math.random() * 400}ms`;
+      piece.style.animationDuration = `${1600 + Math.random() * 1200}ms`;
+      piece.style.setProperty('--drift', `${(Math.random() - 0.5) * 160}px`);
+      piece.style.setProperty('--spin', `${(Math.random() - 0.5) * 1440}deg`);
+      layer.append(piece);
+    }
+    this.screen.append(layer);
+    window.setTimeout(() => layer.remove(), 3400);
   }
 
   toast(text: string, ms = 1400): void {

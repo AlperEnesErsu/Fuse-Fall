@@ -69,7 +69,7 @@ describe('campaign content', () => {
   it.each(cases)('%s is won by its solution', (_id, level) => {
     const session = playSolution(level);
     expect(session.phase).toBe('finished');
-    expect(session.result?.success, JSON.stringify(session.result)).toBe(true);
+    expect(session.result?.cleared, JSON.stringify(session.result)).toBe(true);
   });
 
   // Timing must matter on car levels: firing at the start with the same placement should not win.
@@ -77,7 +77,7 @@ describe('campaign content', () => {
   it.each(cases.filter(([, l]) => l.cars.some((c) => c.target && c.mode === 'patrol') && l.solution.fireAt > 0))(
     '%s needs good timing',
     (_id, level) => {
-      expect(playSolution(level, 0).result?.success).toBe(false);
+      expect(playSolution(level, 0).result?.cleared).toBe(false);
     },
   );
 
@@ -88,7 +88,7 @@ describe('campaign content', () => {
     ),
   )('%s needs the delay timeline', (_id, level) => {
     const defaults = level.solution.charges.map((c) => ({ ...c, delay: undefined }));
-    expect(playSolution(level, level.solution.fireAt, defaults).result?.success).toBe(false);
+    expect(playSolution(level, level.solution.fireAt, defaults).result?.cleared).toBe(false);
   });
 
   // The implosion tutorial's placement must actually win the job it teaches on.
@@ -96,7 +96,7 @@ describe('campaign content', () => {
     const level = levels.find((l) => l.id === 'w4-03');
     if (!level) throw new Error('missing w4-03');
     const result = playSolution(level, 0, [{ x: 490, y: 410, delay: undefined, kind: 'implosion' }]).result;
-    expect(result?.success, JSON.stringify(result)).toBe(true);
+    expect(result?.cleared, JSON.stringify(result)).toBe(true);
   });
 
   // Precision puzzles: the same placement with standard charges must not win.
@@ -105,13 +105,13 @@ describe('campaign content', () => {
     '%s needs precision charges',
     (_id, level) => {
       const standard = level.solution.charges.map((c) => ({ ...c, kind: 'standard' as const }));
-      expect(playSolution(level, level.solution.fireAt, standard).result?.success).toBe(false);
+      expect(playSolution(level, level.solution.fireAt, standard).result?.cleared).toBe(false);
     },
   );
 
   // Detonator puzzles: left to their fuses, the same falling bombs do not win.
   it.each(cases.filter(([, l]) => ['w6-02', 'w6-04', 'w6-05', 'w6-08', 'w6-10'].includes(l.id)))('%s needs the detonator', (_id, level) => {
-    expect(playSolution(level, level.solution.fireAt, level.solution.charges, []).result?.success).toBe(false);
+    expect(playSolution(level, level.solution.fireAt, level.solution.charges, []).result?.cleared).toBe(false);
   });
 
   // Train-window puzzles: with the train overhead, the same placement voids the contract.

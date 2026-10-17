@@ -38,3 +38,33 @@ describe('Free Site templates', () => {
     expect(session.result?.collapseRatio ?? 0).toBeGreaterThan(0.3);
   });
 });
+
+describe('Free Site modes', () => {
+  const template = SANDBOX_TEMPLATES[0];
+  if (!template) throw new Error('no templates');
+
+  it('smash: every tap is a blast and the run never ends by itself', () => {
+    const events = new EventBus<GameEvents>();
+    let blasts = 0;
+    events.on('explosion', () => blasts++);
+    const session = new LevelSession(sandboxLevel(template, 1, 'smash'), new MatterPhysicsWorld(), events);
+    expect(session.strike({ x: 480, y: 450 }).ok).toBe(true);
+    expect(session.phase).toBe('running');
+    for (let t = 0; t < 1; t += STEP) session.step(STEP);
+    expect(session.strike({ x: 520, y: 400 }, 'implosion').ok).toBe(true);
+    for (let t = 0; t < 12; t += STEP) session.step(STEP);
+    expect(blasts).toBe(2);
+    expect(session.phase).toBe('running');
+  });
+
+  it('only smash levels accept taps as blasts', () => {
+    const session = new LevelSession(sandboxLevel(template, 1, 'free'), new MatterPhysicsWorld(), new EventBus<GameEvents>());
+    expect(session.strike({ x: 480, y: 450 })).toEqual({ ok: false, error: 'not-allowed' });
+  });
+
+  it('one shot allows a single charge', () => {
+    const session = new LevelSession(sandboxLevel(template, 1, 'one-shot'), new MatterPhysicsWorld(), new EventBus<GameEvents>());
+    expect(session.placeCharge({ x: 480, y: 450 }).ok).toBe(true);
+    expect(session.placeCharge({ x: 300, y: 450 })).toEqual({ ok: false, error: 'no-charges-left' });
+  });
+});

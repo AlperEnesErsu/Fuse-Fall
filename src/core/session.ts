@@ -431,6 +431,17 @@ export class LevelSession {
     return ok(undefined);
   }
 
+  /** Smash play: a blast goes off right where the player tapped, now. Only on levels that allow it. */
+  strike(position: Vec2, kind: Exclude<ChargeKind, 'bomb'> = 'standard'): Result<void, 'not-allowed'> {
+    if (!this.level.instantBlasts || this.currentPhase === 'finished') return err('not-allowed');
+    if (this.currentPhase === 'placing') {
+      this.currentPhase = 'running';
+      this.firedAt = this.time;
+    }
+    this.pending.push({ at: this.time, position, blast: kind });
+    return ok(undefined);
+  }
+
   /**
    * Advances by a fixed step. While placing, the world is frozen except for
    * cars, which drive along their routes so the player can time the fire.
@@ -757,6 +768,8 @@ export class LevelSession {
       }
     }
     this.calmFor = calm ? this.calmFor + dt : 0;
+    // Smash play goes on until the player leaves; everything else ends once the dust settles.
+    if (this.level.instantBlasts) return;
     if (this.calmFor >= TUNING.settle.hold || this.elapsedSinceFire >= TUNING.settle.timeout) this.finish();
   }
 
