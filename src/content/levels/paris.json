@@ -131,7 +131,7 @@
     "target": true
    },
    {
-    "x": 280,
+    "x": 330,
     "y": 440.0,
     "w": 60,
     "h": 80,
@@ -145,7 +145,7 @@
    "charges": [
     {
      "x": 530,
-     "y": 470
+     "y": 450
     }
    ],
    "fireAt": 0
@@ -235,8 +235,8 @@
   "solution": {
    "charges": [
     {
-     "x": 540,
-     "y": 470
+     "x": 535,
+     "y": 468
     }
    ],
    "fireAt": 0
@@ -664,7 +664,7 @@
   "order": 9,
   "charges": {
    "max": 3,
-   "par": 2
+   "par": 1
   },
   "bonusCollapse": 0.5,
   "zones": [
@@ -745,17 +745,13 @@
   "solution": {
    "charges": [
     {
-     "x": 500,
-     "y": 470
-    },
-    {
-     "x": 700,
-     "y": 470
+     "x": 512,
+     "y": 468
     }
    ],
    "fireAt": 0
   },
-  "hint": "Kaideyi iki yandan kes; piramit kendi ağırlığıyla iner."
+  "hint": "Kaideyi kes; piramit kendi ağırlığıyla iner."
  },
  {
   "id": "w2-10",

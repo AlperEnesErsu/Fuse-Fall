@@ -3,6 +3,7 @@ import { EventBus, type GameEvents } from '../src/core/events';
 import { WORLD, type LevelDefinition } from '../src/core/level';
 import { chargeRadius, circleTouches, LevelSession } from '../src/core/session';
 import { TUNING } from '../src/core/tuning';
+import { MATERIALS } from '../src/core/materials';
 import { FakePhysics } from './fake-physics';
 
 const level = (patch: Partial<LevelDefinition> = {}): LevelDefinition => ({
@@ -131,7 +132,7 @@ describe('detonation', () => {
     run(1 / 60);
     expect(log.some((e) => e.type === 'blockShattered')).toBe(true);
     expect(physics.state('block-1')).toBeUndefined();
-    expect(physics.idsOf('debris-')).toHaveLength(3); // wood splits 3×1
+    expect(physics.idsOf('debris-')).toHaveLength(MATERIALS.wood.fragments.count);
     // A shattered target counts as down.
     expect(session.targetsRemaining).toBe(0);
   });

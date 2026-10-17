@@ -1,11 +1,13 @@
 import type { BlastSource, EventBus, GameEvents } from './events';
 import { WORLD, type CarDef, type ChargeKind, type LevelDefinition } from './level';
 import { MATERIALS, type MaterialId } from './materials';
-import { createRng, distance, hashString, rectContains, rotate, sub, length, scale, vec, type Vec2 } from './math';
+import { createRng, distance, hashString, rectContains, sub, length, scale, vec, type Vec2 } from './math';
 import type { BodyState, PhysicsWorld, Shape } from './ports';
 import { err, ok, type Result } from './result';
 import { scoreLevel, type LevelResult } from './scoring';
 import { shatter } from './shatter';
+import { area, circleTouches, halfExtent, innerRadius } from './shapes';
+import { findJoints, type JointDef } from './joints';
 import { TUNING } from './tuning';
 
 export type Phase = 'placing' | 'running' | 'finished';
@@ -127,26 +129,12 @@ const sourceOf = (blast: BlastKind): BlastSource => (blast === 'standard' || bla
 /** Blast radius of a charge kind, for the placement preview. */
 export const chargeRadius = (kind: ChargeKind): number => BLASTS[kind].radius;
 
+export { circleTouches } from './shapes';
+
 const GROUND_ID = 'ground';
 
-const area = (shape: Shape): number => (shape.kind === 'rect' ? shape.w * shape.h : Math.PI * shape.r * shape.r);
-const halfExtent = (shape: Shape): number => (shape.kind === 'rect' ? Math.max(shape.w, shape.h) / 2 : shape.r);
 /** Gap between the ground and a body's lowest possible point (any orientation). */
 const clearance = (shape: Shape, position: Vec2): number => WORLD.groundY - halfExtent(shape) - position.y;
-const innerRadius = (shape: Shape): number => (shape.kind === 'rect' ? Math.min(shape.w, shape.h) / 2 : shape.r);
-/**
- * Whether a blast circle touches a body's actual outline (rotated rectangle or
- * circle). This is the contract rule for protected property, and the preview
- * uses the same function, so what the player sees is what is judged.
- */
-export const circleTouches = (center: Vec2, radius: number, shape: Shape, position: Vec2, angle: number): boolean => {
-  const local = rotate(sub(center, position), -angle);
-  if (shape.kind === 'circle') return length(local) < radius + shape.r;
-  const dx = Math.max(Math.abs(local.x) - shape.w / 2, 0);
-  const dy = Math.max(Math.abs(local.y) - shape.h / 2, 0);
-  return dx * dx + dy * dy < radius * radius;
-};
-
 /** How far a blast travels past `center` before it starts to hurt a body (damage falloff). */
 const blastReach = (center: Vec2, shape: Shape, position: Vec2): number =>
   Math.max(0, length(sub(position, center)) - innerRadius(shape));
@@ -175,6 +163,9 @@ export class LevelSession {
   /** Footprint material area from debris removed by the debris budget while inside the site. */
   private retiredInside = 0;
   private finishedAt = 0;
+  /** Live joints, and which joints each entity takes part in. */
+  private readonly joints = new Map<string, JointDef>();
+  private readonly jointsOf = new Map<string, Set<string>>();
 
   constructor(
     readonly level: LevelDefinition,
@@ -190,8 +181,9 @@ export class LevelSession {
       material: 'concrete',
       isStatic: true,
     });
+    const blockIds: string[] = [];
     for (const b of level.blocks) {
-      this.spawn({
+      const blockId = this.spawn({
         kind: 'block',
         shape: { kind: 'rect', w: b.w, h: b.h },
         position: vec(b.x, b.y),
@@ -202,7 +194,14 @@ export class LevelSession {
         anchored: b.anchored,
         structural: !b.protected && !b.anchored,
       });
+      blockIds.push(blockId);
     }
+    this.weld(
+      level.blocks.flatMap((b, i) => {
+        const id = blockIds[i];
+        return id === undefined ? [] : [{ ...b, id }];
+      }),
+    );
     for (const p of level.barrels) {
       this.spawn({ kind: 'barrel', shape: { kind: 'circle', r: TUNING.barrel.radius }, position: p, angle: 0, material: 'metal' });
     }
@@ -394,6 +393,7 @@ export class LevelSession {
     this.drive();
     this.cruise(dt, true);
     this.physics.step(dt);
+    this.checkJoints();
     this.applyImpacts();
     this.removeOutOfBounds();
     this.updateTargets();
@@ -424,6 +424,12 @@ export class LevelSession {
       power: spec.pressure / TUNING.charge.pressure,
       source,
     });
+
+    // The blast cuts mortar and welds near it before it throws anything.
+    const cut = radius * TUNING.joints.cut;
+    for (const [id, joint] of [...this.joints]) {
+      if (joint.anchors.some((a) => distance(a, center) <= cut)) this.breakJoint(id);
+    }
 
     const broken: Entity[] = [];
     for (const e of [...this.entities.values()]) {
@@ -491,7 +497,7 @@ export class LevelSession {
     for (const s of shards) {
       this.spawn({
         kind: 'debris',
-        shape: { kind: 'rect', w: s.w, h: s.h },
+        shape: { kind: 'poly', vertices: s.vertices },
         position: s.position,
         angle: s.angle,
         material: e.material,
@@ -694,6 +700,50 @@ export class LevelSession {
     this.events.emit('levelFinished', { result: this.finalResult });
   }
 
+  // ---- joints ------------------------------------------------------------
+
+  /** Welds every touching pair of blocks, and every block standing on the ground or on fixed infrastructure. */
+  private weld(blocks: { id: string; x: number; y: number; w: number; h: number; angle: number; material: MaterialId; anchored: boolean }[]): void {
+    const defs = findJoints(blocks, WORLD.groundY, GROUND_ID).filter((j) => {
+      // Two fixed blocks need no joint.
+      const a = this.entities.get(j.a);
+      const b = this.entities.get(j.b);
+      return !(a?.anchored && (b?.anchored || j.b === GROUND_ID));
+    });
+    for (const def of defs) {
+      this.joints.set(def.id, def);
+      for (const entity of [def.a, def.b]) {
+        let set = this.jointsOf.get(entity);
+        if (!set) this.jointsOf.set(entity, (set = new Set()));
+        set.add(def.id);
+      }
+      def.anchors.forEach((at, k) => this.physics.addJoint(`${def.id}:${k}`, def.a, def.b, at));
+    }
+  }
+
+  /** Joints snap when overloaded (stretched past their tolerance) or when a block they hold is badly cracked. */
+  private checkJoints(): void {
+    for (const [id, joint] of [...this.joints]) {
+      const overloaded = joint.anchors.some((_, k) => (this.physics.jointStretch(`${id}:${k}`) ?? Infinity) > joint.tolerance);
+      const cracked = [joint.a, joint.b].some((eid) => {
+        const e = this.entities.get(eid);
+        return e !== undefined && Number.isFinite(e.maxHp) && e.hp <= e.maxHp * (1 - TUNING.joints.crackDamage);
+      });
+      if (overloaded || cracked) this.breakJoint(id);
+    }
+  }
+
+  private breakJoint(id: string): void {
+    const joint = this.joints.get(id);
+    if (!joint) return;
+    this.joints.delete(id);
+    joint.anchors.forEach((_, k) => this.physics.removeJoint(`${id}:${k}`));
+    this.jointsOf.get(joint.a)?.delete(id);
+    this.jointsOf.get(joint.b)?.delete(id);
+    const at = joint.anchors[0];
+    if (at && this.currentPhase === 'running') this.events.emit('jointBroken', { position: at });
+  }
+
   // ---- footprint ---------------------------------------------------------
 
   private insideFootprint(x: number): boolean {
@@ -728,7 +778,7 @@ export class LevelSession {
     this.events.emit('targetDown', { position, remaining: this.targetsRemaining });
   }
 
-  private spawn(spec: SpawnSpec): void {
+  private spawn(spec: SpawnSpec): string {
     const id = `${spec.kind}-${this.nextEntityId++}`;
     const maxHp =
       spec.kind === 'barrel'
@@ -763,9 +813,11 @@ export class LevelSession {
       ...(spec.kinematic ? { kinematic: true } : {}),
       ...(spec.motion ? { velocity: spec.motion.velocity, angularVelocity: spec.motion.angularVelocity } : {}),
     });
+    return id;
   }
 
   private removeEntity(e: Entity): void {
+    for (const id of [...(this.jointsOf.get(e.id) ?? [])]) this.breakJoint(id);
     this.entities.delete(e.id);
     this.physics.remove(e.id);
   }

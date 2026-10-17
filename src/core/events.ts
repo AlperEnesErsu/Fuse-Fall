@@ -15,6 +15,8 @@ export interface GameEvents {
   blockShattered: { readonly position: Vec2; readonly material: MaterialId; readonly size: number };
   targetDown: { readonly position: Vec2; readonly remaining: number };
   protectedDamaged: { readonly position: Vec2 };
+  /** A mortar joint or weld snapped. */
+  jointBroken: { readonly position: Vec2 };
   levelFinished: { readonly result: LevelResult };
 }
 

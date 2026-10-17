@@ -61,6 +61,13 @@ export const TUNING = {
     displacement: 30,
     rotation: 0.5,
   },
+  /** Mortar and welds between blocks. */
+  joints: {
+    /** A blast cuts every joint within this share of its radius. */
+    cut: 0.6,
+    /** A block cracked past this share of its strength comes loose from its neighbours. */
+    crackDamage: 0.6,
+  },
   /** A protected building counts as damaged when it moves or tilts this much, or loses this share of its strength. */
   protection: {
     displacement: 12,

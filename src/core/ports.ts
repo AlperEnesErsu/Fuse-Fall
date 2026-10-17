@@ -4,6 +4,8 @@ import type { Progress } from './progress';
 
 export type Shape =
   | { readonly kind: 'rect'; readonly w: number; readonly h: number }
+  /** Convex polygon, vertices relative to its centroid. */
+  | { readonly kind: 'poly'; readonly vertices: readonly Vec2[] }
   | { readonly kind: 'circle'; readonly r: number };
 
 export interface BodySpec {
@@ -48,6 +50,11 @@ export interface PhysicsWorld {
   setPose(id: string, position: Vec2, velocity: Vec2): void;
   step(dtSeconds: number): void;
   drainImpacts(): Impact[];
+  /** Welds two bodies together at a world point (zero-length, rigid). */
+  addJoint(id: string, a: string, b: string, at: Vec2): void;
+  removeJoint(id: string): void;
+  /** Current gap between a joint's two anchor points (px); undefined once gone. */
+  jointStretch(id: string): number | undefined;
 }
 
 export interface SaveRepository {

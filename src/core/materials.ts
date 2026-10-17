@@ -1,4 +1,4 @@
-export const MATERIAL_IDS = ['wood', 'glass', 'concrete', 'metal', 'vehicle'] as const;
+export const MATERIAL_IDS = ['wood', 'glass', 'concrete', 'metal', 'vehicle', 'brick'] as const;
 export type MaterialId = (typeof MATERIAL_IDS)[number];
 
 export interface MaterialSpec {
@@ -8,8 +8,11 @@ export interface MaterialSpec {
   readonly restitution: number;
   /** Damage a block absorbs before shattering. Infinity never shatters. */
   readonly strength: number;
-  /** Grid used to cut the block into debris when it shatters. */
-  readonly shards: { readonly cols: number; readonly rows: number };
+  /**
+   * How the block breaks: into `count` irregular fragments; `grain` is the
+   * share of cuts that follow the long axis (1 = splinters, 0 = chunks).
+   */
+  readonly fragments: { readonly count: number; readonly grain: number };
 }
 
 export const MATERIALS: Readonly<Record<MaterialId, MaterialSpec>> = {
@@ -18,28 +21,28 @@ export const MATERIALS: Readonly<Record<MaterialId, MaterialSpec>> = {
     friction: 0.6,
     restitution: 0.05,
     strength: 45,
-    shards: { cols: 3, rows: 1 },
+    fragments: { count: 5, grain: 0.85 },
   },
   glass: {
     density: 0.0018,
     friction: 0.3,
     restitution: 0.1,
     strength: 12,
-    shards: { cols: 3, rows: 3 },
+    fragments: { count: 10, grain: 0 },
   },
   concrete: {
     density: 0.003,
     friction: 0.8,
     restitution: 0.0,
     strength: 95,
-    shards: { cols: 2, rows: 2 },
+    fragments: { count: 6, grain: 0.15 },
   },
   metal: {
     density: 0.006,
     friction: 0.4,
     restitution: 0.05,
     strength: Number.POSITIVE_INFINITY,
-    shards: { cols: 1, rows: 1 },
+    fragments: { count: 1, grain: 0 },
   },
   /**
    * A car body: mostly hollow, on rolling wheels (low sliding friction, or the
@@ -50,7 +53,15 @@ export const MATERIALS: Readonly<Record<MaterialId, MaterialSpec>> = {
     friction: 0.08,
     restitution: 0.1,
     strength: 60,
-    shards: { cols: 1, rows: 1 },
+    fragments: { count: 1, grain: 0 },
+  },
+  /** Masonry: weaker than concrete, crumbles into many small chunks. */
+  brick: {
+    density: 0.0019,
+    friction: 0.75,
+    restitution: 0.02,
+    strength: 60,
+    fragments: { count: 8, grain: 0.1 },
   },
 };
 

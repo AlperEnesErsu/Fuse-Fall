@@ -36,6 +36,22 @@ export class FakePhysics implements PhysicsWorld {
     this.place(id, { position, velocity });
   }
 
+  readonly joints = new Map<string, { a: string; b: string; at: Vec2 }>();
+  /** Tests set this to simulate load on a joint. */
+  stretched = new Map<string, number>();
+
+  addJoint(id: string, a: string, b: string, at: Vec2): void {
+    this.joints.set(id, { a, b, at });
+  }
+
+  removeJoint(id: string): void {
+    this.joints.delete(id);
+  }
+
+  jointStretch(id: string): number | undefined {
+    return this.joints.has(id) ? (this.stretched.get(id) ?? 0) : undefined;
+  }
+
   step(): void {}
 
   drainImpacts(): Impact[] {

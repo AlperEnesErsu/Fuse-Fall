@@ -11,12 +11,14 @@ export class MatterPhysicsWorld implements PhysicsWorld {
   private readonly engine: Matter.Engine;
   private readonly bodies = new Map<string, Matter.Body>();
   private impacts: Impact[] = [];
+  private readonly joints = new Map<string, Matter.Constraint>();
 
   constructor() {
     this.engine = Matter.Engine.create({
       enableSleeping: true,
       positionIterations: 10,
       velocityIterations: 8,
+      constraintIterations: 6,
     });
     Matter.Events.on(this.engine, 'collisionStart', (event) => {
       for (const pair of event.pairs) this.recordImpact(pair);
@@ -36,10 +38,13 @@ export class MatterPhysicsWorld implements PhysicsWorld {
       restitution: material.restitution,
       slop: 0.02,
     };
+    const shape = spec.shape;
     const body =
-      spec.shape.kind === 'rect'
-        ? Matter.Bodies.rectangle(spec.position.x, spec.position.y, spec.shape.w, spec.shape.h, options)
-        : Matter.Bodies.circle(spec.position.x, spec.position.y, spec.shape.r, options);
+      shape.kind === 'rect'
+        ? Matter.Bodies.rectangle(spec.position.x, spec.position.y, shape.w, shape.h, options)
+        : shape.kind === 'circle'
+          ? Matter.Bodies.circle(spec.position.x, spec.position.y, shape.r, options)
+          : Matter.Bodies.fromVertices(spec.position.x, spec.position.y, [shape.vertices.map((v) => ({ ...v }))], options);
     if (spec.velocity) Matter.Body.setVelocity(body, toStep(spec.velocity));
     if (spec.angularVelocity !== undefined) {
       Matter.Body.setAngularVelocity(body, spec.angularVelocity / STEPS_PER_SECOND);
@@ -82,6 +87,41 @@ export class MatterPhysicsWorld implements PhysicsWorld {
     Matter.Sleeping.set(body, false);
     Matter.Body.setPosition(body, position);
     Matter.Body.setVelocity(body, toStep(velocity));
+  }
+
+  addJoint(id: string, a: string, b: string, at: Vec2): void {
+    const bodyA = this.bodies.get(a);
+    const bodyB = this.bodies.get(b);
+    if (!bodyA || !bodyB) return;
+    const constraint = Matter.Constraint.create({
+      bodyA,
+      bodyB,
+      pointA: { x: at.x - bodyA.position.x, y: at.y - bodyA.position.y },
+      pointB: { x: at.x - bodyB.position.x, y: at.y - bodyB.position.y },
+      length: 0,
+      stiffness: 0.9,
+      damping: 0.1,
+    });
+    this.joints.set(id, constraint);
+    Matter.Composite.add(this.engine.world, constraint);
+  }
+
+  removeJoint(id: string): void {
+    const constraint = this.joints.get(id);
+    if (!constraint) return;
+    Matter.Composite.remove(this.engine.world, constraint);
+    this.joints.delete(id);
+  }
+
+  jointStretch(id: string): number | undefined {
+    const j = this.joints.get(id);
+    if (!j?.bodyA || !j.bodyB) return undefined;
+    // Matter keeps pointA/pointB rotated with their bodies.
+    const ax = j.bodyA.position.x + j.pointA.x;
+    const ay = j.bodyA.position.y + j.pointA.y;
+    const bx = j.bodyB.position.x + j.pointB.x;
+    const by = j.bodyB.position.y + j.pointB.y;
+    return Math.hypot(ax - bx, ay - by);
   }
 
   step(dtSeconds: number): void {

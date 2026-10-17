@@ -16,6 +16,9 @@ import {
 import { parseWorlds } from '../src/core/world';
 import { scoreLevel } from '../src/core/scoring';
 import { shatter } from '../src/core/shatter';
+import { circleTouches, polygonArea, polygonCentroid, rectVertices, splitConvex } from '../src/core/shapes';
+import { MATERIALS } from '../src/core/materials';
+import { TUNING } from '../src/core/tuning';
 import { LocalSaveRepository, type KeyValueStore } from '../src/infrastructure/local-save';
 
 const validLevel = {
@@ -207,16 +210,32 @@ describe('shatter', () => {
     velocity: { x: 10, y: 0 },
     angularVelocity: 0,
   };
+  const worldArea = (shards: ReturnType<typeof shatter>) => shards.reduce((a, s) => a + polygonArea(s.vertices), 0);
 
-  it('cuts by the material grid and conserves area', () => {
+  it('breaks into the material fragment count of irregular pieces and conserves area', () => {
     const shards = shatter({ ...block, material: 'concrete' }, undefined, createRng(1));
-    expect(shards).toHaveLength(4);
-    expect(shards.reduce((a, s) => a + s.w * s.h, 0)).toBeCloseTo(60 * 30);
+    expect(shards).toHaveLength(MATERIALS.concrete.fragments.count);
+    expect(worldArea(shards)).toBeCloseTo(60 * 30);
+    // Not a neat grid: some cut edge runs at an angle.
+    const slanted = shards.some((s) =>
+      s.vertices.some((v, i) => {
+        const w = s.vertices[(i + 1) % s.vertices.length];
+        return w !== undefined && Math.abs(w.x - v.x) > 0.5 && Math.abs(w.y - v.y) > 0.5;
+      }),
+    );
+    expect(slanted).toBe(true);
   });
 
-  it('never makes pieces smaller than the minimum size', () => {
-    const shards = shatter({ ...block, w: 10, h: 10, material: 'glass' }, undefined, createRng(1));
+  it('never makes pieces below the minimum size', () => {
+    const shards = shatter({ ...block, w: 12, h: 12, material: 'glass' }, undefined, createRng(1));
     expect(shards).toHaveLength(1);
+    const many = shatter({ ...block, w: 120, h: 40, material: 'glass' }, undefined, createRng(4));
+    for (const s of many) expect(polygonArea(s.vertices)).toBeGreaterThanOrEqual(TUNING.shard.minSize ** 2 * 2);
+  });
+
+  it('places each piece at its centroid, so the pieces cover the parent exactly', () => {
+    const shards = shatter({ ...block, material: 'wood' }, undefined, createRng(9));
+    for (const s of shards) expect(Math.abs(polygonCentroid(s.vertices).x)).toBeLessThan(1e-6);
   });
 
   it('is deterministic for the same seed', () => {
@@ -229,6 +248,20 @@ describe('shatter', () => {
     const shards = shatter({ ...block, velocity: { x: 0, y: 0 }, material: 'wood' }, { x: 0, y: 100 }, createRng(3));
     const meanVx = shards.reduce((a, s) => a + s.velocity.x, 0) / shards.length;
     expect(meanVx).toBeGreaterThan(0);
+  });
+});
+
+describe('shapes', () => {
+  it('splits a convex polygon into two that add up', () => {
+    const [a, b] = splitConvex(rectVertices(40, 20), { x: 0, y: 0 }, { x: 1, y: 1 });
+    expect(polygonArea(a) + polygonArea(b)).toBeCloseTo(800);
+  });
+
+  it('detects blast contact with polygons, inside and near an edge', () => {
+    const tri = { kind: 'poly', vertices: [{ x: -10, y: -10 }, { x: 10, y: -10 }, { x: 0, y: 10 }] } as const;
+    expect(circleTouches({ x: 0, y: 0 }, 1, tri, { x: 0, y: 0 }, 0)).toBe(true);
+    expect(circleTouches({ x: 0, y: -14 }, 5, tri, { x: 0, y: 0 }, 0)).toBe(true);
+    expect(circleTouches({ x: 0, y: -30 }, 5, tri, { x: 0, y: 0 }, 0)).toBe(false);
   });
 });
 

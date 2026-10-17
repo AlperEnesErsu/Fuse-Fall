@@ -25,6 +25,8 @@ export class SoundDirector {
     events.on('explosion', (e) => this.synth?.explosion(e.power, panOf(e.position)));
     events.on('blockShattered', (e) => this.synth?.shatter(e.material, e.size / 60, panOf(e.position)));
     events.on('blockHit', (e) => this.hit(e));
+    // A snapping joint: a short dry crack, rate-limited with the other impacts.
+    events.on('jointBroken', (e) => this.hit({ position: e.position, material: 'concrete', intensity: 0.3 }));
     events.on('carWrecked', (e) => this.synth?.carWreck(panOf(e.position)));
     events.on('chargePlaced', () => this.synth?.arm());
     events.on('chargeRemoved', () => this.synth?.disarm());

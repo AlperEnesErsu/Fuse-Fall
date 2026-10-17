@@ -438,7 +438,7 @@
   "order": 7,
   "charges": {
    "max": 2,
-   "par": 2
+   "par": 1
   },
   "bonusCollapse": 0.6,
   "zones": [
@@ -485,17 +485,13 @@
   "solution": {
    "charges": [
     {
-     "x": 430,
-     "y": 470
-    },
-    {
-     "x": 650,
-     "y": 470
+     "x": 386,
+     "y": 436
     }
    ],
    "fireAt": 0
   },
-  "hint": "Tabliyeyi indirmek için iki ayağı da kes."
+  "hint": "Tabliye ayaklara bağlı; bir ayağı kesersen köprü yana yatar."
  },
  {
   "id": "w1-08",
@@ -548,15 +544,15 @@
   ],
   "barrels": [
    {
-    "x": 450,
+    "x": 470,
     "y": 464
    },
    {
-    "x": 560,
+    "x": 585,
     "y": 464
    },
    {
-    "x": 670,
+    "x": 700,
     "y": 464
    }
   ],
@@ -564,8 +560,8 @@
   "solution": {
    "charges": [
     {
-     "x": 410,
-     "y": 470
+     "x": 360,
+     "y": 436
     }
    ],
    "fireAt": 0

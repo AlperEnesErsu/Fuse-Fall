@@ -6,6 +6,7 @@ import type { JuiceDirector } from './juice';
 import { MATERIAL_COLORS, PALETTE } from './palette';
 import { paintScene, SCENE_MARGIN, skyAt } from './scenery';
 import { flame, puff } from './sprites';
+import { bevel, fillMaterial, glassPane, steelBeam } from './materials-art';
 
 export interface Overlay {
   /** Placement preview under the pointer. */
@@ -224,6 +225,8 @@ export class Renderer {
     c.rotate(angle);
     if (e.shape.kind === 'circle') {
       this.barrel(e.shape.r, time);
+    } else if (e.shape.kind === 'poly') {
+      this.fragment(e.material, e.shape.vertices);
     } else if (e.car) {
       if (e.car.style === 'train') this.train(e, e.shape.w, e.shape.h, threatened);
       else this.car(e, e.shape.w, e.shape.h);
@@ -351,22 +354,40 @@ export class Renderer {
 
   private block(e: EntityView, w: number, h: number, threatened: boolean): void {
     const c = this.ctx;
-    const colors = MATERIAL_COLORS[e.material];
-    const debris = e.kind === 'debris';
-    c.fillStyle = colors.fill;
-    c.fillRect(-w / 2, -h / 2, w, h);
-    if (e.protected) {
-      this.facade(w, h, e.compromised || threatened);
-    } else if (e.anchored) {
+    if (e.anchored) {
       this.girder(w, h);
-    } else if (!debris) {
-      this.pattern(e.material, w, h, colors.detail);
+    } else if (e.material === 'glass') {
+      glassPane(c, w, h);
+    } else {
+      c.beginPath();
+      c.rect(-w / 2, -h / 2, w, h);
+      fillMaterial(c, e.material, MATERIAL_COLORS[e.material].fill, h > w);
+      if (e.material === 'metal') steelBeam(c, w, h);
+      bevel(c, w, h);
     }
-    if (e.damage > 0.25 && !debris) this.cracks(e.id, w, h, e.damage);
-    c.strokeStyle = 'rgba(0,0,0,0.4)';
-    c.lineWidth = 1.5;
+    if (e.protected) this.facade(w, h, e.compromised || threatened);
+    if (e.damage > 0.25) this.cracks(e.id, w, h, e.damage, e.material);
+    c.strokeStyle = 'rgba(0,0,0,0.45)';
+    c.lineWidth = 1.2;
     c.strokeRect(-w / 2, -h / 2, w, h);
     if (e.target) this.targetMark(Math.min(w, h), e.down);
+  }
+
+  /** A broken-off fragment: same surface as its parent, with darker fracture edges. */
+  private fragment(material: EntityView['material'], vertices: readonly Vec2[]): void {
+    const c = this.ctx;
+    c.beginPath();
+    vertices.forEach((v, i) => (i === 0 ? c.moveTo(v.x, v.y) : c.lineTo(v.x, v.y)));
+    c.closePath();
+    if (material === 'glass') {
+      c.fillStyle = 'rgba(170, 210, 230, 0.8)';
+      c.fill();
+    } else {
+      fillMaterial(c, material, MATERIAL_COLORS[material].fill, false);
+    }
+    c.strokeStyle = 'rgba(0,0,0,0.5)';
+    c.lineWidth = 1;
+    c.stroke();
   }
 
   /** Fixed infrastructure: dark steel with cross bracing, visibly not part of the job. */
@@ -436,69 +457,51 @@ export class Renderer {
     c.stroke();
   }
 
-  /** Each material has its own pattern as well as colour (NFR-10, colour blindness). */
-  private pattern(material: EntityView['material'], w: number, h: number, color: string): void {
-    const c = this.ctx;
-    c.strokeStyle = color;
-    c.fillStyle = color;
-    c.lineWidth = 1.5;
-    switch (material) {
-      case 'wood': {
-        c.beginPath();
-        const along = w >= h;
-        for (let i = 1; i < 3; i++) {
-          if (along) {
-            c.moveTo(-w / 2 + 3, -h / 2 + (h * i) / 3);
-            c.lineTo(w / 2 - 3, -h / 2 + (h * i) / 3);
-          } else {
-            c.moveTo(-w / 2 + (w * i) / 3, -h / 2 + 3);
-            c.lineTo(-w / 2 + (w * i) / 3, h / 2 - 3);
-          }
-        }
-        c.stroke();
-        break;
-      }
-      case 'glass':
-        c.beginPath();
-        c.moveTo(-w / 2 + 4, h / 2 - 4);
-        c.lineTo(-w / 2 + Math.min(w, h) * 0.6, -h / 2 + 4);
-        c.stroke();
-        break;
-      case 'concrete':
-        for (let x = -w / 2 + 6; x < w / 2 - 3; x += 9) {
-          for (let y = -h / 2 + 6; y < h / 2 - 3; y += 9) c.fillRect(x, y, 2, 2);
-        }
-        break;
-      case 'metal':
-        for (const [x, y] of [[-1, -1], [1, -1], [-1, 1], [1, 1]] as const) {
-          c.beginPath();
-          c.arc(x * (w / 2 - 5), y * (h / 2 - 5), 2, 0, Math.PI * 2);
-          c.fill();
-        }
-        break;
-    }
-  }
 
   /** Deterministic cracks per block that grow with damage. */
-  private cracks(id: string, w: number, h: number, damage: number): void {
+  /** Deterministic cracks per block that grow with damage; badly cracked concrete shows its rebar. */
+  private cracks(id: string, w: number, h: number, damage: number, material: EntityView['material']): void {
     const c = this.ctx;
     let seed = hashString(id);
     const rnd = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
-    c.strokeStyle = 'rgba(10,10,20,0.7)';
-    c.lineWidth = 1.2;
-    c.beginPath();
-    const lines = Math.ceil(damage * 4);
+    const lines = Math.ceil(damage * 5);
+    const paths: [number, number][][] = [];
     for (let i = 0; i < lines; i++) {
       let x = (rnd() - 0.5) * w * 0.6;
       let y = (rnd() - 0.5) * h * 0.6;
-      c.moveTo(x, y);
-      for (let k = 0; k < 3; k++) {
-        x += (rnd() - 0.5) * w * 0.4;
-        y += (rnd() - 0.5) * h * 0.4;
-        c.lineTo(Math.max(-w / 2, Math.min(w / 2, x)), Math.max(-h / 2, Math.min(h / 2, y)));
+      const path: [number, number][] = [[x, y]];
+      for (let k = 0; k < 4; k++) {
+        x = Math.max(-w / 2, Math.min(w / 2, x + (rnd() - 0.5) * w * 0.35));
+        y = Math.max(-h / 2, Math.min(h / 2, y + (rnd() - 0.5) * h * 0.35));
+        path.push([x, y]);
       }
+      paths.push(path);
     }
-    c.stroke();
+    const stroke = (style: string, width: number) => {
+      c.strokeStyle = style;
+      c.lineWidth = width;
+      c.beginPath();
+      for (const path of paths) path.forEach(([x, y], i) => (i === 0 ? c.moveTo(x, y) : c.lineTo(x, y)));
+      c.stroke();
+    };
+    stroke('rgba(10,10,20,0.75)', 1.4);
+    stroke('rgba(255,255,255,0.12)', 0.6);
+    if (material === 'concrete' && damage > 0.6) {
+      c.strokeStyle = 'rgba(176, 92, 40, 0.9)';
+      c.lineWidth = 1.2;
+      c.beginPath();
+      const long = w >= h;
+      for (const f of [-0.25, 0.25]) {
+        if (long) {
+          c.moveTo(-w * 0.2, h * f);
+          c.lineTo(w * 0.15, h * f);
+        } else {
+          c.moveTo(w * f, -h * 0.2);
+          c.lineTo(w * f, h * 0.15);
+        }
+      }
+      c.stroke();
+    }
   }
 
   private barrel(r: number, time: number): void {

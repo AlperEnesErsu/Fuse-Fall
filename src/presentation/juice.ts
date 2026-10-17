@@ -84,6 +84,7 @@ export class JuiceDirector {
       this.dust(e.position, Math.ceil(4 * e.intensity), DEBRIS_COLORS[e.material]);
     });
     events.on('carWrecked', (e) => this.burningWreck(e.position));
+    events.on('jointBroken', (e) => this.dust(e.position, 2, ['#c9c2b6']));
     events.on('targetDown', (e) => {
       this.dust(e.position, 10, ['#b9b2a6']);
       if (e.remaining === 0) this.slowMoLeft = FEEL.slowMo.duration;

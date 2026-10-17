@@ -21,6 +21,7 @@ export const MATERIAL_COLORS: Readonly<Record<MaterialId, { fill: string; detail
   concrete: { fill: '#8f9399', detail: '#6e7278' },
   metal: { fill: '#5a6672', detail: '#a8b2bc' },
   vehicle: { fill: '#3d6e8f', detail: '#2a4f68' },
+  brick: { fill: '#a4553a', detail: '#cdc5b8' },
 };
 
 /** Particle colours per material when it breaks. */
@@ -30,4 +31,5 @@ export const DEBRIS_COLORS: Readonly<Record<MaterialId, readonly string[]>> = {
   concrete: ['#8f9399', '#a7abb1', '#6e7278'],
   metal: ['#a8b2bc', '#5a6672'],
   vehicle: ['#3d6e8f', '#3b3b46', '#f2b134'],
+  brick: ['#a4553a', '#8c4630', '#cdc5b8'],
 };
