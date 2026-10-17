@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { ACHIEVEMENTS, newAchievements } from '../src/core/achievements';
+import { ACHIEVEMENTS, FOREMAN_RANK, newAchievements } from '../src/core/achievements';
+import { RANK_THRESHOLDS } from '../src/core/economy';
 import { dailyChallenge, dayOf } from '../src/core/daily';
 import {
   currentStreak,
+  earnScrap,
   emptyProgress,
   parseProgress,
   previousDay,
@@ -76,11 +78,10 @@ describe('achievements', () => {
     duration: 3,
     footprint: undefined,
     dominoes: 0,
-    chainBlasts: 0,
     demolished: {},
   };
   const result = scoreLevel(outcome, { par: 1, bonusCollapse: 0.5 });
-  const stats = { barrelsBlown: 3, carsWrecked: 0 };
+  const stats = { barrelsBlown: 3, carsWrecked: 0, implosions: 0, detonations: 0 };
 
   it('unlocks every earned achievement once', () => {
     const earned = newAchievements({ progress: emptyProgress(), campaign, result, stats, streak: 0 }).map((a) => a.id);
@@ -94,6 +95,23 @@ describe('achievements', () => {
     for (const l of campaign.levels.filter((l) => l.world === 1)) p = recordStars(p, l.id, 3);
     const ids = newAchievements({ progress: p, campaign, result, stats, streak: 7 }).map((a) => a.id);
     expect(ids).toEqual(expect.arrayContaining(['perfect-city', 'streak-3', 'streak-7']));
+  });
+
+  it('rewards the newer mechanics and the Foreman rank', () => {
+    const ids = (patch: Partial<typeof stats>, dominoes = 0, earned = 0) =>
+      newAchievements({
+        progress: earnScrap(emptyProgress(), earned),
+        campaign,
+        result: scoreLevel({ ...outcome, dominoes }, { par: 1, bonusCollapse: 0.5 }),
+        stats: { ...stats, ...patch },
+        streak: 0,
+      }).map((a) => a.id);
+    expect(ids({})).not.toEqual(expect.arrayContaining(['domino']));
+    expect(ids({}, 1)).toContain('domino');
+    expect(ids({ implosions: 1 })).toContain('implosion');
+    expect(ids({ detonations: 1 })).toContain('airburst');
+    expect(ids({}, 0, RANK_THRESHOLDS[FOREMAN_RANK] - 1)).not.toContain('foreman');
+    expect(ids({}, 0, RANK_THRESHOLDS[FOREMAN_RANK])).toContain('foreman');
   });
 
   it('have unique ids', () => {

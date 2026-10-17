@@ -1313,3 +1313,24 @@ h2,
     padding-bottom: 8px;
   }
 }
+
+/* Continue (next mission) beside the city map. */
+.menu-main {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+.btn.continue {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.btn.continue small {
+  font-family: var(--font);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  opacity: 0.8;
+}

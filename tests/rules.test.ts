@@ -14,7 +14,7 @@ import {
   worldStatus,
 } from '../src/core/progress';
 import { parseWorlds } from '../src/core/world';
-import { CHAIN_FOR_DOMINO, scoreLevel } from '../src/core/scoring';
+import { scoreLevel } from '../src/core/scoring';
 import { shatter } from '../src/core/shatter';
 import { circleTouches, polygonArea, polygonCentroid, rectVertices, splitConvex } from '../src/core/shapes';
 import { MATERIALS } from '../src/core/materials';
@@ -90,7 +90,6 @@ describe('scoring', () => {
     duration: 3,
     footprint: undefined,
     dominoes: 0,
-    chainBlasts: 0,
     demolished: {},
   };
   const rules = { par: 1, bonusCollapse: 0.5 };
@@ -104,8 +103,8 @@ describe('scoring', () => {
   it('lets a domino finish stand in for either other style', () => {
     const brute = { ...base, chargesUsed: 2 };
     expect(scoreLevel({ ...brute, dominoes: 1 }, rules)).toMatchObject({ stars: 3, styles: { surgical: false, demolition: true, domino: true } });
-    expect(scoreLevel({ ...brute, blocksCollapsed: 1, chainBlasts: CHAIN_FOR_DOMINO }, rules).stars).toBe(2);
-    expect(scoreLevel({ ...brute, blocksCollapsed: 1, chainBlasts: CHAIN_FOR_DOMINO - 1 }, rules).stars).toBe(1);
+    expect(scoreLevel({ ...brute, blocksCollapsed: 1, dominoes: 1 }, rules).stars).toBe(2);
+    expect(scoreLevel({ ...brute, blocksCollapsed: 1 }, rules).stars).toBe(1);
   });
 
   it('never gives more than three stars', () => {

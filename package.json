@@ -13,11 +13,14 @@
     "coverage": "vitest run --coverage",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "check": "tsc --noEmit && eslint . && vitest run"
+    "check": "tsc --noEmit && eslint . && vitest run",
+    "levels": "python tools/genlevels.py src/content/levels"
   },
   "dependencies": {
     "@capacitor/android": "8.5.3",
     "@capacitor/core": "8.5.3",
+    "@capacitor/filesystem": "8.1.5",
+    "@capacitor/share": "8.0.3",
     "matter-js": "0.20.0"
   },
   "devDependencies": {

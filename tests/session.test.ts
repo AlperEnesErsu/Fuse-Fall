@@ -185,7 +185,7 @@ describe('outcome', () => {
     run(0.1);
     physics.place('block-1', { position: { x: 520, y: WORLD.groundY - 20 } });
     run(TUNING.settle.hold + 0.2);
-    expect(session.result).toMatchObject({ dominoes: 0, chainBlasts: 0, styles: { domino: false } });
+    expect(session.result).toMatchObject({ dominoes: 0, styles: { domino: false } });
   });
 
   it('fails when the target is still standing', () => {

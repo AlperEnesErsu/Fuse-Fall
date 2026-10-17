@@ -38,6 +38,7 @@ Bağımlılıklar içe doğru akar ve ESLint ile zorlanır. `core` Matter.js'i y
 ## İçerik
 
 - `src/content/cities.json`: bölümler (başkentler) ve açılma eşikleri. Seviyesi olmayan şehir "Yakında" görünür.
+- `tools/genlevels.py`: görevlerin kaynağı. Görevi orada değiştir, `npm run levels` ile JSON'u yeniden üret, `npm test` ile doğrula.
 - `src/content/levels/<şehir>.json`: şehrin seviyeleri. Bloklar (`target`, `protected` ya da `anchored`), variller, arabalar (`cars`: rota `from`/`to`, `speed`, `mode`: `patrol`/`flow`) ve bir `solution` (`charges` + her şarjın `delay` değeri + ateşleme anı `fireAt`).
 - `src/content/tutorials.ts`: yeni fikir getiren görevlerin adım adım eğitimleri.
 - `src/content/text.ts`: görev ve şehir adlarının İngilizce karşılıkları (Türkçe kaynak seviye verisinde). Arayüz metinleri `src/presentation/i18n/`.
@@ -53,3 +54,4 @@ Bağımlılıklar içe doğru akar ve ESLint ile zorlanır. `core` Matter.js'i y
 
 - [Pazar analizi](docs/01-pazar-analizi.md)
 - [Gereksinimler ve mühendislik ilkeleri](docs/02-gereksinimler.md)
+- [Yayın kontrol listesi](docs/release.md)

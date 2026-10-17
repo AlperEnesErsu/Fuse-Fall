@@ -17,6 +17,7 @@ export class SoundDirector {
   private ctx: AudioContext | undefined;
   private volume: GainNode | undefined;
   private synth: SoundSynth | undefined;
+  private tap: MediaStreamAudioDestinationNode | undefined;
   private lastHit = 0;
   private lastCrack = 0;
   private lastCreak = 0;
@@ -54,6 +55,16 @@ export class SoundDirector {
 
   applyVolumes(): void {
     if (this.volume) this.volume.gain.value = this.settings().sfxVolume;
+  }
+
+  /** The game's sound as a stream, for recording clips; undefined until audio is unlocked. */
+  captureStream(): MediaStream | undefined {
+    if (!this.ctx || !this.volume) return undefined;
+    if (!this.tap) {
+      this.tap = this.ctx.createMediaStreamDestination();
+      this.volume.connect(this.tap);
+    }
+    return this.tap.stream;
   }
 
   /** Lets the player audition the explosion from the settings screen. */

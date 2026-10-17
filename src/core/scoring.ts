@@ -16,8 +16,6 @@ export interface LevelOutcome {
   readonly duration: number;
   /** Targets brought down without any blast reaching them (toppled or struck by falling structure). */
   readonly dominoes: number;
-  /** Barrels, wrecks and bombs set off by another blast. */
-  readonly chainBlasts: number;
   /** Area (px²) of structure brought down, by material. */
   readonly demolished: Readonly<Partial<Record<MaterialId, number>>>;
   /** For footprint jobs: the share of the structure's material that ended up inside the site, and the share required. */
@@ -38,12 +36,9 @@ export interface PlayStyles {
   readonly surgical: boolean;
   /** The collapse bonus: bring the whole structure down. */
   readonly demolition: boolean;
-  /** Let the structure do the work: a target toppled by falling structure, or a chain of blasts. */
+  /** Let the structure do the work: a target brought down by falling structure, never touched by a blast. */
   readonly domino: boolean;
 }
-
-/** Blasts setting off blasts: this many make a chain reaction. */
-export const CHAIN_FOR_DOMINO = 2;
 
 export type FailureReason = 'target-standing' | 'collateral-damage' | 'debris-outside';
 
@@ -90,7 +85,7 @@ export const scoreLevel = (outcome: LevelOutcome, rules: ScoringRules): LevelRes
   const styles: PlayStyles = {
     surgical: underPar,
     demolition: bonusMet,
-    domino: outcome.dominoes > 0 || outcome.chainBlasts >= CHAIN_FOR_DOMINO,
+    domino: outcome.dominoes > 0,
   };
   const met = Number(styles.surgical) + Number(styles.demolition) + Number(styles.domino);
   const stars = (success ? 1 + Math.min(2, met) : 0) as Stars;

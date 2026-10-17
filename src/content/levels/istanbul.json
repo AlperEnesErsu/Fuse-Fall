@@ -390,6 +390,14 @@
     "h": 32,
     "material": "wood",
     "target": true
+   },
+   {
+    "x": 490,
+    "y": 450.0,
+    "w": 50,
+    "h": 60,
+    "material": "concrete",
+    "protected": true
    }
   ],
   "barrels": [],
@@ -411,10 +419,10 @@
    ],
    "fireAt": 0,
    "detonateAt": [
-    1.0
+    1.5
    ]
   },
-  "hint": "İki bomba, tek PATLAT. İkisi de hedefine vardığında bas.",
+  "hint": "İki bomba, tek PATLAT. Aradaki ev korunuyor: bombalar yere inmeden, ikisi de hedefine vardığında bas.",
   "chargeKinds": [
    "bomb"
   ],
@@ -501,6 +509,14 @@
     "h": 32,
     "material": "wood",
     "target": true
+   },
+   {
+    "x": 780,
+    "y": 450.0,
+    "w": 50,
+    "h": 60,
+    "material": "concrete",
+    "protected": true
    }
   ],
   "barrels": [],
@@ -520,10 +536,10 @@
    ],
    "fireAt": 0,
    "detonateAt": [
-    1.0
+    1.1
    ]
   },
-  "hint": "Fitil tabanı keser; bomba üst katı yakalar.",
+  "hint": "Fitil tabanı keser; bomba üst katı yakalar. Sağdaki ev korunuyor: bombayı havada patlat.",
   "chargeKinds": [
    "standard",
    "bomb"
@@ -855,6 +871,14 @@
     "h": 60,
     "material": "concrete",
     "protected": true
+   },
+   {
+    "x": 180,
+    "y": 450.0,
+    "w": 50,
+    "h": 60,
+    "material": "concrete",
+    "protected": true
    }
   ],
   "barrels": [],
@@ -876,10 +900,10 @@
    ],
    "fireAt": 0,
    "detonateAt": [
-    1.5
+    1.4
    ]
   },
-  "hint": "İki kanat, ortada korunan çeşme. İki bombayı da kanatların üstünde patlat.",
+  "hint": "İki kanat, ortada korunan çeşme, solda korunan bekçi kulübesi. İki bombayı da kanatların üstünde patlat.",
   "chargeKinds": [
    "bomb"
   ],

@@ -26,6 +26,8 @@ import {
 } from '../core/progress';
 import { LevelSession } from '../core/session';
 import { MatterPhysicsWorld } from '../infrastructure/matter-physics';
+import { shareClip } from '../infrastructure/share-clip';
+import { ClipRecorder } from '../presentation/clip-recorder';
 import { SoundDirector } from '../presentation/audio';
 import { JuiceDirector } from '../presentation/juice';
 import { Renderer } from '../presentation/renderer';
@@ -77,6 +79,8 @@ interface Attempt {
       }
     | undefined;
   stats: { barrelsBlown: number; carsWrecked: number };
+  /** The attempt's result, once it has settled. */
+  result: LevelResult | undefined;
   /** The report shown after the attempt, re-shown when a replay ends. */
   report: (() => void) | undefined;
 }
@@ -94,6 +98,8 @@ export class Game {
   private readonly events = new EventBus<GameEvents>();
   private readonly renderer: Renderer;
   private readonly juice: JuiceDirector;
+  /** The clip being recorded from a replay, if any. */
+  private clip: ClipRecorder | undefined;
   private readonly sound: SoundDirector;
   private readonly ui: Ui;
   private readonly coach: Coach;
@@ -163,8 +169,12 @@ export class Game {
     this.leaveLevel();
     const today = dayOf(new Date());
     const daily = dailyChallenge(this.campaign, this.progress, today);
+    const next = this.nextMission();
+    const nextWorld = next && this.campaign.worlds.find((w) => w.world === next.world);
     this.ui.menu({
       totalStars: totalStars(this.progress),
+      next: next && nextWorld && { label: `${this.text.city(nextWorld)} ${String(next.order).padStart(2, '0')} · ${this.text.levelName(next)}` },
+      onContinue: () => next && this.startLevel(next.id),
       daily: daily && {
         name: this.text.levelName(daily.base),
         streak: currentStreak(this.progress, today),
@@ -351,6 +361,25 @@ export class Game {
     );
   }
 
+  /** The first open mission not yet won, in campaign order. */
+  private nextMission(): LevelDefinition | undefined {
+    for (const world of this.campaign.worlds) {
+      for (const level of levelsOf(this.campaign, world.world)) {
+        if ((this.progress.stars[level.id] ?? 0) === 0 && this.levelUnlocked(level.id)) return level;
+      }
+    }
+    return undefined;
+  }
+
+  /** Takes back the most recently placed charge. */
+  private undoCharge(): void {
+    const s = this.session;
+    const last = s?.charges[s.charges.length - 1];
+    if (!s || !last || s.phase !== 'placing') return;
+    s.removeCharge(last.id);
+    this.refreshHud();
+  }
+
   private startLevel(id: string): void {
     const level = this.campaign.levels.find((l) => l.id === id);
     if (level) this.play(level, { kind: 'campaign' });
@@ -379,6 +408,7 @@ export class Game {
       replaying: false,
       plan: undefined,
       stats: { barrelsBlown: 0, carsWrecked: 0 },
+      result: undefined,
       report: undefined,
     };
     this.ui.showHud({
@@ -387,6 +417,7 @@ export class Game {
       onFire: () => this.fire(),
       onDetonate: () => this.detonate(),
       onRetry: () => this.play(level, mode),
+      onUndo: () => this.undoCharge(),
       onMenu: () => (mode.kind === 'campaign' ? this.showLevels() : mode.kind === 'sandbox' ? this.showFreeSite(level.world, mode.template) : this.showMenu()),
       onDelay: (chargeId, seconds) => {
         if (this.session?.setChargeDelay(chargeId, seconds).ok) {
@@ -441,15 +472,57 @@ export class Game {
     this.session = session;
     this.attempt = { ...a, replaying: true };
     this.ui.hideScreen();
-    this.ui.showReplay(() => this.endReplay());
+    this.ui.showReplay(() => this.endReplay(false));
   }
 
-  private endReplay(): void {
+  /** `complete`: the replay ran to the end (rather than being skipped). */
+  private endReplay(complete: boolean): void {
     const a = this.attempt;
     if (!a?.replaying) return;
     this.attempt = { ...a, replaying: false };
     this.ui.hideReplay();
+    const clip = this.clip;
+    this.clip = undefined;
+    if (clip) void this.deliverClip(clip, complete);
     a.report?.();
+  }
+
+  /** Records the replay as a vertical clip, then offers it to the share sheet. */
+  private recordClip(): void {
+    const a = this.attempt;
+    if (!a?.plan || !a.result || this.clip) return;
+    if (!ClipRecorder.supported()) {
+      this.ui.toast(T.clip.unsupported);
+      return;
+    }
+    const pct = Math.round(a.result.collapseRatio * 100);
+    const world = this.campaign.worlds.find((w) => w.world === a.level.world);
+    const place = world ? this.text.city(world) : '';
+    const mode = a.mode;
+    const sandbox = mode.kind === 'sandbox';
+    const template = mode.kind === 'sandbox' ? SANDBOX_TEMPLATES.find((t) => t.id === mode.template) : undefined;
+    this.clip = new ClipRecorder(this.canvas, {
+      title: sandbox
+        ? `${T.freeSite} · ${template?.name[language] ?? ''} · ${place}`
+        : `${place} ${String(a.level.order).padStart(2, '0')} · ${this.displayName(a.level)}`,
+      stamp: sandbox ? T.clip.sandbox(pct) : a.result.success ? T.clip.win(pct) : T.clip.fail,
+      success: sandbox || a.result.success,
+    });
+    this.replay();
+    this.clip.start(this.sound.captureStream());
+    this.ui.toast(T.clip.recording, 1600);
+  }
+
+  private async deliverClip(clip: ClipRecorder, complete: boolean): Promise<void> {
+    const blob = await clip.stop();
+    if (!complete) return;
+    if (!blob) {
+      this.ui.toast(T.clip.failed);
+      return;
+    }
+    const outcome = await shareClip(blob, `fuse-and-fall-${Date.now()}.${clip.extension}`, T.clip.shareTitle);
+    if (outcome === 'failed') this.ui.toast(T.clip.failed);
+    else if (outcome === 'saved') this.ui.toast(T.clip.saved);
   }
 
   private fire(): void {
@@ -495,15 +568,17 @@ export class Game {
     const attempt = this.attempt;
     if (!session || !attempt) return;
     if (attempt.replaying) {
-      window.setTimeout(() => this.endReplay(), RESULT_DELAY_MS * 2);
+      window.setTimeout(() => this.endReplay(true), RESULT_DELAY_MS * 2);
       return;
     }
+    attempt.result = result;
     if (attempt.mode.kind === 'sandbox') {
       const mode = attempt.mode;
       attempt.report = () =>
         this.ui.freeSiteDone(result, {
           onReset: () => this.play(attempt.level, mode),
           onReplay: () => this.replay(),
+          onShare: () => this.recordClip(),
           onSetup: () => this.showFreeSite(attempt.level.world, mode.template),
         });
       window.setTimeout(() => {
@@ -533,7 +608,11 @@ export class Game {
         result.score,
       );
     }
-    const stats: AttemptStats = attempt.stats;
+    const stats: AttemptStats = {
+      ...attempt.stats,
+      implosions: attempt.plan?.charges.filter((c) => c.kind === 'implosion').length ?? 0,
+      detonations: attempt.plan?.presses.length ?? 0,
+    };
     const earned = newAchievements({
       progress: this.progress,
       campaign: this.campaign,
@@ -572,6 +651,7 @@ export class Game {
         {
           onRetry: () => this.play(level, attempt.mode),
           onReplay: () => this.replay(),
+          onShare: () => this.recordClip(),
           onNext: daily
             ? () => this.showMenu()
             : !result.success
@@ -659,6 +739,7 @@ export class Game {
       targetsLeft: s.targetsRemaining,
       showTargets: s.level.blocks.some((b) => b.target) || s.level.cars.some((c) => c.target),
       canFire: s.phase === 'placing' && s.charges.length > 0,
+      canUndo: s.phase === 'placing' && s.charges.length > 0 && !this.attempt?.replaying,
     });
     this.ui.setDetonateVisible(s.phase === 'running' && s.liveBombs > 0 && !this.attempt?.replaying);
     this.ui.updateTimeline(

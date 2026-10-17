@@ -1,6 +1,7 @@
 import { WORLD } from '../core/level';
 import { hashString, type Vec2 } from '../core/math';
 import { chargeRadius, contractRadius, type EntityView, type LevelSession } from '../core/session';
+import { halfExtent } from '../core/shapes';
 import { TUNING } from '../core/tuning';
 import type { ChargeKind } from '../core/level';
 import type { JuiceDirector } from './juice';
@@ -22,6 +23,9 @@ export interface Overlay {
 }
 
 /** Draws the logical 960×540 world letterboxed into the canvas. */
+/** Bodies higher than this above the ground cast no visible shadow. */
+const SHADOW_REACH = 240;
+
 export class Renderer {
   private readonly ctx: CanvasRenderingContext2D;
   private scale = 1;
@@ -98,6 +102,7 @@ export class Renderer {
         this.routes(session, overlay.time);
       }
       const threatened = session.phase === 'placing' ? this.blastRadii(session, overlay) : new Set<string>();
+      this.groundShadows(session);
       for (const e of session.view()) this.entity(e, overlay.time, threatened.has(e.id));
       this.charges(session, overlay);
     }
@@ -634,6 +639,33 @@ export class Renderer {
         else this.charge(a.position, 0, true, overlay.time, a.kind);
       }
     }
+  }
+
+  /**
+   * Soft contact shadows on the ground: dark and tight under bodies resting on it,
+   * fainter and wider as they rise, so falling pieces read as having height.
+   */
+  private groundShadows(session: LevelSession): void {
+    const c = this.ctx;
+    const shade = puff('#000000');
+    for (const e of session.view()) {
+      const { position: p, angle } = e.state;
+      const shape = e.shape;
+      const [halfW, halfH] =
+        shape.kind === 'rect'
+          ? [
+              (Math.abs(shape.w * Math.cos(angle)) + Math.abs(shape.h * Math.sin(angle))) / 2,
+              (Math.abs(shape.w * Math.sin(angle)) + Math.abs(shape.h * Math.cos(angle))) / 2,
+            ]
+          : [halfExtent(shape), halfExtent(shape)];
+      const height = WORLD.groundY - (p.y + halfH);
+      if (height > SHADOW_REACH || halfW < 3) continue;
+      const fade = 1 - Math.max(0, height) / SHADOW_REACH;
+      const w = halfW * (1.15 + Math.max(0, height) / 160);
+      c.globalAlpha = 0.38 * fade * fade;
+      c.drawImage(shade, p.x - w, WORLD.groundY - 5, w * 2, 10);
+    }
+    c.globalAlpha = 1;
   }
 
   /**

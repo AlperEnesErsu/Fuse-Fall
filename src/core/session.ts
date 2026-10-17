@@ -186,9 +186,8 @@ export class LevelSession {
   /** Area of structure brought down, by material: what the demolition yields. */
   private readonly demolished: Partial<Record<MaterialId, number>> = {};
   private compromisedCount = 0;
-  /** Targets brought down without a blast reaching them, and blasts set off by other blasts. */
+  /** Targets brought down without a blast reaching them. */
   private dominoes = 0;
-  private chainBlasts = 0;
   /** Footprint material area from debris removed by the debris budget while inside the site. */
   private retiredInside = 0;
   private finishedAt = 0;
@@ -557,13 +556,11 @@ export class LevelSession {
     if (e.kind === 'bomb') {
       // Sympathetic detonation: a blast sets off a bomb it reaches.
       this.removeEntity(e);
-      this.chainBlasts++;
       this.pending.push({ at: this.time + 0.05, position: state.position, blast: 'bomb' });
       return;
     }
     if (e.kind === 'barrel') {
       this.removeEntity(e);
-      this.chainBlasts++;
       this.pending.push({ at: this.time + TUNING.barrel.delay, position: state.position, blast: 'barrel' });
       return;
     }
@@ -573,7 +570,6 @@ export class LevelSession {
       e.driver.engine = false;
       e.driver.wrecked = true;
       this.events.emit('carWrecked', { position: state.position });
-      this.chainBlasts++;
       this.pending.push({ at: this.time + TUNING.vehicle.delay, position: state.position, blast: 'vehicle' });
       if (e.target) this.markDown(e, state.position);
       return;
@@ -793,7 +789,6 @@ export class LevelSession {
         duration: this.finishedAt - this.firedAt,
         dominoes: this.dominoes,
         demolished: { ...this.demolished },
-        chainBlasts: this.chainBlasts,
         footprint: this.level.footprint && {
           achieved: this.containment(),
           required: this.level.footprint.ratio * TUNING.footprintSlack,

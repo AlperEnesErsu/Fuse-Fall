@@ -76,6 +76,8 @@ export interface HudState {
   readonly showTargets: boolean;
   readonly protectedTotal: number;
   readonly canFire: boolean;
+  /** A charge is on the field and can be taken back. */
+  readonly canUndo: boolean;
 }
 
 export interface ReportInfo {
@@ -107,6 +109,9 @@ export interface WorkshopView {
 
 export interface MenuState {
   readonly totalStars: number;
+  /** The next mission to play, for the Continue button. */
+  readonly next: { readonly label: string } | undefined;
+  readonly onContinue: () => void;
   readonly daily: { readonly name: string; readonly streak: number; readonly wonToday: boolean } | undefined;
   readonly achievements: { readonly unlocked: number; readonly total: number };
   readonly onPlay: () => void;
@@ -126,6 +131,7 @@ export interface HudActions {
   readonly onFire: () => void;
   readonly onDetonate: () => void;
   readonly onRetry: () => void;
+  readonly onUndo: () => void;
   readonly onMenu: () => void;
   readonly onDelay: (chargeId: number, seconds: number) => void;
   readonly onKind: (kind: ChargeKind) => void;
@@ -134,6 +140,7 @@ export interface HudActions {
 export interface ResultActions {
   readonly onRetry: () => void;
   readonly onReplay: () => void;
+  readonly onShare: () => void;
   readonly onNext: (() => void) | undefined;
   readonly nextLabel: string;
   readonly onLevels: () => void;
@@ -152,6 +159,7 @@ export class Ui {
         guarded: HTMLElement;
         fire: HTMLButtonElement;
         detonate: HTMLButtonElement;
+        undo: HTMLElement;
         timeline: DelayTimeline;
         kinds: HTMLElement;
       }
@@ -181,7 +189,19 @@ export class Ui {
         h('div', { class: 'hazard' }),
         h('p', { class: 'subtitle' }, T.subtitle),
         h('p', { class: 'tagline' }, T.tagline),
-        this.button(T.play, m.onPlay, 'primary big'),
+        m.next
+          ? h(
+              'div',
+              { class: 'menu-main' },
+              h(
+                'button',
+                { class: 'btn primary big continue', click: () => this.tap(m.onContinue) },
+                h('span', {}, T.continue),
+                h('small', {}, m.next.label),
+              ),
+              this.button(T.play, m.onPlay, 'big'),
+            )
+          : this.button(T.play, m.onPlay, 'primary big'),
         h(
           'div',
           { class: 'menu-modes' },
@@ -328,7 +348,7 @@ export class Ui {
   }
 
   /** End of a Free Site run: a short summary and quick ways to go again. */
-  freeSiteDone(r: LevelResult, a: { onReset: () => void; onReplay: () => void; onSetup: () => void }): void {
+  freeSiteDone(r: LevelResult, a: { onReset: () => void; onReplay: () => void; onShare: () => void; onSetup: () => void }): void {
     this.show(
       h(
         'div',
@@ -346,6 +366,7 @@ export class Ui {
           { class: 'actions' },
           this.button(T.reset, a.onReset, 'primary'),
           this.button(T.replay, a.onReplay),
+          this.iconButton(ICONS.share(), a.onShare, T.clip.share),
           this.button(T.structureLabel, a.onSetup),
         ),
       ),
@@ -525,6 +546,7 @@ export class Ui {
       ICONS.detonator(30),
       h('span', {}, T.detonate),
     ) as HTMLButtonElement;
+    const undo = this.iconButton(ICONS.undo(), a.onUndo, T.undo);
     const timeline = new DelayTimeline(TUNING.charge.delay.max, a.onDelay);
     timeline.element.classList.toggle('docked', a.skyInUse);
     // Charge type switch, only where the job offers more than one type.
@@ -543,6 +565,7 @@ export class Ui {
         h(
           'div',
           { class: 'hud-actions' },
+          undo,
           this.iconButton(ICONS.retry(), a.onRetry, T.retry),
           this.iconButton(ICONS.menu(), a.onMenu, T.menu),
         ),
@@ -552,7 +575,7 @@ export class Ui {
       fire,
       detonate,
     );
-    this.hudParts = { name, charges, targets, guarded, fire, detonate, timeline, kinds: kindSwitch };
+    this.hudParts = { name, charges, targets, guarded, fire, detonate, undo, timeline, kinds: kindSwitch };
     this.hud.classList.remove('hidden');
   }
 
@@ -570,6 +593,7 @@ export class Ui {
     this.hudParts.guarded.replaceChildren(h('span', { class: 'label' }, T.protectedLabel), String(s.protectedTotal));
     this.hudParts.guarded.classList.toggle('hidden', s.protectedTotal === 0);
     this.hudParts.fire.disabled = !s.canFire;
+    this.hudParts.undo.classList.toggle('hidden', !s.canUndo);
   }
 
   /** The delay timeline shows while placing whenever there is a charge to time. */
@@ -672,6 +696,7 @@ export class Ui {
           { class: 'actions' },
           this.button(T.retry, actions.onRetry, r.success ? '' : 'primary'),
           this.button(T.replay, actions.onReplay),
+          this.iconButton(ICONS.share(), actions.onShare, T.clip.share),
           actions.onNext && this.button(actions.nextLabel, actions.onNext, 'primary'),
           this.button(T.levels, actions.onLevels),
         ),

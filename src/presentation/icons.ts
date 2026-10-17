@@ -12,6 +12,9 @@ export const ICONS = {
   lock: (size?: number) => svg('<rect x="5" y="11" width="14" height="10" rx="1"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>', size),
   retry: (size?: number) => svg('<path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v5h5"/>', size),
   menu: (size?: number) => svg('<path d="M4 7h16M4 12h16M4 17h16"/>', size),
+  share: (size?: number) =>
+    svg('<path d="M12 15V3"/><path d="M7 8l5-5 5 5"/><path d="M5 12v7a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-7"/>', size),
+  undo: (size?: number) => svg('<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/>', size),
   back: (size?: number) => svg('<path d="M15 5l-7 7 7 7"/>', size),
   /** A plunger detonator. */
   detonator: (size?: number) =>

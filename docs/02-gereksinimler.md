@@ -198,7 +198,7 @@ Yapıyı incele → Patlayıcı yerleştir → Ateşle → Yıkımı izle → Pu
 | ID | Gereksinim | Öncelik |
 |---|---|---|
 | FR-59 | **Gevşetilmiş toleranslar (~%15):** sözleşmeyi bozan, patlamanın çekirdeğidir (yarıçapın %85'i); dış saçak affedilir. Önizleme çekirdeği dolgu, tam patlamayı kesikli çizgi olarak gösterir. Koruma eşikleri (kayma 14 px, eğilme 0,17 rad, dayanım %58), enkaz alanı oranı (×0,85) ve hedefin "yıkıldı" sayılması da gevşetildi. | M |
-| FR-60 | **Oyun tarzı yıldızları:** başarı 1 yıldız; her tarz +1, en fazla 3. Tarzlar: *Cerrahi* (par içinde şarj), *Tam yıkım* (çöküş bonusu), *Domino* (patlamanın değmediği bir hedefi düşen yapı devirdi ya da en az 2 zincirleme patlama). Herhangi iki tarz üç yıldız verir. Rapor ekranı hangi tarzların tuttuğunu gösterir. | M |
+| FR-60 | **Oyun tarzı yıldızları:** başarı 1 yıldız; her tarz +1, en fazla 3. Tarzlar: *Cerrahi* (par içinde şarj), *Tam yıkım* (çöküş bonusu), *Domino* (patlamanın değmediği bir hedefi düşen yapı devirdi; zincirleme varil patlaması tek başına saymaz). Herhangi iki tarz üç yıldız verir. Rapor ekranı hangi tarzların tuttuğunu gösterir. | M |
 | FR-61 | **İçe çöken (implozyon) şarj:** harcı kesip yapıyı merkeze ve aşağı çeker; yapı kendi alanına katlanır. Enkaz alanı olan görevlerde ve Serbest Şantiye'de kullanılabilir. Kendi görünümü, içe kapanan halka efekti ve sesi vardır. | M |
 
 ### Kariyer ve atölye (v0.9)
@@ -209,6 +209,18 @@ Yapıyı incele → Patlayıcı yerleştir → Ateşle → Yıkımı izle → Pu
 | FR-63 | **Kariyer rütbesi:** toplam kazanılan hurdaya göre altı rütbe (Stajyer → Baş Mühendis); harcamak rütbeyi düşürmez. Terfi raporda gösterilir. | M |
 | FR-64 | **Atölye:** hurda ile kozmetik patlama stilleri (Termit, Pembe Duman, Neon, Konfeti) ve ek Serbest Şantiye yapıları alınır. Hiçbiri görev fiziğini ya da zorluğunu değiştirmez; her görev yeni oyuncuyla da çözülebilir kalır. | M |
 | FR-65 | Hurda, rütbe ve atölye kaydı eski kayıtlarla uyumludur: alanlar yoksa boş başlar, bozuk değerler sıfırlanır. | M |
+
+### Paylaşım ve oyuncu konforu (v1.0)
+
+| ID | Gereksinim | Öncelik |
+|---|---|---|
+| FR-66 | **Yıkımı paylaş:** rapordan (ve Serbest Şantiye sonucundan) tek dokunuşla replay, sesiyle birlikte 720×1280 dikey bir klip olarak cihazda kaydedilir (MP4, yoksa WebM): üstte başlık ve görev adı, ortada yıkım, sonlara doğru sonuç damgası. Android'de sistem paylaşım menüsü açılır; tarayıcıda paylaşım ya da indirme. Hiçbir şey yüklenmez. | M |
+| FR-67 | **Devam et:** ana menü, kazanılmamış ilk açık göreve tek dokunuşla götürür. | M |
+| FR-68 | **Son şarjı geri al:** yerleştirme sırasında HUD'daki düğme en son yerleştirilen şarjı kaldırır. | M |
+| FR-69 | Yeni mekaniklerin başarımları: Domino, İçe Doğru (implozyonla kazan), Tam Zamanında (PATLAT ile kazan), Formen (rütbe). | S |
+| FR-70 | İçe çöken şarjın eğitimi (Roma 03); eğitimdeki yerleşimin görevi kazandığı testle doğrulanır. | S |
+| FR-71 | Cisimlerin zemine yumuşak temas gölgesi düşer; yükseldikçe solar ve genişler. | S |
+| FR-72 | İstanbul'da 5 görev (02, 04, 05, 08, 10) PATLAT gerektirir: fitile bırakılan bomba korunan yapıya zarar verir ya da hedefi indiremez (testle doğrulanır). | M |
 
 ## 6. MVP kapsamı (Sürüm 0.1)
 

@@ -1,3 +1,4 @@
+import { rankOf } from './economy';
 import { levelsOf, type Campaign, type Progress } from './progress';
 import type { LevelResult } from './scoring';
 
@@ -5,7 +6,13 @@ import type { LevelResult } from './scoring';
 export interface AttemptStats {
   readonly barrelsBlown: number;
   readonly carsWrecked: number;
+  /** Implosion charges fired, and detonator presses that set off falling bombs. */
+  readonly implosions: number;
+  readonly detonations: number;
 }
+
+/** Career rank index that earns the Foreman achievement. */
+export const FOREMAN_RANK = 2;
 
 export interface AchievementContext {
   readonly progress: Progress;
@@ -25,6 +32,10 @@ export const ACHIEVEMENT_IDS = [
   'perfect-city',
   'streak-3',
   'streak-7',
+  'domino',
+  'implosion',
+  'airburst',
+  'foreman',
 ] as const;
 export type AchievementId = (typeof ACHIEVEMENT_IDS)[number];
 
@@ -65,6 +76,10 @@ export const ACHIEVEMENTS: readonly AchievementDef[] = [
   { id: 'perfect-city', earned: cityPerfect },
   { id: 'streak-3', earned: (c) => c.streak >= 3 },
   { id: 'streak-7', earned: (c) => c.streak >= 7 },
+  { id: 'domino', earned: (c) => c.result.success && c.result.styles.domino },
+  { id: 'implosion', earned: (c) => c.result.success && c.stats.implosions > 0 },
+  { id: 'airburst', earned: (c) => c.result.success && c.stats.detonations > 0 },
+  { id: 'foreman', earned: (c) => rankOf(c.progress.wallet.earned).index >= FOREMAN_RANK },
 ];
 
 /** Achievements earned by this attempt that the player does not have yet. */

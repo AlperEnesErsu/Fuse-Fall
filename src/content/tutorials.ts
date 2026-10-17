@@ -122,8 +122,8 @@ const TUTORIALS: Readonly<Record<string, readonly TutorialStep[]>> = {
   'w4-02': [
     {
       text: {
-        tr: "Yerdeki sarı şerit şantiye alanı. Yapının malzemesinin en az %80'i bu alanın içinde kalmalı. Devam etmek için dokun.",
-        en: 'The striped strip on the ground is the site. At least 80% of the structure must end up inside it. Tap to continue.',
+        tr: 'Yerdeki sarı şerit şantiye alanı. Yapının malzemesinin büyük kısmı bu alanın içinde kalmalı; rapor gereken oranı gösterir. Devam etmek için dokun.',
+        en: 'The striped strip on the ground is the site. Most of the structure must end up inside it; the report shows the share required. Tap to continue.',
       },
       highlight: { world: { x: 520, y: 476 }, radius: 120 },
       until: 'tap',
@@ -134,6 +134,26 @@ const TUTORIALS: Readonly<Record<string, readonly TutorialStep[]>> = {
         en: 'Cut one support with a precision charge so the structure lies down on site.',
       },
       highlight: { selector: '.kind-toggle' },
+      until: 'placed',
+    },
+    { text: { tr: 'ATEŞLE.', en: 'FIRE.' }, highlight: { selector: '.fire-btn' }, until: 'fired' },
+  ],
+  // The implosion charge: another way to keep a structure on its site.
+  'w4-03': [
+    {
+      text: {
+        tr: 'Bu kez başka bir araç dene: sağ alttan İÇE ÇÖKEN şarjı seç. Yapıyı itmez, kendine çeker.',
+        en: 'Try another tool this time: pick IMPLOSION at the bottom right. It does not push the structure, it pulls it in.',
+      },
+      highlight: { selector: '.kind-toggle' },
+      until: 'kind',
+    },
+    {
+      text: {
+        tr: 'İçe çöken şarjı yapının orta yüksekliğine koy; bina kendi alanının içine katlansın.',
+        en: 'Set the implosion charge at mid-height; the building folds onto its own site.',
+      },
+      highlight: { world: { x: 490, y: 410 }, radius: 30 },
       until: 'placed',
     },
     { text: { tr: 'ATEŞLE.', en: 'FIRE.' }, highlight: { selector: '.fire-btn' }, until: 'fired' },

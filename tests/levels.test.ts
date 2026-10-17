@@ -91,6 +91,14 @@ describe('campaign content', () => {
     expect(playSolution(level, level.solution.fireAt, defaults).result?.success).toBe(false);
   });
 
+  // The implosion tutorial's placement must actually win the job it teaches on.
+  it('w4-03 is won by the implosion tutorial placement', () => {
+    const level = levels.find((l) => l.id === 'w4-03');
+    if (!level) throw new Error('missing w4-03');
+    const result = playSolution(level, 0, [{ x: 490, y: 410, delay: undefined, kind: 'implosion' }]).result;
+    expect(result?.success, JSON.stringify(result)).toBe(true);
+  });
+
   // Precision puzzles: the same placement with standard charges must not win.
   // w4-05 is forgiving since the tolerances were loosened: either charge type works there.
   it.each(cases.filter(([, l]) => l.solution.charges.some((c) => c.kind === 'precision') && l.id !== 'w4-05'))(
@@ -102,7 +110,7 @@ describe('campaign content', () => {
   );
 
   // Detonator puzzles: left to their fuses, the same falling bombs do not win.
-  it.each(cases.filter(([, l]) => ['w6-02', 'w6-10'].includes(l.id)))('%s needs the detonator', (_id, level) => {
+  it.each(cases.filter(([, l]) => ['w6-02', 'w6-04', 'w6-05', 'w6-08', 'w6-10'].includes(l.id)))('%s needs the detonator', (_id, level) => {
     expect(playSolution(level, level.solution.fireAt, level.solution.charges, []).result?.success).toBe(false);
   });
 
