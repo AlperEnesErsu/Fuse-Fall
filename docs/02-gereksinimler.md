@@ -245,6 +245,16 @@ Yapıyı incele → Patlayıcı yerleştir → Ateşle → Yıkımı izle → Pu
 | FR-79 | **Yıkım güllesi:** vinç kancasına halatla asılı çelik gülle, ATEŞLE ile salınmaya başlar (gülleli görevlerde ATEŞLE şarj istemez). Çarptığı şey tam hızına göre hasar alır. Kancanın yakınındaki bir patlama halatı keser; gülle o anki yönünde uçar. Kesme anı gecikme çizelgesiyle ayarlanır. İpteki gülle ilk 4,5 saniye görevi açık tutar. | M |
 | FR-80 | Berlin (Bölüm 7): 10 görev; silüet (Brandenburg Kapısı, Reichstag, Fernsehturm). Halat kesme ya da şarj gerektiren görevlerde yalnızca vinci bırakmak kazanmaz (testle doğrulanır). Eğitimler: ilk salınım (Görev 1) ve halat kesme (Görev 2). Serbest Şantiye'ye "Vinç ve Gülle" yapısı eklendi. | M |
 
+### Zorluk eğrisi, ipucu, trafik ve hurda teklifleri (v1.4)
+
+| ID | Gereksinim | Öncelik |
+|---|---|---|
+| FR-81 | **Zorluğa göre sarı alan:** şarj alanları zorluk eğrisini izler: ilk görevlerde ~%35 daha geniş, son görevlerde ~%25 daha dar. Her çözüm ve eğitim noktası kendi alanında kalır (üretici garanti eder, testler doğrular); kanca gibi küçük özel alanlar değişmez. | M |
+| FR-82 | **Zorluk etiketi:** görev kartında Kolay / Orta / Zor / Uzman: şehir içindeki sıraya göre, 5. şehirden itibaren bir kademe yukarı, iki ya da daha fazla zamanlı şarj gerektiren işte bir kademe daha. | S |
+| FR-83 | **İpucu:** bir görev aynı oturumda iki kez tam başarıyla bitmezse HUD'da ipucu düğmesi çıkar; her basış kayıtlı çözümün sıradaki şarjını (yer, tür, gecikme) gösterir ve gerekirse ateşleme/PATLAT zamanını söyler. Ücretsizdir. | M |
+| FR-84 | **Serbest Şantiye trafiği:** isteğe bağlı üst geçit, yapının en yüksek noktasının üstünde; üç araç akar, vurulan aracın yakıt tankı patlar. | S |
+| FR-85 | **Hurda teklifleri:** ödüllü reklam (atölyede +60 hurda, raporda iş hurdasını ×2; günde en fazla 5) ve hurda paketleri (500 / 1500 / 4000). Satın alınan hurda harcanır ama kariyer rütbesine sayılmaz. Oyun reklam ağıyla ya da ödeme sistemiyle doğrudan konuşmaz: `OfferStore` portunun bir adaptörü konuşur. Gerçek adaptör bağlanana kadar mağaza sürümü hiçbir teklif göstermez; geliştirme sürümü akışı sahte bir sağlayıcıyla dener. | M |
+
 ## 6. MVP kapsamı (Sürüm 0.1)
 
 - 1 dünya, 10 seviye

@@ -811,12 +811,33 @@ def berlin():
     l.sol((420, 450), (580, 450, 0.3)); out.append(l)
     return out
 
+def scale_zones(l, levels_total=70):
+    """Charge zones follow the difficulty curve: roomy on the first jobs, tight on the
+    last. Every solution charge stays inside its zone (with a margin), small special
+    zones (crane hooks) keep their size, and zones never go below the ground."""
+    d = ((l.d['world'] - 1) * 10 + (l.d['order'] - 1)) / (levels_total - 1)
+    f = 1.35 - 0.6 * d
+    points = [(c['x'], c['y']) for c in l.d['solution']['charges']]
+    for z in l.d['zones']:
+        if z['w'] < 80 or z['h'] < 30:
+            continue
+        inside = [(x, y) for x, y in points if z['x'] <= x <= z['x'] + z['w'] and z['y'] <= y <= z['y'] + z['h']]
+        cx, cy = z['x'] + z['w'] / 2, z['y'] + z['h'] / 2
+        w, h = z['w'] * f, z['h'] * f
+        x0, x1, y0, y1 = cx - w / 2, cx + w / 2, cy - h / 2, cy + h / 2
+        for x, y in inside:
+            x0, x1, y0, y1 = min(x0, x - 14), max(x1, x + 14), min(y0, y - 14), max(y1, y + 14)
+        x0, x1, y0, y1 = max(0, x0), min(960, x1), max(0, y0), min(G, y1)
+        z.update(x=round(x0), y=round(y0), w=round(x1 - x0), h=round(y1 - y0))
+
+
 outdir = sys.argv[1]
 for name, levels in (('ankara', ankara()), ('paris', paris()), ('london', london()), ('rome', rome()), ('tokyo', tokyo()), ('istanbul', istanbul()), ('berlin', berlin())):
     for l in levels:
         # Footprint jobs offer the implosion charge: it folds a structure onto its own site.
         if 'footprint' in l.d and 'implosion' not in l.d.get('chargeKinds', ['standard']):
             l.d['chargeKinds'] = l.d.get('chargeKinds', ['standard']) + ['implosion']
+        scale_zones(l)
     json.dump([l.d for l in levels], open(os.path.join(outdir, f'{name}.json'), 'w', encoding='utf-8'),
               ensure_ascii=False, indent=1)
 print('ok')

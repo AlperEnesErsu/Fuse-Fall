@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { PAYOUT, RANK_THRESHOLDS, payout, rankOf, salvageOf } from '../src/core/economy';
-import { buyItem, earnScrap, emptyProgress, parseProgress, recordOneShot } from '../src/core/progress';
+import { ADS, PAYOUT, RANK_THRESHOLDS, adsToday, payout, rankOf, salvageOf } from '../src/core/economy';
+import { addBoughtScrap, buyItem, earnScrap, emptyProgress, parseProgress, recordOneShot, rewardAd } from '../src/core/progress';
 import { scoreLevel } from '../src/core/scoring';
 import { loadCampaign } from '../src/content/levels';
 import { WORKSHOP, activeLook, isOwned, structureItemId, workshopItem } from '../src/content/workshop';
@@ -114,5 +114,30 @@ describe('One Shot records', () => {
     expect(p.oneShot).toEqual({ chimney: 62 });
     const parsed = parseProgress(JSON.parse(JSON.stringify({ ...p, oneShot: { chimney: 62, bad: 140, worse: 'x' } })));
     expect(parsed.ok && parsed.value.oneShot).toEqual({ chimney: 62 });
+  });
+});
+
+describe('scrap offers', () => {
+  it('lets bought scrap be spent without raising the career rank', () => {
+    const p = addBoughtScrap(emptyProgress(), 4000);
+    expect(p.wallet).toEqual({ balance: 4000, earned: 0 });
+    expect(rankOf(p.wallet.earned).index).toBe(0);
+  });
+
+  it('counts rewarded ads per day and starts each day afresh', () => {
+    let p = rewardAd(emptyProgress(), '2026-10-17', ADS.reward);
+    p = rewardAd(p, '2026-10-17', ADS.reward);
+    expect(p.wallet.balance).toBe(2 * ADS.reward);
+    expect(adsToday(p.ads, '2026-10-17')).toBe(2);
+    expect(adsToday(p.ads, '2026-10-18')).toBe(0);
+    expect(rewardAd(p, '2026-10-18', ADS.reward).ads).toEqual({ day: '2026-10-18', count: 1 });
+  });
+
+  it('keeps the ad count through a save and resets a malformed one', () => {
+    const p = rewardAd(emptyProgress(), '2026-10-17', ADS.reward);
+    const parsed = parseProgress(JSON.parse(JSON.stringify(p)));
+    expect(parsed.ok && parsed.value.ads).toEqual({ day: '2026-10-17', count: 1 });
+    const bad = parseProgress({ ...p, ads: { day: 'yesterday', count: -2 } });
+    expect(bad.ok && bad.value.ads).toEqual({ day: '', count: 0 });
   });
 });

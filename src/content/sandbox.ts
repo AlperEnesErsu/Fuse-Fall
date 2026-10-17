@@ -165,12 +165,28 @@ export type SandboxVariant = (typeof SANDBOX_VARIANTS)[number];
 /** Charges for a Free Site: generous, but bounded so performance stays predictable. */
 export const SANDBOX_CHARGES = 12;
 
-/** Builds a playable, rule-free level from a template in a city. */
-export const sandboxLevel = (template: SandboxTemplate, world: number, variant: SandboxVariant = 'free'): LevelDefinition => {
-  const b = template.build();
+/**
+ * Traffic for the Free Site: an overpass above the structure's highest point with
+ * cars streaming across it, there to be blown up (their fuel tanks join in).
+ */
+const traffic = (b: Builder): { blocks: BlockDef[]; cars: CarDef[] } => {
+  const tops = [...b.blocks.map((x) => x.y - x.h / 2), ...b.balls.map((x) => x.hook.y)];
+  const lane = Math.max(64, Math.min(300, Math.min(...tops) - 56));
+  const deck = (x: number): BlockDef => ({ x, y: lane + 7, w: 470, h: 14, angle: 0, material: 'concrete', target: false, protected: false, anchored: true });
+  const car = (x: number, speed: number): CarDef => ({
+    x, y: lane - 12, w: 56, h: 24, from: 20, to: WORLD.width - 20, speed, target: false, mode: 'flow', protected: false, style: 'car',
+  });
+  return { blocks: [deck(245), deck(715)], cars: [car(80, 90), car(380, 110), car(700, 75)] };
+};
+
+/** Builds a playable, rule-free level from a template in a city; `withTraffic` adds the overpass. */
+export const sandboxLevel = (template: SandboxTemplate, world: number, variant: SandboxVariant = 'free', withTraffic = false): LevelDefinition => {
+  const built = template.build();
+  const extra = withTraffic ? traffic(built) : { blocks: [], cars: [] };
+  const b: Builder = { ...built, blocks: [...built.blocks, ...extra.blocks], cars: [...built.cars, ...extra.cars] };
   const charges = variant === 'one-shot' ? 1 : SANDBOX_CHARGES;
   return {
-    id: `sandbox-${variant}-${template.id}`,
+    id: `sandbox-${variant}-${template.id}${withTraffic ? '-traffic' : ''}`,
     name: template.name.tr,
     world,
     order: 1,

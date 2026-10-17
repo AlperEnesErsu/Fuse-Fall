@@ -73,6 +73,21 @@ export interface Wallet {
 export const credit = (wallet: Wallet, amount: number): Wallet =>
   amount <= 0 ? wallet : { balance: wallet.balance + amount, earned: wallet.earned + amount };
 
+/** Bought scrap is spendable but not earned: the career rank only grows by playing. */
+export const creditPurchase = (wallet: Wallet, amount: number): Wallet =>
+  amount <= 0 ? wallet : { ...wallet, balance: wallet.balance + amount };
+
+export const ADS = {
+  /** Scrap for watching a rewarded ad in the workshop. */
+  reward: 60,
+  /** Rewarded ads a day, workshop and report together. */
+  dailyCap: 5,
+} as const;
+
+/** Rewarded ads watched today (a new day starts at zero). */
+export const adsToday = (watched: { readonly day: string; readonly count: number }, today: string): number =>
+  watched.day === today ? watched.count : 0;
+
 /** Lifetime scrap needed for each career rank, from the first. */
 export const RANK_THRESHOLDS = [0, 250, 700, 1500, 3000, 6000] as const;
 

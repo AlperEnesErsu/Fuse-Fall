@@ -15,6 +15,8 @@ import {
 } from '../src/core/progress';
 import { parseWorlds } from '../src/core/world';
 import { SCORE, scoreLevel } from '../src/core/scoring';
+import { difficultyOf } from '../src/core/difficulty';
+import { loadCampaign } from '../src/content/levels';
 import { shatter } from '../src/core/shatter';
 import { circleTouches, polygonArea, polygonCentroid, rectVertices, splitConvex } from '../src/core/shapes';
 import { MATERIALS } from '../src/core/materials';
@@ -297,5 +299,20 @@ describe('event bus', () => {
     off();
     bus.emit('ping', 2);
     expect(seen).toEqual([1]);
+  });
+});
+
+describe('difficulty', () => {
+  const campaign = loadCampaign();
+  const tierOf = (id: string) => {
+    const l = campaign.levels.find((x) => x.id === id);
+    if (!l) throw new Error(id);
+    return difficultyOf(l);
+  };
+  it('starts every city gently and climbs towards its finale', () => {
+    expect(tierOf('w1-01')).toBe('easy');
+    expect(tierOf('w1-10')).toBe('hard');
+    expect(tierOf('w5-01')).toBe('medium');
+    expect(tierOf('w7-10')).toBe('expert');
   });
 });

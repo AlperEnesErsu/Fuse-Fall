@@ -14,6 +14,9 @@ export const ICONS = {
   menu: (size?: number) => svg('<path d="M4 7h16M4 12h16M4 17h16"/>', size),
   share: (size?: number) =>
     svg('<path d="M12 15V3"/><path d="M7 8l5-5 5 5"/><path d="M5 12v7a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-7"/>', size),
+  /** A light bulb, for hints. */
+  hint: (size?: number) =>
+    svg('<path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/>', size),
   undo: (size?: number) => svg('<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/>', size),
   back: (size?: number) => svg('<path d="M15 5l-7 7 7 7"/>', size),
   /** A plunger detonator. */

@@ -1,5 +1,7 @@
 import { WORLD, type LevelDefinition } from '../core/level';
+import { difficultyOf } from '../core/difficulty';
 import type { Payout, Rank } from '../core/economy';
+import type { ScrapPack } from '../core/ports';
 import { SANDBOX_VARIANTS, type SandboxVariant } from '../content/sandbox';
 import type { Settings, WorldStatus } from '../core/progress';
 import type { LevelResult, Stars } from '../core/scoring';
@@ -79,6 +81,8 @@ export interface HudState {
   readonly canFire: boolean;
   /** A charge is on the field and can be taken back. */
   readonly canUndo: boolean;
+  /** The hint button shows once the player has struggled with this job. */
+  readonly hintAvailable: boolean;
 }
 
 export interface ReportInfo {
@@ -92,6 +96,15 @@ export interface ReportInfo {
   readonly payout: Payout;
   /** Career rank index reached with this job, if it was a promotion. */
   readonly promotedTo: number | undefined;
+  /** Doubles the scrap with a rewarded ad, when one can be shown. */
+  readonly onDouble: (() => void) | undefined;
+}
+
+/** What the offer store has: rewarded ads (with today's count) and packs; `demo` marks the development stand-in. */
+export interface WorkshopOffers {
+  readonly ad: { readonly reward: number; readonly watched: number; readonly cap: number } | undefined;
+  readonly packs: readonly ScrapPack[];
+  readonly demo: boolean;
 }
 
 export interface WorkshopView {
@@ -133,6 +146,7 @@ export interface HudActions {
   readonly onDetonate: () => void;
   readonly onRetry: () => void;
   readonly onUndo: () => void;
+  readonly onHint: () => void;
   readonly onMenu: () => void;
   readonly onDelay: (chargeId: number, seconds: number) => void;
   readonly onKind: (kind: ChargeKind) => void;
@@ -163,6 +177,7 @@ export class Ui {
         fire: HTMLButtonElement;
         detonate: HTMLButtonElement;
         undo: HTMLElement;
+        hint: HTMLElement;
         timeline: DelayTimeline;
         kinds: HTMLElement;
       }
@@ -250,7 +265,17 @@ export class Ui {
   }
 
   /** The workshop: blast styles and Free Site structures, bought with scrap. */
-  workshop(v: WorkshopView, a: { onBuy: (id: string) => void; onEquip: (id: string) => void; onBack: () => void }): void {
+  workshop(
+    v: WorkshopView,
+    a: {
+      onBuy: (id: string) => void;
+      onEquip: (id: string) => void;
+      onBack: () => void;
+      onWatchAd: () => void;
+      onBuyPack: (id: string) => void;
+    },
+    offers?: WorkshopOffers,
+  ): void {
     this.hideHud();
     const W = T.workshop;
     const card = (item: WorkshopView['items'][number]) => {
@@ -287,11 +312,49 @@ export class Ui {
         h('div', { class: 'levels-head' }, this.iconButton(ICONS.back(), a.onBack, T.back), h('h2', {}, W.title)),
         this.career(v.rank, v.scrap),
         h('p', { class: 'meta' }, `${T.career(v.rank.next)} · ${W.tagline}`),
+        offers && (offers.ad || offers.packs.length > 0) ? this.offersSection(offers, a) : undefined,
         section(W.styles, 'blast-style'),
         section(W.themes, 'block-theme'),
         section(W.structures, 'structure'),
       ),
     );
+  }
+
+  /** Scrap for a rewarded ad (with today's count) and scrap packs at store prices. */
+  private offersSection(o: WorkshopOffers, a: { onWatchAd: () => void; onBuyPack: (id: string) => void }): HTMLElement {
+    const O = T.offers;
+    const left = o.ad ? o.ad.cap - o.ad.watched : 0;
+    return h(
+      'section',
+      { class: 'offers' },
+      h('span', { class: 'label section' }, O.title),
+      o.demo ? h('p', { class: 'meta' }, O.demo) : undefined,
+      h(
+        'ul',
+        { class: 'shop-list' },
+        o.ad
+          ? h(
+              'li',
+              { class: 'shop-item' },
+              h('div', { class: 'shop-text' }, h('strong', {}, O.watch(o.ad.reward)), h('small', {}, O.left(left, o.ad.cap))),
+              h('button', { class: `btn small${left > 0 ? ' primary' : ' short'}`, click: () => this.tap(a.onWatchAd) }, O.watchButton),
+            )
+          : undefined,
+        ...o.packs.map((p) =>
+          h(
+            'li',
+            { class: 'shop-item' },
+            h('div', { class: 'shop-text' }, h('strong', {}, O.pack(p.scrap)), h('small', {}, O.packNote)),
+            h('button', { class: 'btn small', click: () => this.tap(() => a.onBuyPack(p.id)) }, p.price),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /** Whether a given screen is up (async work checks this before redrawing it). */
+  isShowing(screen: 'workshop'): boolean {
+    return this.screen.querySelector(`.panel.${screen}`) !== null;
   }
 
   achievements(list: readonly { title: string; description: string; unlocked: boolean }[], onBack: () => void): void {
@@ -323,10 +386,10 @@ export class Ui {
     cities: readonly { world: number; name: string }[],
     templates: readonly { id: string; name: string }[],
     moreInWorkshop: boolean,
-    chosen: { world: number; template: string; variant: SandboxVariant },
+    chosen: { world: number; template: string; variant: SandboxVariant; traffic: boolean },
     /** One Shot best for the chosen structure, if any. */
     oneShotBest: number | undefined,
-    onPick: (pick: { world: number; template: string; variant: SandboxVariant }) => void,
+    onPick: (pick: { world: number; template: string; variant: SandboxVariant; traffic: boolean }) => void,
     onStart: () => void,
     onBack: () => void,
   ): void {
@@ -359,6 +422,11 @@ export class Ui {
           { class: 'meta' },
           T.freeSiteModes[chosen.variant].hint,
           chosen.variant === 'one-shot' && oneShotBest !== undefined ? ` ${T.oneShotBest(oneShotBest)}` : '',
+        ),
+        h(
+          'div',
+          { class: 'chips' },
+          chip(`${T.traffic.label}: ${chosen.traffic ? T.traffic.on : T.traffic.off}`, chosen.traffic, () => onPick({ ...chosen, traffic: !chosen.traffic })),
         ),
         this.button(T.start, onStart, 'primary big'),
       ),
@@ -499,6 +567,7 @@ export class Ui {
               },
               h('span', { class: 'num' }, c.unlocked ? T.mission(c.level.order) : ICONS.lock(18)),
               h('span', { class: 'name' }, c.name),
+              c.unlocked ? h('span', { class: `difficulty ${difficultyOf(c.level)}` }, T.difficulty[difficultyOf(c.level)]) : undefined,
               starRow(c.stars, 'sm'),
               c.best ? h('span', { class: 'best' }, String(c.best)) : undefined,
             ),
@@ -579,6 +648,8 @@ export class Ui {
       h('span', {}, T.detonate),
     ) as HTMLButtonElement;
     const undo = this.iconButton(ICONS.undo(), a.onUndo, T.undo);
+    const hint = this.iconButton(ICONS.hint(), a.onHint, T.hint.button);
+    hint.classList.add('hint-btn');
     const timeline = new DelayTimeline(TUNING.charge.delay.max, a.onDelay);
     timeline.element.classList.toggle('docked', a.skyInUse);
     // Charge type switch, only where the job offers more than one type.
@@ -597,6 +668,7 @@ export class Ui {
         h(
           'div',
           { class: 'hud-actions' },
+          hint,
           undo,
           this.iconButton(ICONS.retry(), a.onRetry, T.retry),
           this.iconButton(ICONS.menu(), a.onMenu, T.menu),
@@ -607,7 +679,7 @@ export class Ui {
       fire,
       detonate,
     );
-    this.hudParts = { name, charges, targets, guarded, fire, detonate, undo, timeline, kinds: kindSwitch };
+    this.hudParts = { name, charges, targets, guarded, fire, detonate, undo, hint, timeline, kinds: kindSwitch };
     this.hud.classList.remove('hidden');
   }
 
@@ -631,6 +703,7 @@ export class Ui {
     this.hudParts.guarded.classList.toggle('hidden', s.protectedTotal === 0);
     this.hudParts.fire.disabled = !s.canFire;
     this.hudParts.undo.classList.toggle('hidden', !s.canUndo);
+    this.hudParts.hint.classList.toggle('hidden', !s.hintAvailable);
   }
 
   /** The delay timeline shows while placing whenever there is a charge to time. */
@@ -698,6 +771,7 @@ export class Ui {
               h('span', { class: 'label' }, T.scrapLabel),
               h('span', { class: 'value' }, `+${info.payout.total}`),
               h('small', {}, R.scrapParts(info.payout.salvage, info.payout.styles, info.payout.firstClear)),
+              info.onDouble ? h('button', { class: 'btn small primary', click: () => this.tap(info.onDouble ?? (() => undefined)) }, T.offers.double) : undefined,
             ),
             info.promotedTo !== undefined ? h('span', { class: 'badge promoted' }, R.promoted(T.ranks[info.promotedTo] ?? '')) : undefined,
             h(

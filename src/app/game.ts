@@ -2,10 +2,12 @@ import { EventBus, type GameEvents } from '../core/events';
 import type { ChargeKind, LevelDefinition } from '../core/level';
 import type { Vec2 } from '../core/math';
 import { TUNING } from '../core/tuning';
-import type { SaveRepository } from '../core/ports';
-import { payout, rankOf } from '../core/economy';
+import type { OfferStore, SaveRepository } from '../core/ports';
+import { ADS, adsToday, payout, rankOf } from '../core/economy';
 import {
+  addBoughtScrap,
   buyItem,
+  rewardAd,
   equip,
   earnScrap,
   isLevelUnlocked,
@@ -33,10 +35,11 @@ import { SoundDirector } from '../presentation/audio';
 import { JuiceDirector } from '../presentation/juice';
 import { Renderer } from '../presentation/renderer';
 import { T, language, resolveLanguage, setLanguage } from '../presentation/strings';
-import { Ui } from '../presentation/ui';
+import { Ui, type WorkshopOffers } from '../presentation/ui';
 import { Coach } from '../presentation/coach';
 import { tutorialFor } from '../content/tutorials';
 import { SANDBOX_TEMPLATES, sandboxLevel, type SandboxVariant } from '../content/sandbox';
+import { SCRAP_PACKS } from '../content/offers';
 import { WORKSHOP, activeLook, isOwned, structureItemId, workshopItem } from '../content/workshop';
 import { setBlockTheme } from '../presentation/materials-art';
 import { FULL_VIEW, focusOf } from '../presentation/camera';
@@ -54,6 +57,8 @@ const TIMELINE_FROM_WORLD = 3;
 const TOUCH_PICK_CSS_PX = 30;
 /** Pause after the level settles before the result panel slides in. */
 const RESULT_DELAY_MS = 450;
+/** Missed attempts at a job (this session) before the hint button appears. */
+const HINT_AFTER_FAILURES = 2;
 /** Replays run at this fraction of real time. */
 const REPLAY_SPEED = 0.45;
 /** Shared clips are kept short for Shorts and Reels: closer to real time than the slow-motion replay. */
@@ -67,7 +72,7 @@ const UNLOCK_ALL = import.meta.env.VITE_UNLOCK_ALL === '1';
 type Mode =
   | { readonly kind: 'campaign' }
   | { readonly kind: 'daily'; readonly day: string; readonly baseId: string }
-  | { readonly kind: 'sandbox'; readonly template: string; readonly variant: SandboxVariant };
+  | { readonly kind: 'sandbox'; readonly template: string; readonly variant: SandboxVariant; readonly traffic: boolean };
 
 /** One go at a mission: what it is, what the player did, and how to show it again. */
 interface Attempt {
@@ -103,6 +108,11 @@ export class Game {
   private readonly events = new EventBus<GameEvents>();
   private readonly renderer: Renderer;
   private readonly juice: JuiceDirector;
+  /** Whether the offer store can show rewarded ads (checked at start and when the workshop opens). */
+  private adsAvailable = false;
+  /** Jobs missed in a row this session (not cleared), for offering hints; and which hint is next. */
+  private readonly failures = new Map<string, number>();
+  private hintIndex = 0;
   /** The clip being recorded from a replay, if any. */
   private clip: ClipRecorder | undefined;
   private readonly sound: SoundDirector;
@@ -128,8 +138,10 @@ export class Game {
     private readonly campaign: Campaign,
     private readonly saves: SaveRepository,
     private readonly vibrate: (ms: number) => void,
+    private readonly offers: OfferStore,
   ) {
     this.progress = saves.load();
+    void offers.adReady().then((ready) => (this.adsAvailable = ready));
     this.text = this.applyLanguage();
     const settings = (): Settings => this.progress.settings;
     this.renderer = new Renderer(canvas);
@@ -212,8 +224,9 @@ export class Game {
   }
 
   /** The workshop: spend scrap on blast styles and Free Site structures, and pick the blast style. */
-  private showWorkshop(): void {
+  private showWorkshop(offers?: WorkshopOffers): void {
     this.leaveLevel();
+    if (!offers) void this.loadOffers().then((loaded) => this.ui.isShowing('workshop') && this.showWorkshop(loaded));
     const { owned } = this.progress.workshop;
     const active = [
       activeLook(owned, this.progress.workshop.blastStyle, 'blast-style'),
@@ -257,8 +270,55 @@ export class Game {
           this.showWorkshop();
         },
         onBack: () => this.showMenu(),
+        onWatchAd: () => void this.watchAd(() => this.showWorkshop()),
+        onBuyPack: (id) => void this.buyPack(id),
       },
+      offers,
     );
+  }
+
+  /** What the offer store has now: rewarded ads (with today's count) and packs. */
+  private async loadOffers(): Promise<WorkshopOffers> {
+    const [ready, packs] = await Promise.all([this.offers.adReady(), this.offers.packs()]);
+    this.adsAvailable = ready;
+    const today = dayOf(new Date());
+    return {
+      ad: ready ? { reward: ADS.reward, watched: adsToday(this.progress.ads, today), cap: ADS.dailyCap } : undefined,
+      packs,
+      demo: import.meta.env.DEV,
+    };
+  }
+
+  /** A rewarded ad: scrap if it was watched to the end and today's cap allows. `amount` defaults to the workshop reward. */
+  private async watchAd(after: () => void, amount: number = ADS.reward): Promise<void> {
+    const today = dayOf(new Date());
+    if (adsToday(this.progress.ads, today) >= ADS.dailyCap) {
+      this.ui.toast(T.offers.capped);
+      return;
+    }
+    const watched = await this.offers.showRewardedAd();
+    if (!watched.ok) {
+      if (watched.error !== 'cancelled') this.ui.toast(T.offers.failed);
+      return;
+    }
+    this.progress = rewardAd(this.progress, today, amount);
+    this.saves.save(this.progress);
+    this.ui.toast(T.offers.thanks(amount));
+    after();
+  }
+
+  private async buyPack(id: string): Promise<void> {
+    const pack = SCRAP_PACKS.find((p) => p.id === id);
+    if (!pack) return;
+    const bought = await this.offers.buy(id);
+    if (!bought.ok) {
+      if (bought.error !== 'cancelled') this.ui.toast(T.offers.failed);
+      return;
+    }
+    this.progress = addBoughtScrap(this.progress, pack.scrap);
+    this.saves.save(this.progress);
+    this.ui.toast(T.offers.thanks(pack.scrap));
+    this.showWorkshop();
   }
 
   /** Progression rules, unless the test switch opens everything that has missions. */
@@ -272,7 +332,7 @@ export class Game {
   }
 
   /** Free Site setup: pick an opened city, a structure and a way to play. */
-  private showFreeSite(world = this.currentWorld, template = SANDBOX_TEMPLATES[0]?.id ?? '', variant: SandboxVariant = 'free'): void {
+  private showFreeSite(world = this.currentWorld, template = SANDBOX_TEMPLATES[0]?.id ?? '', variant: SandboxVariant = 'free', traffic = false): void {
     this.leaveLevel();
     const cities = this.campaign.worlds
       .filter((w) => this.worldStatus(w.world).kind === 'open')
@@ -286,12 +346,12 @@ export class Game {
       cities,
       templates.map((t) => ({ id: t.id, name: t.name[language] })),
       templates.length < SANDBOX_TEMPLATES.length,
-      { world: chosen, template, variant },
+      { world: chosen, template, variant, traffic },
       this.progress.oneShot[template],
-      (pick) => this.showFreeSite(pick.world, pick.template, pick.variant),
+      (pick) => this.showFreeSite(pick.world, pick.template, pick.variant, pick.traffic),
       () => {
         const t = SANDBOX_TEMPLATES.find((x) => x.id === template);
-        if (t) this.play(sandboxLevel(t, chosen, variant), { kind: 'sandbox', template, variant });
+        if (t) this.play(sandboxLevel(t, chosen, variant, traffic), { kind: 'sandbox', template, variant, traffic });
       },
       () => this.showMenu(),
     );
@@ -398,6 +458,31 @@ export class Game {
     this.juice.perchBirds(roofs);
   }
 
+  /**
+   * Hints for a job the player keeps missing: each press points at the next charge
+   * of the recorded solution (where, which kind, which delay) and says how to fire.
+   */
+  private showHint(): void {
+    const s = this.session;
+    if (!s || s.phase !== 'placing') return;
+    const sol = s.level.solution;
+    const timing = (sol.fireAt > 0 ? T.hint.fireAt(sol.fireAt.toFixed(1)) : '') +
+      (sol.detonateAt[0] !== undefined ? T.hint.detonateAt(sol.detonateAt[0].toFixed(1)) : '');
+    if (sol.charges.length === 0) {
+      this.coach.start([{ text: T.hint.fireOnly + timing, highlight: { selector: '.fire-btn' }, until: 'fired' }], s.level.balls.length > 0);
+      return;
+    }
+    const n = this.hintIndex % sol.charges.length;
+    this.hintIndex++;
+    const c = sol.charges[n];
+    if (!c) return;
+    const delay = c.delay !== undefined && c.delay > 0 ? T.hint.delay(Math.round(c.delay * 1000)) : '';
+    this.coach.start(
+      [{ text: T.hint.place(n + 1, sol.charges.length, T.chargeKinds[c.kind].toLowerCase(), delay) + (n === sol.charges.length - 1 ? timing : ''), highlight: { world: { x: c.x, y: c.y }, radius: 26 }, until: 'tap' }],
+      s.level.balls.length > 0,
+    );
+  }
+
   /** Takes back the most recently placed charge. */
   private undoCharge(): void {
     const s = this.session;
@@ -430,6 +515,7 @@ export class Game {
     );
     setBlockTheme(activeLook(this.progress.workshop.owned, this.progress.workshop.blockTheme, 'block-theme'));
     this.renderer.setFocus(focusOf(level));
+    this.hintIndex = 0;
     this.session = new LevelSession(level, new MatterPhysicsWorld(), this.events);
     this.perchBirds(this.session);
     this.attempt = {
@@ -448,7 +534,8 @@ export class Game {
       onDetonate: () => this.detonate(),
       onRetry: () => this.play(level, mode),
       onUndo: () => this.undoCharge(),
-      onMenu: () => (mode.kind === 'campaign' ? this.showLevels() : mode.kind === 'sandbox' ? this.showFreeSite(level.world, mode.template, mode.variant) : this.showMenu()),
+      onHint: () => this.showHint(),
+      onMenu: () => (mode.kind === 'campaign' ? this.showLevels() : mode.kind === 'sandbox' ? this.showFreeSite(level.world, mode.template, mode.variant, mode.traffic) : this.showMenu()),
       onDelay: (chargeId, seconds) => {
         if (this.session?.setChargeDelay(chargeId, seconds).ok) {
           this.coach.notify('delay');
@@ -611,6 +698,9 @@ export class Game {
       return;
     }
     attempt.result = result;
+    if (attempt.mode.kind === 'campaign') {
+      this.failures.set(attempt.level.id, result.cleared ? 0 : (this.failures.get(attempt.level.id) ?? 0) + 1);
+    }
     if (attempt.mode.kind === 'sandbox') {
       const mode = attempt.mode;
       // One Shot keeps a best collapse per structure.
@@ -629,7 +719,7 @@ export class Game {
             onReset: () => this.play(attempt.level, mode),
             onReplay: () => this.replay(),
             onShare: () => this.recordClip(),
-            onSetup: () => this.showFreeSite(attempt.level.world, mode.template, mode.variant),
+            onSetup: () => this.showFreeSite(attempt.level.world, mode.template, mode.variant, mode.traffic),
           },
           record,
         );
@@ -699,6 +789,11 @@ export class Game {
           cityComplete: lastInCity && cityDone,
           payout: pay,
           promotedTo: rankAfter > rankBefore ? rankAfter : undefined,
+          // A rewarded ad can double what the job paid, while today's ads last.
+          onDouble:
+            this.adsAvailable && pay.total > 0 && adsToday(this.progress.ads, today) < ADS.dailyCap
+              ? () => void this.watchAd(() => attempt.report?.(), pay.total)
+              : undefined,
         },
         {
           onRetry: () => this.play(level, attempt.mode),
@@ -794,6 +889,7 @@ export class Game {
       // With a wrecking ball on site, Fire also releases the crane, so it needs no charge.
       canFire: s.phase === 'placing' && (s.charges.length > 0 || s.level.balls.length > 0),
       canUndo: s.phase === 'placing' && s.charges.length > 0 && !this.attempt?.replaying,
+      hintAvailable: s.phase === 'placing' && this.attempt?.mode.kind === 'campaign' && (this.failures.get(s.level.id) ?? 0) >= HINT_AFTER_FAILURES,
     });
     this.ui.setDetonateVisible(s.phase === 'running' && s.liveBombs > 0 && !this.attempt?.replaying);
     this.ui.updateTimeline(

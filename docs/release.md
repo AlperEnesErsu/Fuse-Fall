@@ -51,6 +51,14 @@ npm run store-shots
 
 Orta sınıf bir telefonda, uçak modunda: yatay ve dikey oynanış, oyun ortasında döndürme, çöküş anlarında akıcılık (konfeti + buz en ağır görünüm), titreşim, klip paylaşımı. Emülatörde doğrulananlar: ısınmış çöküşte ~59,5 FPS, MP4 klip paylaşım menüsüne ulaşıyor (Ankara 10: 11,8 sn), dikey düzen ve döndürme.
 
-## 7. Yükleme (sen)
+## 7. Reklam ve hurda paketleri (bağlanınca) (sen)
+
+Kod hazır: kurallar `src/core/economy.ts`, paketler `src/content/offers.ts`, port `OfferStore` (`src/core/ports.ts`). Canlıya almak için:
+
+- AdMob hesabı ve uygulama/ödüllü reklam birimi kimlikleri; Play Console'da `scrap_small`, `scrap_medium`, `scrap_large` adlı tek seferlik (tüketilebilir) ürünler.
+- Bu kimliklerle gerçek bir `OfferStore` adaptörü (`src/infrastructure/offers.ts` yanında) ve `src/main.ts` içinde onun seçilmesi.
+- **Dikkat:** reklam, uygulamaya internet izni ve reklam kimliği ekler. Gizlilik sayfası ("veri toplamaz, ağ izni yok") ve Play'deki *Veri güvenliği* formu buna göre güncellenmeli; reklamlar kişiselleştirilecekse AB/TR için onay ekranı (UMP) gerekir.
+
+## 8. Yükleme (sen)
 
 Play Console'da önce *Dahili test* kanalına yükle, birkaç cihazda dene, sonra *Üretim*e geç.

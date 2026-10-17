@@ -1447,3 +1447,26 @@ h2,
   top: auto;
   bottom: max(16px, env(safe-area-inset-bottom));
 }
+
+/* Mission difficulty: a small coloured tag on the card. */
+.difficulty {
+  align-self: flex-start;
+  font: 700 0.62rem var(--font-display);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 1px 6px;
+  border-radius: 3px;
+  border: 1px solid currentColor;
+}
+.difficulty.easy {
+  color: var(--ok);
+}
+.difficulty.medium {
+  color: var(--accent);
+}
+.difficulty.hard {
+  color: #f08a4b;
+}
+.difficulty.expert {
+  color: var(--danger);
+}

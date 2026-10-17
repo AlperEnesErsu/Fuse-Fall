@@ -1,4 +1,4 @@
-import { credit, purchase, type PurchaseError, type ShopItem, type Wallet } from './economy';
+import { adsToday, credit, creditPurchase, purchase, type PurchaseError, type ShopItem, type Wallet } from './economy';
 import type { LevelDefinition } from './level';
 import { err, ok, type Result } from './result';
 import type { Stars } from './scoring';
@@ -30,6 +30,8 @@ export interface Progress {
   readonly wallet: Wallet;
   /** Workshop items bought, and the blast style in use. */
   readonly workshop: { readonly owned: readonly string[]; readonly blastStyle: string; readonly blockTheme: string };
+  /** Rewarded ads watched, by day, for the daily cap. */
+  readonly ads: { readonly day: string; readonly count: number };
   /** One Shot: the best collapse (whole percent) per Free Site structure. */
   readonly oneShot: Readonly<Record<string, number>>;
   readonly settings: Settings;
@@ -56,6 +58,7 @@ export const emptyProgress = (): Progress => ({
   wallet: { balance: 0, earned: 0 },
   workshop: { owned: [], blastStyle: DEFAULT_BLAST_STYLE, blockTheme: DEFAULT_BLOCK_THEME },
   oneShot: {},
+  ads: { day: '', count: 0 },
   settings: DEFAULT_SETTINGS,
 });
 
@@ -122,6 +125,8 @@ export const parseProgress = (input: unknown): Result<Progress, ProgressError> =
       if (typeof value === 'number' && Number.isInteger(value) && value >= 0 && value <= 100) oneShot[id] = value;
     }
   }
+  const a = isRecord(input.ads) ? input.ads : {};
+  const ads = { day: typeof a.day === 'string' && DAY.test(a.day) ? a.day : '', count: count(a.count) };
   const s = isRecord(input.settings) ? input.settings : {};
   return ok({
     version: PROGRESS_VERSION,
@@ -132,6 +137,7 @@ export const parseProgress = (input: unknown): Result<Progress, ProgressError> =
     wallet,
     workshop,
     oneShot,
+    ads,
     settings: {
       language: s.language === 'tr' || s.language === 'en' || s.language === 'auto' ? s.language : DEFAULT_SETTINGS.language,
       sfxVolume: volume(s.sfxVolume, DEFAULT_SETTINGS.sfxVolume),
@@ -186,6 +192,18 @@ export const earnScrap = (progress: Progress, amount: number): Progress => {
   const wallet = credit(progress.wallet, amount);
   return wallet === progress.wallet ? progress : { ...progress, wallet };
 };
+
+/** A rewarded ad watched today: its scrap, counted against the daily cap. */
+export const rewardAd = (progress: Progress, today: string, scrap: number): Progress => ({
+  ...earnScrap(progress, scrap),
+  ads: { day: today, count: adsToday(progress.ads, today) + 1 },
+});
+
+/** A scrap pack bought: spendable scrap, not career earnings. */
+export const addBoughtScrap = (progress: Progress, scrap: number): Progress => ({
+  ...progress,
+  wallet: creditPurchase(progress.wallet, scrap),
+});
 
 export const buyItem = (progress: Progress, item: ShopItem): Result<Progress, PurchaseError> => {
   const bought = purchase(progress.wallet, progress.workshop.owned, item);

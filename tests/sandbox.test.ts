@@ -70,3 +70,14 @@ describe('Free Site modes', () => {
     expect(session.placeCharge({ x: 300, y: 450 })).toEqual({ ok: false, error: 'no-charges-left' });
   });
 });
+
+describe('Free Site traffic', () => {
+  it.each(SANDBOX_TEMPLATES.map((t) => [t.id, t] as const))('%s keeps its overpass clear of the structure', (_id, template) => {
+    const plain = sandboxLevel(template, 1);
+    const busy = sandboxLevel(template, 1, 'free', true);
+    expect(busy.cars.length - plain.cars.length).toBe(3);
+    const lane = Math.min(...busy.blocks.filter((b) => !plain.blocks.includes(b) && b.anchored && b.w === 470).map((b) => b.y - b.h / 2));
+    const highest = Math.min(...plain.blocks.map((b) => b.y - b.h / 2), ...plain.balls.map((b) => b.hook.y));
+    expect(lane + 14).toBeLessThanOrEqual(highest);
+  });
+});

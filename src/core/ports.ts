@@ -1,3 +1,4 @@
+import type { Result } from './result';
 import type { MaterialId } from './materials';
 import type { Vec2 } from './math';
 import type { Progress } from './progress';
@@ -59,6 +60,31 @@ export interface PhysicsWorld {
   removeJoint(id: string): void;
   /** Current gap between a joint's two anchor points (px); undefined once gone. */
   jointStretch(id: string): number | undefined;
+}
+
+/** A scrap pack on sale, with the store's own localised price. */
+export interface ScrapPack {
+  readonly id: string;
+  readonly scrap: number;
+  readonly price: string;
+}
+
+export type OfferError = 'unavailable' | 'cancelled' | 'failed';
+
+/**
+ * Rewarded ads and scrap packs. The game never talks to an ad network or a
+ * billing service directly; an adapter does, and a build without one simply
+ * offers nothing.
+ */
+export interface OfferStore {
+  /** Whether a rewarded ad can be shown now. */
+  adReady(): Promise<boolean>;
+  /** Shows a rewarded ad; ok only when the viewer earned the reward. */
+  showRewardedAd(): Promise<Result<true, OfferError>>;
+  /** Packs on sale; empty when purchases are unavailable. */
+  packs(): Promise<readonly ScrapPack[]>;
+  /** Buys a pack; ok once the store has confirmed the payment. */
+  buy(id: string): Promise<Result<true, OfferError>>;
 }
 
 export interface SaveRepository {
