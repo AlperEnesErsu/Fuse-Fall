@@ -475,6 +475,9 @@ h2,
 .criteria li.met svg {
   color: var(--ok);
 }
+.criteria li svg {
+  flex: none;
+}
 .criteria li strong {
   font-weight: 600;
 }
@@ -1407,6 +1410,26 @@ h2,
   .kind-toggle {
     left: max(16px, env(safe-area-inset-left));
     right: auto;
+  }
+  /* Narrow screens: the info card gives way so the buttons stay on screen; stats wrap. */
+  .hud-top {
+    gap: 8px;
+  }
+  .hud-info {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+  .hud-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .hud-stats {
+    flex-wrap: wrap;
+    row-gap: 2px;
+  }
+  .hud-actions {
+    flex: none;
   }
   /* Portrait has sky to spare above the job: the coaching card spans the width. */
   .coach {

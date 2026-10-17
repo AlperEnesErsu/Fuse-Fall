@@ -1,12 +1,13 @@
 {
   "name": "fuse-and-fall",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "description": "Offline physics demolition puzzle.",
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
+    "build:release": "tsc --noEmit && vite build --mode release",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -14,7 +15,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "check": "tsc --noEmit && eslint . && vitest run",
-    "levels": "python tools/genlevels.py src/content/levels"
+    "levels": "python tools/genlevels.py src/content/levels",
+    "store-shots": "node tools/store-shots.mjs"
   },
   "dependencies": {
     "@capacitor/android": "8.5.3",
@@ -32,6 +34,7 @@
     "eslint": "10.13.0",
     "globals": "17.13.0",
     "prettier": "3.9.10",
+    "puppeteer-core": "25.14.0",
     "typescript": "6.0.3",
     "typescript-eslint": "8.71.2",
     "vite": "8.3.4",

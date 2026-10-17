@@ -6,3 +6,4 @@ coverage/
 samples/
 .claude/
 .env.local
+store-assets/
