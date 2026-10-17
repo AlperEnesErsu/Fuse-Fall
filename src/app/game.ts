@@ -22,6 +22,7 @@ import {
   type Campaign,
   type Progress,
   type Settings,
+  type WorldStatus,
 } from '../core/progress';
 import { LevelSession } from '../core/session';
 import { MatterPhysicsWorld } from '../infrastructure/matter-physics';
@@ -50,6 +51,11 @@ const TOUCH_PICK_CSS_PX = 30;
 const RESULT_DELAY_MS = 450;
 /** Replays run at this fraction of real time. */
 const REPLAY_SPEED = 0.45;
+/**
+ * Test switch: VITE_UNLOCK_ALL=1 (in the git-ignored .env.local) opens every city
+ * and mission without touching the save. Remove the line to play the real progression.
+ */
+const UNLOCK_ALL = import.meta.env.VITE_UNLOCK_ALL === '1';
 
 type Mode =
   | { readonly kind: 'campaign' }
@@ -230,11 +236,21 @@ export class Game {
     );
   }
 
+  /** Progression rules, unless the test switch opens everything that has missions. */
+  private worldStatus(world: number): WorldStatus {
+    const status = worldStatus(this.progress, this.campaign, world);
+    return UNLOCK_ALL && status.kind === 'locked' ? { kind: 'open' } : status;
+  }
+
+  private levelUnlocked(levelId: string): boolean {
+    return UNLOCK_ALL || isLevelUnlocked(this.progress, this.campaign, levelId);
+  }
+
   /** Free Site setup: pick an opened city and a structure. */
   private showFreeSite(world = this.currentWorld, template = SANDBOX_TEMPLATES[0]?.id ?? ''): void {
     this.leaveLevel();
     const cities = this.campaign.worlds
-      .filter((w) => worldStatus(this.progress, this.campaign, w.world).kind === 'open')
+      .filter((w) => this.worldStatus(w.world).kind === 'open')
       .map((w) => ({ world: w.world, name: this.text.city(w) }));
     const chosen = cities.some((c) => c.world === world) ? world : (cities[0]?.world ?? 1);
     const templates = SANDBOX_TEMPLATES.filter((t) => {
@@ -271,7 +287,7 @@ export class Game {
           world,
           city: this.text.city(world),
           country: this.text.country(world),
-          status: worldStatus(this.progress, this.campaign, world.world),
+          status: this.worldStatus(world.world),
           stars: worldStars(this.progress, this.campaign, world.world),
           maxStars: levelsOf(this.campaign, world.world).length * 3,
           previousCity: previous && this.text.city(previous),
@@ -303,7 +319,7 @@ export class Game {
         name: this.text.levelName(level),
         stars: this.progress.stars[level.id] ?? 0,
         best: this.progress.best[level.id],
-        unlocked: isLevelUnlocked(this.progress, this.campaign, level.id),
+        unlocked: this.levelUnlocked(level.id),
       })),
       (id) => this.startLevel(id),
       () => this.showCities(),
@@ -560,7 +576,7 @@ export class Game {
             ? () => this.showMenu()
             : !result.success
               ? undefined
-              : next && isLevelUnlocked(this.progress, this.campaign, next.id)
+              : next && this.levelUnlocked(next.id)
                 ? () => this.startLevel(next.id)
                 : lastInCity
                   ? () => this.showCities()

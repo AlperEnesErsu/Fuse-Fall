@@ -5,3 +5,4 @@ coverage/
 .DS_Store
 samples/
 .claude/
+.env.local
