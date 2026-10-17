@@ -39,6 +39,7 @@ import { tutorialFor } from '../content/tutorials';
 import { SANDBOX_TEMPLATES, sandboxLevel, type SandboxVariant } from '../content/sandbox';
 import { WORKSHOP, activeLook, isOwned, structureItemId, workshopItem } from '../content/workshop';
 import { setBlockTheme } from '../presentation/materials-art';
+import { FULL_VIEW, focusOf } from '../presentation/camera';
 import { contentText, type ContentText } from '../content/text';
 import { ACHIEVEMENTS } from '../core/achievements';
 import { FIXED_STEP, FixedStepLoop } from './loop';
@@ -161,6 +162,8 @@ export class Game {
     });
     this.events.on('levelFinished', (e) => this.onFinished(e.result));
     this.bindInput();
+    // Development builds expose the world-to-screen mapping for automated play-throughs.
+    if (import.meta.env.DEV) Object.assign(window, { __fuse: { toClient: (x: number, y: number) => this.renderer.toClient({ x, y }) } });
   }
 
   start(): void {
@@ -350,6 +353,7 @@ export class Game {
   }
 
   private leaveLevel(): void {
+    this.renderer.setFocus(FULL_VIEW);
     this.session = undefined;
     this.attempt = undefined;
     this.juice.reset();
@@ -425,6 +429,7 @@ export class Game {
       cityLevels.length > 1 ? (level.order - 1) / (cityLevels.length - 1) : 0,
     );
     setBlockTheme(activeLook(this.progress.workshop.owned, this.progress.workshop.blockTheme, 'block-theme'));
+    this.renderer.setFocus(focusOf(level));
     this.session = new LevelSession(level, new MatterPhysicsWorld(), this.events);
     this.perchBirds(this.session);
     this.attempt = {
@@ -540,7 +545,7 @@ export class Game {
             ? T.clip.partial(pct)
             : T.clip.fail,
       tone: sandbox || a.result.cleared ? 'win' : a.result.partial ? 'partial' : 'fail',
-    });
+    }, () => this.renderer.visibleWorld());
     this.replay();
     this.clip.start(this.sound.captureStream());
     this.ui.toast(T.clip.recording, 1600);
@@ -869,18 +874,11 @@ export class Game {
     });
   }
 
-  /** On phones, play full screen in landscape. Browsers may refuse; that is fine. */
+  /** On phones, play full screen, held either way. Browsers may refuse; that is fine. */
   private goFullscreen(): void {
     const root = document.documentElement;
     if (document.fullscreenElement || !root.requestFullscreen) return;
-    root
-      .requestFullscreen({ navigationUI: 'hide' })
-      .then(() =>
-        (screen.orientation as ScreenOrientation & { lock?: (o: string) => Promise<void> }).lock?.(
-          'landscape',
-        ),
-      )
-      .catch(() => undefined);
+    root.requestFullscreen({ navigationUI: 'hide' }).catch(() => undefined);
   }
 
   private buzz(ms: number): void {

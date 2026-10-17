@@ -179,7 +179,7 @@ export class Ui {
     this.toastEl = h('div', { class: 'toast', role: 'status' });
     this.replayEl = h('div', { class: 'replay hidden' });
     root.append(this.replayEl);
-    root.append(this.hud, this.screen, this.toastEl, h('div', { class: 'rotate' }, ICONS.phone(56), T.rotate));
+    root.append(this.hud, this.screen, this.toastEl);
   }
 
   menu(m: MenuState): void {

@@ -91,7 +91,6 @@ export const en: Strings = {
   comingSoon: 'Coming soon',
   needsPrevious: (city: string) => `Finish ${city} first`,
   needsStars: (n: number) => `${n} more ${n === 1 ? 'star' : 'stars'} needed`,
-  rotate: 'Play in landscape',
   sfx: 'Effects volume',
   testSound: 'Hear an explosion',
   skip: 'Skip',

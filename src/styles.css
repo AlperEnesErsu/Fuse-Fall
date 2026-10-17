@@ -735,41 +735,6 @@ h2,
 }
 
 /* ---- portrait phones: ask to rotate ---- */
-.rotate {
-  display: none;
-}
-@media (orientation: portrait) and (pointer: coarse) {
-  .rotate {
-    pointer-events: auto;
-    position: fixed;
-    inset: 0;
-    z-index: 10;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    padding: 32px;
-    text-align: center;
-    background: var(--bg);
-    font-family: var(--font-display);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-  }
-  .rotate svg {
-    animation: tilt 1.8s ease-in-out infinite;
-    color: var(--accent);
-  }
-}
-@keyframes tilt {
-  0%,
-  100% {
-    transform: rotate(90deg);
-  }
-  50% {
-    transform: rotate(0deg);
-  }
-}
 
 @media (max-height: 420px) {
   .panel {
@@ -1408,4 +1373,50 @@ h2,
     padding-top: 8px;
     padding-bottom: 8px;
   }
+}
+
+/* Portrait phones: menus stack into one column; the HUD keeps to the screen edges. */
+@media (orientation: portrait) {
+  .panel.menu {
+    width: calc(100vw - 32px);
+  }
+  .menu-main,
+  .menu-modes {
+    flex-direction: column;
+    align-self: stretch;
+  }
+  .menu-row {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .menu-row .btn {
+    flex: 1 1 40%;
+  }
+  .btn.daily,
+  .btn.freesite {
+    min-width: 0;
+  }
+  .timeline,
+  .timeline.docked {
+    top: calc(max(12px, env(safe-area-inset-top)) + 64px);
+    left: 16px;
+    right: 16px;
+    transform: none;
+    width: auto;
+  }
+  .kind-toggle {
+    left: max(16px, env(safe-area-inset-left));
+    right: auto;
+  }
+  /* Portrait has sky to spare above the job: the coaching card spans the width. */
+  .coach {
+    right: max(16px, env(safe-area-inset-right));
+    width: auto;
+  }
+}
+
+/* With a panel open (report, menus), messages move below it instead of covering its header. */
+.screen:not(.hidden) ~ .toast {
+  top: auto;
+  bottom: max(16px, env(safe-area-inset-bottom));
 }

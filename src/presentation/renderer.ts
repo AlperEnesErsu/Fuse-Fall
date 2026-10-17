@@ -2,6 +2,7 @@ import { WORLD } from '../core/level';
 import { hashString, type Vec2 } from '../core/math';
 import { chargeRadius, contractRadius, type EntityView, type LevelSession } from '../core/session';
 import { halfExtent } from '../core/shapes';
+import { FULL_VIEW, type View } from './camera';
 import { TUNING } from '../core/tuning';
 import type { ChargeKind } from '../core/level';
 import type { JuiceDirector } from './juice';
@@ -25,7 +26,11 @@ export interface Overlay {
 /** Bodies higher than this above the ground cast no visible shadow. */
 const SHADOW_REACH = 240;
 
-/** Draws the logical 960×540 world letterboxed into the canvas. */
+/**
+ * Draws the logical 960×540 world into the canvas. Landscape screens show the
+ * whole world; portrait screens frame the job's own slice of it (see camera.ts)
+ * and extend the sky above and the ground below to fill the screen.
+ */
 export class Renderer {
   /** What the targets' eyes follow: the charge being placed, the last charge, or the last blast. */
   private lookAt: Vec2 | undefined;
@@ -34,8 +39,10 @@ export class Renderer {
   private offsetX = 0;
   private offsetY = 0;
   private scene = { city: 'ankara', progress: 0 };
+  /** The slice of the world a portrait screen frames. */
+  private focus: View = FULL_VIEW;
   /** The backdrop is static per level, so it is painted once and blitted each frame. */
-  private backdrop: { key: string; canvas: HTMLCanvasElement } | undefined;
+  private backdrop: { key: string; canvas: HTMLCanvasElement; sky: string; ground: string } | undefined;
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     const ctx = canvas.getContext('2d', { alpha: false });
@@ -52,9 +59,40 @@ export class Renderer {
     const { clientWidth: w, clientHeight: h } = this.canvas;
     this.canvas.width = Math.round(w * dpr);
     this.canvas.height = Math.round(h * dpr);
-    this.scale = Math.min(this.canvas.width / WORLD.width, this.canvas.height / WORLD.height);
-    this.offsetX = (this.canvas.width - WORLD.width * this.scale) / 2;
-    this.offsetY = (this.canvas.height - WORLD.height * this.scale) / 2;
+    this.layout();
+  }
+
+  /** Frames a job's slice of the world on portrait screens; FULL_VIEW for menus. */
+  setFocus(view: View): void {
+    this.focus = view;
+    this.layout();
+  }
+
+  private get portrait(): boolean {
+    return this.canvas.height > this.canvas.width;
+  }
+
+  /** Fits the view: the whole world in landscape, the job's slice across the width in portrait. */
+  private layout(): void {
+    const { width: cw, height: ch } = this.canvas;
+    const view = this.portrait ? this.focus : FULL_VIEW;
+    const vw = view.x1 - view.x0;
+    this.scale = Math.min(cw / vw, ch / WORLD.height);
+    this.offsetX = (cw - vw * this.scale) / 2 - view.x0 * this.scale;
+    this.offsetY = (ch - WORLD.height * this.scale) / 2;
+  }
+
+  /** The canvas rectangle (device pixels) showing the framed world, for clip recording. */
+  visibleWorld(): { readonly sx: number; readonly sy: number; readonly sw: number; readonly sh: number } {
+    const view = this.portrait ? this.focus : FULL_VIEW;
+    const sx = Math.max(0, this.offsetX + view.x0 * this.scale);
+    const sy = Math.max(0, this.offsetY);
+    return {
+      sx,
+      sy,
+      sw: Math.min(this.canvas.width, this.offsetX + view.x1 * this.scale) - sx,
+      sh: Math.min(this.canvas.height, this.offsetY + WORLD.height * this.scale) - sy,
+    };
   }
 
   /** Chooses the city backdrop; `progress` (0..1) is the level's place in the city, dawn to night. */
@@ -66,6 +104,15 @@ export class Renderer {
   get worldPerCssPixel(): number {
     const rect = this.canvas.getBoundingClientRect();
     return rect.width > 0 ? this.canvas.width / rect.width / this.scale : 1;
+  }
+
+  /** The inverse of toWorld: where a world point is on screen, in CSS pixels. */
+  toClient(p: Vec2): Vec2 {
+    const rect = this.canvas.getBoundingClientRect();
+    return {
+      x: rect.left + ((this.offsetX + p.x * this.scale) / this.canvas.width) * rect.width,
+      y: rect.top + ((this.offsetY + p.y * this.scale) / this.canvas.height) * rect.height,
+    };
   }
 
   toWorld(clientX: number, clientY: number): Vec2 {
@@ -80,8 +127,13 @@ export class Renderer {
     if (this.canvas.width === 0 || this.canvas.height === 0) return;
     const c = this.ctx;
     c.setTransform(1, 0, 0, 1, 0, 0);
-    c.fillStyle = '#0d1020';
+    const backdrop = this.paintedBackdrop();
+    // Beyond the painted scene (tall portrait screens): more sky above, more ground below.
+    c.fillStyle = backdrop.sky;
     c.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    c.fillStyle = backdrop.ground;
+    const groundTop = this.offsetY + WORLD.groundY * this.scale;
+    c.fillRect(0, groundTop, this.canvas.width, this.canvas.height - groundTop);
 
     const shake = juice.shake();
     const zoom = 1 + juice.zoom;
@@ -94,7 +146,7 @@ export class Renderer {
     c.translate(-pivot.x, -pivot.y);
 
     const m = SCENE_MARGIN;
-    c.drawImage(this.paintedBackdrop(), -m, -m, WORLD.width + 2 * m, WORLD.height + 2 * m);
+    c.drawImage(backdrop.canvas, -m, -m, WORLD.width + 2 * m, WORLD.height + 2 * m);
     this.scorches(juice);
     if (session?.level.footprint) this.footprint(session.level.footprint.from, session.level.footprint.to);
     if (session) this.tracks(session);
@@ -165,9 +217,9 @@ export class Renderer {
     c.restore();
   }
 
-  private paintedBackdrop(): HTMLCanvasElement {
+  private paintedBackdrop(): { canvas: HTMLCanvasElement; sky: string; ground: string } {
     const key = `${this.scene.city}:${this.scene.progress}:${this.scale}`;
-    if (this.backdrop?.key === key) return this.backdrop.canvas;
+    if (this.backdrop?.key === key) return this.backdrop;
     const m = SCENE_MARGIN;
     const canvas = this.backdrop?.canvas ?? document.createElement('canvas');
     canvas.width = Math.ceil((WORLD.width + 2 * m) * this.scale);
@@ -177,8 +229,13 @@ export class Renderer {
       c.setTransform(this.scale, 0, 0, this.scale, m * this.scale, m * this.scale);
       paintScene(c, this.scene.city, skyAt(this.scene.progress));
     }
-    this.backdrop = { key, canvas };
-    return canvas;
+    // The colours at the scene's top and bottom edges carry it past them on tall screens.
+    const edge = (y: number): string => {
+      const px = c?.getImageData(Math.floor(canvas.width / 2), y, 1, 1).data;
+      return px ? `rgb(${px[0]}, ${px[1]}, ${px[2]})` : '#0d1020';
+    };
+    this.backdrop = { key, canvas, sky: edge(0), ground: edge(Math.max(0, canvas.height - 1)) };
+    return this.backdrop;
   }
 
   /** Dashed road markings showing where each car will drive. */

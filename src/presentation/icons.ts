@@ -19,7 +19,6 @@ export const ICONS = {
   /** A plunger detonator. */
   detonator: (size?: number) =>
     svg('<rect x="4" y="12" width="16" height="8" rx="1"/><path d="M12 12V5"/><path d="M8 5h8"/><path d="M8 16h2"/>', size),
-  phone: (size?: number) => svg('<rect x="3" y="7" width="18" height="10" rx="2"/><path d="M17 12h.01"/>', size),
   check: (size?: number) => svg('<path d="M5 12l5 5 9-10"/>', size),
   cross: (size?: number) => svg('<path d="M6 6l12 12M18 6L6 18"/>', size),
 };

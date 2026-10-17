@@ -94,7 +94,6 @@ export const tr = {
   comingSoon: 'Yakında',
   needsPrevious: (city: string) => `Önce ${city} tamamlanmalı`,
   needsStars: (n: number) => `${n} yıldız daha gerekli`,
-  rotate: 'Yatay modda oyna',
   sfx: 'Efekt sesi',
   testSound: 'Patlama sesini dinle',
   skip: 'Atla',

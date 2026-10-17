@@ -21,8 +21,8 @@ const HEIGHT = 1280;
 const FPS = 30;
 /** The stamp lands this long after recording starts, when the collapse is under way. */
 const STAMP_AT_MS = 2600;
-/** Share of the world's width kept in the clip: the middle, where structures stand. */
-const CENTRE_SHARE = 0.64;
+/** The widest picture kept in the clip (width / height): the middle of a landscape world, where structures stand. */
+const MAX_ASPECT = 1.14;
 /** Layout of the card: title, mission line, then the game frame. */
 const TITLE_Y = 190;
 const SUBTITLE_Y = 250;
@@ -51,6 +51,8 @@ export class ClipRecorder {
   constructor(
     private readonly source: HTMLCanvasElement,
     private readonly caption: ClipCaption,
+    /** The part of the source canvas showing the world (the renderer knows; portrait frames differ). */
+    private readonly frameOf: () => { readonly sx: number; readonly sy: number; readonly sw: number; readonly sh: number },
   ) {
     this.canvas.width = WIDTH;
     this.canvas.height = HEIGHT;
@@ -105,13 +107,13 @@ export class ClipRecorder {
     c.fillStyle = bg;
     c.fillRect(0, 0, WIDTH, HEIGHT);
 
-    // The game: the world's 16:9 frame, narrowed to its middle where the jobs stand, scaled to the full width.
+    // The game: the framed world, narrowed to its middle when it is wide, scaled to the full width.
     const src = this.source;
-    const world = Math.min(src.width, (src.height * 16) / 9);
-    const cropH = (world * 9) / 16;
-    const crop = world * CENTRE_SHARE;
-    const sx = (src.width - crop) / 2;
-    const sy = (src.height - cropH) / 2;
+    const frame = this.frameOf();
+    const crop = Math.min(frame.sw, frame.sh * MAX_ASPECT);
+    const cropH = frame.sh;
+    const sx = frame.sx + (frame.sw - crop) / 2;
+    const sy = frame.sy;
     const h = (WIDTH * cropH) / crop;
     const top = FRAME_TOP;
     if (src.width > 0 && src.height > 0) c.drawImage(src, sx, sy, crop, cropH, 0, top, WIDTH, h);

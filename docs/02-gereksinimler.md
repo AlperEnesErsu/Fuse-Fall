@@ -129,7 +129,7 @@ Yapıyı incele → Patlayıcı yerleştir → Ateşle → Yıkımı izle → Pu
 | FR-22 | Arabalar rotalarında ileri geri gider. Fitil yerleştirilirken de hareket ederler, böylece oyuncu ATEŞLE anını zamanlar. | M |
 | FR-23 | Patlamaya yakalanan arabanın motoru durur. Hasarı dayanımını aşarsa araba hurdaya döner ve yakıt deposu ikinci bir patlama yaratır. | M |
 | FR-24 | Hedef araba, hurdaya döndüğünde veya yüksekliğinin çoğunu kaybettiğinde düşmüş sayılır. | M |
-| FR-25 | Mobil arayüz: kaydırılabilir şehir haritası, sağ başparmak altında büyük ATEŞLE düğmesi, dokunmatikte geniş seçim alanı, telefonda tam ekran + yatay kilit isteği, dikey telefonda "yan çevir" uyarısı. | M |
+| FR-25 | Mobil arayüz: kaydırılabilir şehir haritası, sağ başparmak altında büyük ATEŞLE düğmesi, dokunmatikte geniş seçim alanı, telefonda tam ekran; telefon yatay da dikey de tutulabilir (bkz. FR-78). | M |
 | FR-26 | Zamanlama gerektiren araba seviyeleri, aynı yerleşimle hemen ateşlendiğinde kazanılamaz (testle doğrulanır). | S |
 
 ### Yıkım mühendisi yönü (v0.3)
@@ -153,7 +153,7 @@ Yapıyı incele → Patlayıcı yerleştir → Ateşle → Yıkımı izle → Pu
 | FR-34 | Gecikme çizelgesi: şarj başına bir şerit, sürükleyerek ayar. Londra'dan itibaren görünür; şarjların altında gecikme etiketi. | M |
 | FR-35 | Londra (Bölüm 3): 10 görev. Konvoy görevleri ayrı gecikmeler gerektirir; varsayılan sırayla kazanılamadığı testle doğrulanır. | M |
 | FR-36 | Tek yönlü trafik (`flow`) ve sabit altyapı blokları (`anchored`: hareketsiz, yıkılmaz, görev dışı). | M |
-| FR-37 | Android uygulaması (Capacitor): yatay, tam ekran, ağ izni yok, titreşim izni var. | M |
+| FR-37 | Android uygulaması (Capacitor): iki yönde de çalışır (kullanıcının döndürme kilidine uyar), tam ekran, ağ izni yok, titreşim izni var. | M |
 | FR-38 | Yeni bir fikir getiren görevlerde adım adım eğitim (ilk görev, ilk korunan yapı, ilk araç, ilk gecikme görevi); görev bir kez geçilene kadar gösterilir, atlanabilir. | S |
 | FR-39 | Günlük görev: tarihten seçilir, çevrimdışı; yalnızca par kadar şarj. Tüm çözümlerin par içinde kaldığı testle doğrulanır. Günlük seri (takvim günüyle). | S |
 | FR-40 | Başarımlar (9 adet): kayda işlenir, açıldığında bildirilir, menüden listelenir. | S |
@@ -231,6 +231,12 @@ Yapıyı incele → Patlayıcı yerleştir → Ateşle → Yıkımı izle → Pu
 | FR-75 | **Canlılık:** hedef blokların yüzü vardır: gözler yerleştirilen şarja ya da son patlamaya bakar, sarsılınca büyür, devrilince çarpı olur. Yapıların tepesindeki güvercinler ilk patlamada havalanır. Fiziği etkilemez. | S |
 | FR-76 | **Serbest Şantiye modları:** *Anında Patlat* (dokunulan yer hemen patlar, bitiş yok, şarj sınırı yok) ve *Tek Atış* (tek şarj; yapı başına en iyi çöküş yüzdesi kaydedilir). | M |
 | FR-77 | **Blok temaları (atölye):** Karton Şehir ve Buz Kuleleri, yapıların yüzeyini değiştirir; araçlar ve cam olduğu gibi kalır, fizik değişmez. | S |
+
+### Dikey ekran (v1.2)
+
+| ID | Gereksinim | Öncelik |
+|---|---|---|
+| FR-78 | **Dikey oynanış:** yatayda dünyanın tamamı görünür; dikeyde kamera görevin aksiyon alanını (yapılar, şarj ve bırakma alanları, araç rotaları, şantiye alanı) ekran genişliğine oturtur, üstte gökyüzü ve altta zemin ekranı doldurur. Oyun sırasında döndürmek kesinti yaratmaz. Menüler tek sütuna geçer; zaman çizelgesi ve eğitim kartı ekran genişliğini kullanır. Klip kaydı her iki yönde de görünen dünyayı kullanır. | M |
 
 ## 6. MVP kapsamı (Sürüm 0.1)
 
