@@ -157,6 +157,7 @@ export class Renderer {
       }
       const threatened = session.phase === 'placing' ? this.blastRadii(session, overlay) : new Set<string>();
       this.groundShadows(session);
+      this.ropes(session);
       const charges = session.charges;
       const light = juice.lights[juice.lights.length - 1];
       this.lookAt = overlay.ghost?.position ?? charges[charges.length - 1]?.position ?? (light && { x: light.x, y: light.y }) ?? this.lookAt;
@@ -296,6 +297,8 @@ export class Renderer {
     c.rotate(angle);
     if (e.kind === 'bomb' && e.shape.kind === 'circle') {
       this.bomb(e.shape.r, time, true);
+    } else if (e.kind === 'ball' && e.shape.kind === 'circle') {
+      this.wreckingBall(e.shape.r);
     } else if (e.shape.kind === 'circle') {
       this.barrel(e.shape.r, time);
     } else if (e.shape.kind === 'poly') {
@@ -307,6 +310,42 @@ export class Renderer {
       this.block(e, e.shape.w, e.shape.h, threatened);
     }
     c.restore();
+  }
+
+  /** Wrecking ball ropes: a steel cable from the crane hook, with the hook block, to the ball's shackle. */
+  private ropes(session: LevelSession): void {
+    const c = this.ctx;
+    for (const { hook, ball } of session.ropeLines) {
+      c.strokeStyle = '#2b2d31';
+      c.lineWidth = 2.4;
+      c.beginPath();
+      c.moveTo(hook.x, hook.y);
+      c.lineTo(ball.x, ball.y);
+      c.stroke();
+      c.fillStyle = '#e0a52e';
+      c.fillRect(hook.x - 7, hook.y - 4, 14, 10);
+      c.strokeStyle = '#1c1f14';
+      c.lineWidth = 1.2;
+      c.strokeRect(hook.x - 7, hook.y - 4, 14, 10);
+    }
+  }
+
+  /** A forged steel wrecking ball: dark, with a hard highlight and its shackle. */
+  private wreckingBall(r: number): void {
+    const c = this.ctx;
+    const g = c.createRadialGradient(-r * 0.35, -r * 0.4, r * 0.1, 0, 0, r);
+    g.addColorStop(0, '#8a9099');
+    g.addColorStop(0.35, '#4a4f57');
+    g.addColorStop(1, '#1e2126');
+    c.fillStyle = g;
+    c.beginPath();
+    c.arc(0, 0, r, 0, Math.PI * 2);
+    c.fill();
+    c.strokeStyle = 'rgba(0, 0, 0, 0.55)';
+    c.lineWidth = 1.5;
+    c.stroke();
+    c.fillStyle = '#30343a';
+    c.fillRect(-r * 0.18, -r - 5, r * 0.36, 7);
   }
 
   /** Rails under every train route, across the whole view. */

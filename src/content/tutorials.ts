@@ -177,6 +177,37 @@ const TUTORIALS: Readonly<Record<string, readonly TutorialStep[]>> = {
       until: 'fired',
     },
   ],
+  // The first wrecking ball: Fire alone lets the crane go.
+  'w7-01': [
+    {
+      text: {
+        tr: 'Vincin kancasında ağır bir çelik gülle var. Bu işte şarja gerek yok: ATEŞLE vincin frenini bırakır.',
+        en: 'A heavy steel ball hangs from the crane hook. No charge needed this time: FIRE lets the crane go.',
+      },
+      highlight: { selector: '.fire-btn' },
+      until: 'fired',
+    },
+  ],
+  // Cutting the rope: a charge at the hook, timed on the delay timeline.
+  'w7-02': [
+    {
+      text: {
+        tr: 'Şarjı kancaya koy. Patlayınca halat kopar ve gülle o anki yönünde uçar.',
+        en: 'Put a charge on the hook. When it goes off, the rope parts and the ball flies the way it is moving.',
+      },
+      highlight: { world: { x: 300, y: 138 }, radius: 28 },
+      until: 'placed',
+    },
+    {
+      text: {
+        tr: 'Gecikmeyi ayarla: gülle sağa doğru yükselirken kesersen kuleye uçar. Erken kesersen kulübeye düşer.',
+        en: 'Set the delay: cut while the ball rises to the right and it flies to the tower. Too early and it lands on the kiosk.',
+      },
+      highlight: { selector: '.timeline' },
+      until: 'delay',
+    },
+    { text: { tr: 'ATEŞLE.', en: 'FIRE.' }, highlight: { selector: '.fire-btn' }, until: 'fired' },
+  ],
   // The first free-fall bomb and the detonator.
   'w6-01': [
     {

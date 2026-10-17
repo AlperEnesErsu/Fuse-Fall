@@ -24,8 +24,8 @@ Doğru yere doğru şarj: binaları yık, şehirleri temizle. Tamamen çevrimdı
 
 Fuse & Fall bir kontrollü yıkım bulmacası. Şarjları yerleştir, ATEŞLE'ye bas ve gerçek fiziğin işini yapmasını izle. Kolonlar kırılır, harç çatlar, kuleler toz bulutu içinde çöker.
 
-ALTI BAŞKENT, 60 GÖREV
-Ankara, Paris, Londra, Roma, Tokyo ve İstanbul. Her şehir yeni bir fikir getirir: hareketli araçlar, gecikmeli ateşleme, hassas ve içe çöken şarjlar, tren saatleri, gökyüzünden düşen bombalar.
+YEDİ ŞEHİR, 70 GÖREV
+Ankara, Paris, Londra, Roma, Tokyo, İstanbul ve Berlin. Her şehir yeni bir fikir getirir: hareketli araçlar, gecikmeli ateşleme, hassas ve içe çöken şarjlar, tren saatleri, gökyüzünden düşen bombalar ve vinçten salınan yıkım gülleleri.
 
 KENDİ YOLUNU BUL
 Tek bir doğru çözüm yok. Az şarjla cerrahi bir iş mi, hepsini yerle bir eden tam yıkım mı, yoksa bir yapıyı ötekine devirdiğin bir domino mu? Herhangi iki tarz üç yıldız getirir. Yapının çoğunu indirdiğin her iş bir yıldızla geçer; takılıp kalmazsın.
@@ -51,8 +51,8 @@ The right charge in the right place: bring buildings down. Fully offline.
 
 Fuse & Fall is a controlled-demolition puzzle. Place your charges, hit FIRE and let real physics do the rest. Columns snap, mortar cracks, towers come down in a cloud of dust.
 
-SIX CAPITALS, 60 JOBS
-Ankara, Paris, London, Rome, Tokyo and Istanbul. Every city brings a new idea: moving vehicles, timed detonation, precision and implosion charges, train timetables and bombs that fall from the sky.
+SEVEN CITIES, 70 JOBS
+Ankara, Paris, London, Rome, Tokyo, Istanbul and Berlin. Every city brings a new idea: moving vehicles, timed detonation, precision and implosion charges, train timetables, bombs that fall from the sky and wrecking balls swinging from cranes.
 
 FIND YOUR OWN WAY
 There is no single right answer. A surgical job with few charges, a total demolition that flattens everything, or a domino where one structure topples the next? Any two styles earn three stars. Bring most of it down and you always move on with one star; you never get stuck.

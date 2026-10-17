@@ -443,7 +443,7 @@ export class Game {
     };
     this.ui.showHud({
       kinds: level.chargeKinds,
-      skyInUse: level.dropZones.length > 0,
+      skyInUse: level.dropZones.length > 0 || level.balls.length > 0,
       onFire: () => this.fire(),
       onDetonate: () => this.detonate(),
       onRetry: () => this.play(level, mode),
@@ -468,7 +468,8 @@ export class Game {
     // New ideas are coached step by step until the mission is cleared once; otherwise a one-line hint.
     const cleared = (this.progress.stars[base.id] ?? 0) > 0;
     const tutorial = cleared || mode.kind === 'daily' ? undefined : tutorialFor(level.id, language);
-    this.coach.start(tutorial ?? []);
+    // A crane fills the top-left sky; its jobs coach from the bottom-left instead.
+    this.coach.start(tutorial ?? [], level.balls.length > 0);
     if (mode.kind === 'sandbox') {
       this.ui.toast(T.freeSiteModes[mode.variant].hint, 3600);
       if (mode.variant === 'smash') this.ui.setFireVisible(false);
@@ -790,7 +791,8 @@ export class Game {
       par: s.level.instantBlasts ? 0 : s.level.charges.par,
       targetsLeft: s.targetsRemaining,
       showTargets: s.level.blocks.some((b) => b.target) || s.level.cars.some((c) => c.target),
-      canFire: s.phase === 'placing' && s.charges.length > 0,
+      // With a wrecking ball on site, Fire also releases the crane, so it needs no charge.
+      canFire: s.phase === 'placing' && (s.charges.length > 0 || s.level.balls.length > 0),
       canUndo: s.phase === 'placing' && s.charges.length > 0 && !this.attempt?.replaying,
     });
     this.ui.setDetonateVisible(s.phase === 'running' && s.liveBombs > 0 && !this.attempt?.replaying);

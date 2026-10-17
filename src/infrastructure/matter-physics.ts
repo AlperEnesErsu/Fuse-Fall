@@ -37,6 +37,7 @@ export class MatterPhysicsWorld implements PhysicsWorld {
       frictionStatic: material.friction * 1.2,
       restitution: material.restitution,
       slop: 0.02,
+      ...(spec.airDrag !== undefined ? { frictionAir: spec.airDrag } : {}),
     };
     const shape = spec.shape;
     const body =
@@ -102,6 +103,14 @@ export class MatterPhysicsWorld implements PhysicsWorld {
       stiffness: 0.9,
       damping: 0.1,
     });
+    this.joints.set(id, constraint);
+    Matter.Composite.add(this.engine.world, constraint);
+  }
+
+  addRope(id: string, body: string, hook: Vec2, length: number): void {
+    const bodyA = this.bodies.get(body);
+    if (!bodyA) return;
+    const constraint = Matter.Constraint.create({ bodyA, pointA: { x: 0, y: 0 }, pointB: { x: hook.x, y: hook.y }, length, stiffness: 1, damping: 0 });
     this.joints.set(id, constraint);
     Matter.Composite.add(this.engine.world, constraint);
   }

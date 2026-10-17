@@ -90,6 +90,7 @@ const STRUCTURE_COST: Readonly<Record<string, number>> = {
   'glass-tower': 250,
   depot: 350,
   'steel-frame': 450,
+  'wrecking-ball': 300,
 };
 
 export const structureItemId = (templateId: string): string => `structure:${templateId}`;

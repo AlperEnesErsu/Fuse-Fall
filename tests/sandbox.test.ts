@@ -8,7 +8,9 @@ const STEP = 1 / 60;
 
 describe('Free Site templates', () => {
   // Structures are frozen until Fire and welded by their joints after it: a blast far away must leave them standing.
-  it.each(SANDBOX_TEMPLATES.map((t) => [t.id, t] as const))('%s stands when fired elsewhere', (_id, template) => {
+  // (A wrecking ball template is left out: Fire releases its ball into the building, by design.)
+  const still = SANDBOX_TEMPLATES.filter((t) => t.build().balls.length === 0);
+  it.each(still.map((t) => [t.id, t] as const))('%s stands when fired elsewhere', (_id, template) => {
     const level = sandboxLevel(template, 1);
     const physics = new MatterPhysicsWorld();
     const session = new LevelSession(level, physics, new EventBus<GameEvents>());

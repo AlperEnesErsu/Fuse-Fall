@@ -1,4 +1,4 @@
-import { WORLD, type BlockDef, type CarDef, type LevelDefinition } from '../core/level';
+import { WORLD, type BlockDef, type CarDef, type LevelDefinition, type WreckingBallDef } from '../core/level';
 import type { MaterialId } from '../core/materials';
 import type { Language } from '../presentation/strings';
 
@@ -15,6 +15,7 @@ interface Builder {
   /** Barrel positions along the ground. */
   readonly barrels: number[];
   readonly cars: CarDef[];
+  readonly balls: WreckingBallDef[];
 }
 
 const block = (b: Builder, x: number, y: number, w: number, h: number, material: MaterialId): number => {
@@ -54,7 +55,7 @@ export const SANDBOX_TEMPLATES: readonly SandboxTemplate[] = [
     id: 'timber-tower',
     name: { tr: 'Ahşap Kule', en: 'Timber Tower' },
     build: () => {
-      const b: Builder = { blocks: [], barrels: [], cars: [] };
+      const b: Builder = { blocks: [], barrels: [], cars: [], balls: [] };
       let top: number = storey(b, [440, 520], G, 110, 20, 'wood', 'wood');
       top = storey(b, [450, 510], top, 90, 18, 'wood', 'wood');
       storey(b, [460, 500], top, 70, 16, 'wood', 'wood');
@@ -65,7 +66,7 @@ export const SANDBOX_TEMPLATES: readonly SandboxTemplate[] = [
     id: 'apartment',
     name: { tr: 'Betonarme Apartman', en: 'Concrete Apartment' },
     build: () => {
-      const b: Builder = { blocks: [], barrels: [], cars: [] };
+      const b: Builder = { blocks: [], barrels: [], cars: [], balls: [] };
       let base: number = G;
       for (let floor = 0; floor < 3; floor++) {
         const xs = [380, 480, 580];
@@ -79,7 +80,7 @@ export const SANDBOX_TEMPLATES: readonly SandboxTemplate[] = [
     id: 'brick-house',
     name: { tr: 'Tuğla Ev', en: 'Brick House' },
     build: () => {
-      const b: Builder = { blocks: [], barrels: [], cars: [] };
+      const b: Builder = { blocks: [], barrels: [], cars: [], balls: [] };
       infill(b, 400, 600, G, 108);
       let top: number = col(b, 500, G - 108, 240, 14, 'wood');
       for (const w of [200, 150, 100]) top = col(b, 500, top, w, 14, 'wood');
@@ -90,7 +91,7 @@ export const SANDBOX_TEMPLATES: readonly SandboxTemplate[] = [
     id: 'chimney',
     name: { tr: 'Fabrika Bacası', en: 'Factory Chimney' },
     build: () => {
-      const b: Builder = { blocks: [], barrels: [], cars: [] };
+      const b: Builder = { blocks: [], barrels: [], cars: [], balls: [] };
       let top: number = G;
       for (let i = 0; i < 7; i++) top = col(b, 500, top, 48, 56, i < 2 ? 'concrete' : 'brick');
       return b;
@@ -100,7 +101,7 @@ export const SANDBOX_TEMPLATES: readonly SandboxTemplate[] = [
     id: 'bridge',
     name: { tr: 'Köprü ve Araç', en: 'Bridge and Car' },
     build: () => {
-      const b: Builder = { blocks: [], barrels: [], cars: [] };
+      const b: Builder = { blocks: [], barrels: [], cars: [], balls: [] };
       col(b, 330, G, 30, 120, 'concrete');
       col(b, 670, G, 30, 120, 'concrete');
       const deck = col(b, 500, G - 120, 380, 18, 'metal');
@@ -112,7 +113,7 @@ export const SANDBOX_TEMPLATES: readonly SandboxTemplate[] = [
     id: 'glass-tower',
     name: { tr: 'Cam Ofis', en: 'Glass Office' },
     build: () => {
-      const b: Builder = { blocks: [], barrels: [], cars: [] };
+      const b: Builder = { blocks: [], barrels: [], cars: [], balls: [] };
       let top: number = G;
       for (let i = 0; i < 4; i++) top = storey(b, [450, 550], top, 60, 16, 'metal', 'glass');
       return b;
@@ -122,7 +123,7 @@ export const SANDBOX_TEMPLATES: readonly SandboxTemplate[] = [
     id: 'depot',
     name: { tr: 'Yakıt Deposu', en: 'Fuel Depot' },
     build: () => {
-      const b: Builder = { blocks: [], barrels: [380, 420, 460, 640, 680], cars: [] };
+      const b: Builder = { blocks: [], barrels: [380, 420, 460, 640, 680], cars: [], balls: [] };
       storey(b, [520, 600], G, 120, 22, 'wood', 'metal');
       return b;
     },
@@ -131,10 +132,24 @@ export const SANDBOX_TEMPLATES: readonly SandboxTemplate[] = [
     id: 'steel-frame',
     name: { tr: 'Çelik İskele', en: 'Steel Frame' },
     build: () => {
-      const b: Builder = { blocks: [], barrels: [], cars: [] };
+      const b: Builder = { blocks: [], barrels: [], cars: [], balls: [] };
       let top: number = storey(b, [400, 500, 600], G, 100, 18, 'metal', 'metal');
       top = storey(b, [420, 500, 580], top, 90, 16, 'metal', 'wood');
       storey(b, [460, 540], top, 80, 14, 'wood', 'wood');
+      return b;
+    },
+  },
+  {
+    id: 'wrecking-ball',
+    name: { tr: 'Vinç ve Gülle', en: 'Crane and Wrecking Ball' },
+    build: () => {
+      const b: Builder = { blocks: [], barrels: [], cars: [], balls: [] };
+      infill(b, 480, 640, G, 126);
+      col(b, 560, G - 126, 200, 14, 'wood');
+      // Crane: mast and jib are fixed; the ball hangs pulled back, ready to swing.
+      b.blocks.push({ x: 170, y: G - 170, w: 22, h: 340, angle: 0, material: 'metal', target: false, protected: false, anchored: true });
+      b.blocks.push({ x: 300, y: G - 350, w: 280, h: 16, angle: 0, material: 'metal', target: false, protected: false, anchored: true });
+      b.balls.push({ hook: { x: 420, y: G - 342 }, length: 230, angle: -1.0, radius: 26 });
       return b;
     },
   },
@@ -167,6 +182,7 @@ export const sandboxLevel = (template: SandboxTemplate, world: number, variant: 
     blocks: b.blocks,
     barrels: b.barrels.map((x) => ({ x, y: G - 16 })),
     cars: b.cars,
+    balls: b.balls,
     chargeKinds: ['standard', 'precision', 'implosion', 'bomb'],
     footprint: undefined,
     ...(variant === 'smash' ? { instantBlasts: true as const } : {}),

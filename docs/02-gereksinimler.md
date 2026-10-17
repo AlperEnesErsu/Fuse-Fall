@@ -238,6 +238,13 @@ Yapıyı incele → Patlayıcı yerleştir → Ateşle → Yıkımı izle → Pu
 |---|---|---|
 | FR-78 | **Dikey oynanış:** yatayda dünyanın tamamı görünür; dikeyde kamera görevin aksiyon alanını (yapılar, şarj ve bırakma alanları, araç rotaları, şantiye alanı) ekran genişliğine oturtur, üstte gökyüzü ve altta zemin ekranı doldurur. Oyun sırasında döndürmek kesinti yaratmaz. Menüler tek sütuna geçer; zaman çizelgesi ve eğitim kartı ekran genişliğini kullanır. Klip kaydı her iki yönde de görünen dünyayı kullanır. | M |
 
+### Berlin: yıkım güllesi (v1.3)
+
+| ID | Gereksinim | Öncelik |
+|---|---|---|
+| FR-79 | **Yıkım güllesi:** vinç kancasına halatla asılı çelik gülle, ATEŞLE ile salınmaya başlar (gülleli görevlerde ATEŞLE şarj istemez). Çarptığı şey tam hızına göre hasar alır. Kancanın yakınındaki bir patlama halatı keser; gülle o anki yönünde uçar. Kesme anı gecikme çizelgesiyle ayarlanır. İpteki gülle ilk 4,5 saniye görevi açık tutar. | M |
+| FR-80 | Berlin (Bölüm 7): 10 görev; silüet (Brandenburg Kapısı, Reichstag, Fernsehturm). Halat kesme ya da şarj gerektiren görevlerde yalnızca vinci bırakmak kazanmaz (testle doğrulanır). Eğitimler: ilk salınım (Görev 1) ve halat kesme (Görev 2). Serbest Şantiye'ye "Vinç ve Gülle" yapısı eklendi. | M |
+
 ## 6. MVP kapsamı (Sürüm 0.1)
 
 - 1 dünya, 10 seviye

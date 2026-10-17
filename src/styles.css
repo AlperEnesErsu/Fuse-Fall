@@ -909,6 +909,10 @@ h2,
   align-items: center;
   animation: rise 200ms ease-out;
 }
+.coach.low {
+  top: auto;
+  bottom: max(16px, env(safe-area-inset-bottom));
+}
 .coach p {
   grid-column: 1 / span 2;
   margin: 0;

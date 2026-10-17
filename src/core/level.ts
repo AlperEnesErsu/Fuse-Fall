@@ -69,6 +69,18 @@ export interface LevelSolution {
   readonly fireAt: number;
 }
 
+/**
+ * A wrecking ball on a crane: hangs from `hook` on a rope of `length`, pulled
+ * back to `angle` (radians from straight down; positive swings to the right).
+ * It swings once the job is fired; a blast at the hook cuts the rope.
+ */
+export interface WreckingBallDef {
+  readonly hook: Vec2;
+  readonly length: number;
+  readonly angle: number;
+  readonly radius: number;
+}
+
 export interface LevelDefinition {
   readonly id: string;
   readonly name: string;
@@ -85,6 +97,7 @@ export interface LevelDefinition {
   readonly blocks: readonly BlockDef[];
   readonly barrels: readonly Vec2[];
   readonly cars: readonly CarDef[];
+  readonly balls: readonly WreckingBallDef[];
   /** Charge types the player may use here. */
   readonly chargeKinds: readonly ChargeKind[];
   readonly footprint: Footprint | undefined;
@@ -198,7 +211,17 @@ const car = (v: unknown, path: string): CarDef => {
   return def;
 };
 
-const solution = (v: unknown, path: string, maxCharges: number): LevelSolution => {
+const wreckingBall = (v: unknown, path: string): WreckingBallDef => {
+  const o = obj(v, path);
+  return {
+    hook: point(o.hook, `${path}.hook`),
+    length: num(o.length, `${path}.length`, 40, 420),
+    angle: o.angle === undefined ? 0 : num(o.angle, `${path}.angle`, -1.5, 1.5),
+    radius: o.radius === undefined ? 24 : num(o.radius, `${path}.radius`, 10, 40),
+  };
+};
+
+const solution = (v: unknown, path: string, maxCharges: number, minCharges: number): LevelSolution => {
   const o = obj(v, path);
   const charges = arr(o.charges, `${path}.charges`).map((s, i): SolutionCharge => {
     const at = `${path}.charges[${i}]`;
@@ -206,7 +229,7 @@ const solution = (v: unknown, path: string, maxCharges: number): LevelSolution =
     const kind = o.kind === undefined ? 'standard' : isChargeKind(o.kind) ? o.kind : fail(`${at}.kind`, 'unknown charge kind');
     return { ...point(s, at), delay: o.delay === undefined ? undefined : num(o.delay, `${at}.delay`, 0, 2), kind };
   });
-  if (charges.length === 0 || charges.length > maxCharges) fail(`${path}.charges`, 'solution must use 1..max charges');
+  if (charges.length < minCharges || charges.length > maxCharges) fail(`${path}.charges`, `solution must use ${minCharges}..max charges`);
   const detonateAt =
     o.detonateAt === undefined ? [] : arr(o.detonateAt, `${path}.detonateAt`).map((t, i) => num(t, `${path}.detonateAt[${i}]`, 0, 10));
   return { charges, detonateAt, fireAt: o.fireAt === undefined ? 0 : num(o.fireAt, `${path}.fireAt`, 0, 30) };
@@ -243,6 +266,7 @@ export const parseLevel = (input: unknown): Result<LevelDefinition, LevelError> 
     if (chargeKinds.length === 0) fail(`${p}.chargeKinds`, 'at least one charge kind');
     if (!blocks.some((b) => b.target) && !cars.some((c) => c.target)) fail(`${p}.blocks`, 'level needs at least one target');
     const zones = arr(o.zones, `${p}.zones`).map((z, i) => rect(z, `${p}.zones[${i}]`));
+    const balls = o.balls === undefined ? [] : arr(o.balls, `${p}.balls`).map((b, i) => wreckingBall(b, `${p}.balls[${i}]`));
     if (zones.length === 0) fail(`${p}.zones`, 'level needs at least one placement zone');
     return ok({
       id,
@@ -257,9 +281,11 @@ export const parseLevel = (input: unknown): Result<LevelDefinition, LevelError> 
       blocks,
       barrels: o.barrels === undefined ? [] : arr(o.barrels, `${p}.barrels`).map((b, i) => point(b, `${p}.barrels[${i}]`)),
       cars,
+      balls,
       chargeKinds,
       footprint: o.footprint === undefined ? undefined : footprint(o.footprint, `${p}.footprint`),
-      solution: solution(o.solution, `${p}.solution`, max),
+      // A wrecking ball can do a job alone (Fire releases it), so its solution may place no charges.
+      solution: solution(o.solution, `${p}.solution`, max, balls.length > 0 ? 0 : 1),
     });
   } catch (e) {
     if (e instanceof Invalid) return err({ kind: 'invalid-level', path: e.path, message: e.message });

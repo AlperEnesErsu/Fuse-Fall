@@ -44,6 +44,10 @@ export class FakePhysics implements PhysicsWorld {
     this.joints.set(id, { a, b, at });
   }
 
+  addRope(id: string, body: string, hook: Vec2): void {
+    this.joints.set(id, { a: body, b: 'world', at: hook });
+  }
+
   removeJoint(id: string): void {
     this.joints.delete(id);
   }

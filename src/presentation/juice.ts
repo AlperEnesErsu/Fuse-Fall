@@ -125,6 +125,10 @@ export class JuiceDirector {
     });
     events.on('carWrecked', (e) => this.burningWreck(e.position));
     events.on('jointBroken', (e) => this.dust(e.position, 2, ['#c9c2b6']));
+    events.on('ropeCut', (e) => {
+      this.addTrauma(FEEL.trauma.hit * 2);
+      this.dust(e.position, 3, ['#9aa1aa']);
+    });
     events.on('targetDown', (e) => {
       this.dust(e.position, 14, ['#b9b2a6']);
       if (e.remaining === 0) this.slowMoLeft = FEEL.slowMo.duration;

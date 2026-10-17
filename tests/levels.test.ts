@@ -109,6 +109,14 @@ describe('campaign content', () => {
     },
   );
 
+  // Wrecking ball puzzles: letting the crane go is not enough; the rope cut or the charge is the point.
+  it.each(cases.filter(([, l]) => ['w7-02', 'w7-05', 'w7-07', 'w7-09', 'w7-10'].includes(l.id)))(
+    '%s needs more than letting the crane go',
+    (_id, level) => {
+      expect(playSolution(level, level.solution.fireAt, []).result?.cleared).toBe(false);
+    },
+  );
+
   // Detonator puzzles: left to their fuses, the same falling bombs do not win.
   it.each(cases.filter(([, l]) => ['w6-02', 'w6-04', 'w6-05', 'w6-08', 'w6-10'].includes(l.id)))('%s needs the detonator', (_id, level) => {
     expect(playSolution(level, level.solution.fireAt, level.solution.charges, []).result?.cleared).toBe(false);

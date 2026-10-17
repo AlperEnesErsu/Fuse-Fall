@@ -20,6 +20,8 @@ export interface GameEvents {
   bombReleased: { readonly position: Vec2 };
   /** A mortar joint or weld snapped. */
   jointBroken: { readonly position: Vec2 };
+  /** A wrecking ball's rope was cut at its hook. */
+  ropeCut: { readonly position: Vec2 };
   levelFinished: { readonly result: LevelResult };
 }
 

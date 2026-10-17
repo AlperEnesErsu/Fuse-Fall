@@ -1,0 +1,1206 @@
+[
+ {
+  "id": "w7-01",
+  "name": "İlk Gülle",
+  "world": 7,
+  "order": 1,
+  "charges": {
+   "max": 1,
+   "par": 1
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 420,
+    "y": 430,
+    "w": 100,
+    "h": 50
+   }
+  ],
+  "blocks": [
+   {
+    "x": 32,
+    "y": 300.0,
+    "w": 24,
+    "h": 360,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 166.0,
+    "y": 112,
+    "w": 308,
+    "h": 16,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 435.0,
+    "y": 425.0,
+    "w": 20,
+    "h": 110,
+    "material": "wood"
+   },
+   {
+    "x": 505.0,
+    "y": 425.0,
+    "w": 20,
+    "h": 110,
+    "material": "wood"
+   },
+   {
+    "x": 470,
+    "y": 360.0,
+    "w": 110,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 440.0,
+    "y": 305.0,
+    "w": 20,
+    "h": 90,
+    "material": "wood"
+   },
+   {
+    "x": 500.0,
+    "y": 305.0,
+    "w": 20,
+    "h": 90,
+    "material": "wood"
+   },
+   {
+    "x": 470,
+    "y": 250.0,
+    "w": 100,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 470,
+    "y": 223.0,
+    "w": 34,
+    "h": 34,
+    "material": "wood",
+    "target": true
+   }
+  ],
+  "barrels": [],
+  "cars": [],
+  "solution": {
+   "charges": [],
+   "fireAt": 0
+  },
+  "hint": "ATEŞLE vincin frenini bırakır. Gülle salınır ve kuleye çarpar.",
+  "balls": [
+   {
+    "hook": {
+     "x": 300,
+     "y": 128
+    },
+    "length": 240,
+    "angle": -1.1,
+    "radius": 24
+   }
+  ]
+ },
+ {
+  "id": "w7-02",
+  "name": "Kesik Halat",
+  "world": 7,
+  "order": 2,
+  "charges": {
+   "max": 1,
+   "par": 1
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 276,
+    "y": 122,
+    "w": 48,
+    "h": 40
+   }
+  ],
+  "blocks": [
+   {
+    "x": 32,
+    "y": 300.0,
+    "w": 24,
+    "h": 360,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 166.0,
+    "y": 112,
+    "w": 308,
+    "h": 16,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 420,
+    "y": 455.0,
+    "w": 50,
+    "h": 50,
+    "material": "concrete",
+    "protected": true
+   },
+   {
+    "x": 550.0,
+    "y": 420.0,
+    "w": 20,
+    "h": 120,
+    "material": "wood"
+   },
+   {
+    "x": 620.0,
+    "y": 420.0,
+    "w": 20,
+    "h": 120,
+    "material": "wood"
+   },
+   {
+    "x": 585,
+    "y": 350.0,
+    "w": 110,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 585,
+    "y": 323.0,
+    "w": 34,
+    "h": 34,
+    "material": "wood",
+    "target": true
+   }
+  ],
+  "barrels": [],
+  "cars": [],
+  "solution": {
+   "charges": [
+    {
+     "x": 300,
+     "y": 138,
+     "delay": 1.15
+    }
+   ],
+   "fireAt": 0
+  },
+  "hint": "Kulübe korunuyor, kule erişilmez. Halatı doğru anda kes: gülle uçsun.",
+  "balls": [
+   {
+    "hook": {
+     "x": 300,
+     "y": 128
+    },
+    "length": 240,
+    "angle": -1.1,
+    "radius": 24
+   }
+  ]
+ },
+ {
+  "id": "w7-03",
+  "name": "Duvar",
+  "world": 7,
+  "order": 3,
+  "charges": {
+   "max": 1,
+   "par": 1
+  },
+  "bonusCollapse": 0.6,
+  "zones": [
+   {
+    "x": 310,
+    "y": 430,
+    "w": 110,
+    "h": 50
+   }
+  ],
+  "blocks": [
+   {
+    "x": 32,
+    "y": 310.0,
+    "w": 24,
+    "h": 340,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 156.0,
+    "y": 132,
+    "w": 288,
+    "h": 16,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 365.0,
+    "y": 471.0,
+    "w": 70,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 365.0,
+    "y": 453.0,
+    "w": 70,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 365.0,
+    "y": 435.0,
+    "w": 70,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 365.0,
+    "y": 417.0,
+    "w": 70,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 365.0,
+    "y": 399.0,
+    "w": 70,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 365.0,
+    "y": 381.0,
+    "w": 70,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 365,
+    "y": 355.0,
+    "w": 34,
+    "h": 34,
+    "material": "wood",
+    "target": true
+   }
+  ],
+  "barrels": [],
+  "cars": [],
+  "solution": {
+   "charges": [],
+   "fireAt": 0
+  },
+  "hint": "Tuğla duvar salınımın en alt noktasında. Gülle tam ortadan geçer.",
+  "balls": [
+   {
+    "hook": {
+     "x": 280,
+     "y": 148
+    },
+    "length": 230,
+    "angle": -1.0,
+    "radius": 24
+   }
+  ]
+ },
+ {
+  "id": "w7-04",
+  "name": "İki Vinç",
+  "world": 7,
+  "order": 4,
+  "charges": {
+   "max": 1,
+   "par": 1
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 430,
+    "y": 430,
+    "w": 100,
+    "h": 50
+   }
+  ],
+  "blocks": [
+   {
+    "x": 22,
+    "y": 300.0,
+    "w": 24,
+    "h": 360,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 146.0,
+    "y": 112,
+    "w": 288,
+    "h": 16,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 938,
+    "y": 300.0,
+    "w": 24,
+    "h": 360,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 814.0,
+    "y": 112,
+    "w": 288,
+    "h": 16,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 440.0,
+    "y": 420.0,
+    "w": 20,
+    "h": 120,
+    "material": "wood"
+   },
+   {
+    "x": 520.0,
+    "y": 420.0,
+    "w": 20,
+    "h": 120,
+    "material": "wood"
+   },
+   {
+    "x": 480,
+    "y": 350.0,
+    "w": 120,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 445.0,
+    "y": 295.0,
+    "w": 20,
+    "h": 90,
+    "material": "wood"
+   },
+   {
+    "x": 515.0,
+    "y": 295.0,
+    "w": 20,
+    "h": 90,
+    "material": "wood"
+   },
+   {
+    "x": 480,
+    "y": 240.0,
+    "w": 110,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 480,
+    "y": 213.0,
+    "w": 34,
+    "h": 34,
+    "material": "wood",
+    "target": true
+   }
+  ],
+  "barrels": [],
+  "cars": [],
+  "solution": {
+   "charges": [],
+   "fireAt": 0
+  },
+  "hint": "İki gülle iki yandan. Ortadaki kule dayanamaz.",
+  "balls": [
+   {
+    "hook": {
+     "x": 270,
+     "y": 128
+    },
+    "length": 230,
+    "angle": -1.0,
+    "radius": 24
+   },
+   {
+    "hook": {
+     "x": 690,
+     "y": 128
+    },
+    "length": 230,
+    "angle": 1.0,
+    "radius": 24
+   }
+  ]
+ },
+ {
+  "id": "w7-05",
+  "name": "Gülle ve Fitil",
+  "world": 7,
+  "order": 5,
+  "charges": {
+   "max": 2,
+   "par": 1
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 400,
+    "y": 420,
+    "w": 140,
+    "h": 60
+   }
+  ],
+  "blocks": [
+   {
+    "x": 34,
+    "y": 305.0,
+    "w": 24,
+    "h": 350,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 162.0,
+    "y": 122,
+    "w": 296,
+    "h": 16,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 430,
+    "y": 430.0,
+    "w": 24,
+    "h": 100,
+    "material": "concrete"
+   },
+   {
+    "x": 510,
+    "y": 430.0,
+    "w": 24,
+    "h": 100,
+    "material": "concrete"
+   },
+   {
+    "x": 470.0,
+    "y": 371.0,
+    "w": 120,
+    "h": 18,
+    "material": "concrete"
+   },
+   {
+    "x": 470,
+    "y": 345.0,
+    "w": 34,
+    "h": 34,
+    "material": "wood",
+    "target": true
+   }
+  ],
+  "barrels": [],
+  "cars": [],
+  "solution": {
+   "charges": [
+    {
+     "x": 430,
+     "y": 450
+    }
+   ],
+   "fireAt": 0
+  },
+  "hint": "Beton kolonlar gülleye dayanır. Önce bir şarjla çatlat.",
+  "balls": [
+   {
+    "hook": {
+     "x": 290,
+     "y": 138
+    },
+    "length": 240,
+    "angle": -1.0,
+    "radius": 24
+   }
+  ]
+ },
+ {
+  "id": "w7-06",
+  "name": "Baca",
+  "world": 7,
+  "order": 6,
+  "charges": {
+   "max": 1,
+   "par": 1
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 440,
+    "y": 440,
+    "w": 80,
+    "h": 40
+   }
+  ],
+  "blocks": [
+   {
+    "x": 99,
+    "y": 280.0,
+    "w": 24,
+    "h": 400,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 214.5,
+    "y": 72,
+    "w": 271,
+    "h": 16,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 480,
+    "y": 452.0,
+    "w": 40,
+    "h": 56,
+    "material": "concrete"
+   },
+   {
+    "x": 480,
+    "y": 396.0,
+    "w": 40,
+    "h": 56,
+    "material": "concrete"
+   },
+   {
+    "x": 480,
+    "y": 340.0,
+    "w": 40,
+    "h": 56,
+    "material": "concrete"
+   },
+   {
+    "x": 480,
+    "y": 284.0,
+    "w": 40,
+    "h": 56,
+    "material": "concrete"
+   },
+   {
+    "x": 480,
+    "y": 228.0,
+    "w": 40,
+    "h": 56,
+    "material": "concrete"
+   },
+   {
+    "x": 480,
+    "y": 182.0,
+    "w": 36,
+    "h": 36,
+    "material": "wood",
+    "target": true
+   },
+   {
+    "x": 210,
+    "y": 445.0,
+    "w": 60,
+    "h": 70,
+    "material": "concrete",
+    "protected": true
+   }
+  ],
+  "barrels": [],
+  "cars": [],
+  "solution": {
+   "charges": [],
+   "fireAt": 0
+  },
+  "hint": "Bacaya yüksekten vur. Soldaki ev korunuyor; gülle üstünden geçer.",
+  "balls": [
+   {
+    "hook": {
+     "x": 330,
+     "y": 88
+    },
+    "length": 190,
+    "angle": -1.2,
+    "radius": 24
+   }
+  ]
+ },
+ {
+  "id": "w7-07",
+  "name": "Üstünden",
+  "world": 7,
+  "order": 7,
+  "charges": {
+   "max": 1,
+   "par": 1
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 276,
+    "y": 112,
+    "w": 48,
+    "h": 40
+   }
+  ],
+  "blocks": [
+   {
+    "x": 32,
+    "y": 295.0,
+    "w": 24,
+    "h": 370,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 166.0,
+    "y": 102,
+    "w": 308,
+    "h": 16,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 480,
+    "y": 425.0,
+    "w": 60,
+    "h": 110,
+    "material": "concrete",
+    "protected": true
+   },
+   {
+    "x": 580.0,
+    "y": 430.0,
+    "w": 20,
+    "h": 100,
+    "material": "wood"
+   },
+   {
+    "x": 650.0,
+    "y": 430.0,
+    "w": 20,
+    "h": 100,
+    "material": "wood"
+   },
+   {
+    "x": 615,
+    "y": 370.0,
+    "w": 110,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 615,
+    "y": 343.0,
+    "w": 34,
+    "h": 34,
+    "material": "wood",
+    "target": true
+   }
+  ],
+  "barrels": [],
+  "cars": [],
+  "solution": {
+   "charges": [
+    {
+     "x": 300,
+     "y": 128,
+     "delay": 1.2
+    }
+   ],
+   "fireAt": 0
+  },
+  "hint": "Aradaki bina korunuyor. Gülleyi yükselirken bırak, üstünden aşsın.",
+  "balls": [
+   {
+    "hook": {
+     "x": 300,
+     "y": 118
+    },
+    "length": 230,
+    "angle": -1.2,
+    "radius": 24
+   }
+  ]
+ },
+ {
+  "id": "w7-08",
+  "name": "Zincir",
+  "world": 7,
+  "order": 8,
+  "charges": {
+   "max": 1,
+   "par": 1
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 410,
+    "y": 430,
+    "w": 80,
+    "h": 50
+   }
+  ],
+  "blocks": [
+   {
+    "x": 52,
+    "y": 310.0,
+    "w": 24,
+    "h": 340,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 176.0,
+    "y": 132,
+    "w": 288,
+    "h": 16,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 360,
+    "y": 432.5,
+    "w": 60,
+    "h": 95,
+    "material": "wood"
+   },
+   {
+    "x": 410.0,
+    "y": 420.0,
+    "w": 20,
+    "h": 120,
+    "material": "wood"
+   },
+   {
+    "x": 490.0,
+    "y": 420.0,
+    "w": 20,
+    "h": 120,
+    "material": "wood"
+   },
+   {
+    "x": 450,
+    "y": 350.0,
+    "w": 120,
+    "h": 20,
+    "material": "metal"
+   },
+   {
+    "x": 450,
+    "y": 323.0,
+    "w": 34,
+    "h": 34,
+    "material": "wood",
+    "target": true
+   }
+  ],
+  "barrels": [
+   {
+    "x": 346,
+    "y": 369.0
+   },
+   {
+    "x": 374,
+    "y": 369.0
+   }
+  ],
+  "cars": [],
+  "solution": {
+   "charges": [],
+   "fireAt": 0
+  },
+  "hint": "Gülle sehpadaki varillere çarpar; patlamalar depoyu yıkar.",
+  "balls": [
+   {
+    "hook": {
+     "x": 300,
+     "y": 148
+    },
+    "length": 230,
+    "angle": -1.0,
+    "radius": 24
+   }
+  ]
+ },
+ {
+  "id": "w7-09",
+  "name": "Uçan Gülle",
+  "world": 7,
+  "order": 9,
+  "charges": {
+   "max": 1,
+   "par": 1
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 276,
+    "y": 122,
+    "w": 48,
+    "h": 40
+   }
+  ],
+  "blocks": [
+   {
+    "x": 32,
+    "y": 300.0,
+    "w": 24,
+    "h": 360,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 166.0,
+    "y": 112,
+    "w": 308,
+    "h": 16,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 420,
+    "y": 455.0,
+    "w": 50,
+    "h": 50,
+    "material": "concrete",
+    "protected": true
+   },
+   {
+    "x": 585,
+    "y": 450.0,
+    "w": 60,
+    "h": 60,
+    "material": "wood"
+   },
+   {
+    "x": 665.0,
+    "y": 415.0,
+    "w": 20,
+    "h": 130,
+    "material": "wood"
+   },
+   {
+    "x": 735.0,
+    "y": 415.0,
+    "w": 20,
+    "h": 130,
+    "material": "wood"
+   },
+   {
+    "x": 700,
+    "y": 340.0,
+    "w": 110,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 700,
+    "y": 313.0,
+    "w": 34,
+    "h": 34,
+    "material": "wood",
+    "target": true
+   }
+  ],
+  "barrels": [
+   {
+    "x": 571,
+    "y": 404.0
+   },
+   {
+    "x": 599,
+    "y": 404.0
+   }
+  ],
+  "cars": [],
+  "solution": {
+   "charges": [
+    {
+     "x": 300,
+     "y": 138,
+     "delay": 1.15
+    }
+   ],
+   "fireAt": 0
+  },
+  "hint": "Gülleyi varillerin üstüne uçur. Zincir kuleyi yıkar; kulübe korunuyor.",
+  "balls": [
+   {
+    "hook": {
+     "x": 300,
+     "y": 128
+    },
+    "length": 240,
+    "angle": -1.1,
+    "radius": 24
+   }
+  ]
+ },
+ {
+  "id": "w7-10",
+  "name": "Berlin Finali",
+  "world": 7,
+  "order": 10,
+  "charges": {
+   "max": 3,
+   "par": 2
+  },
+  "bonusCollapse": 0.45,
+  "zones": [
+   {
+    "x": 400,
+    "y": 420,
+    "w": 200,
+    "h": 60
+   },
+   {
+    "x": 266,
+    "y": 122,
+    "w": 48,
+    "h": 40
+   }
+  ],
+  "blocks": [
+   {
+    "x": 34,
+    "y": 300.0,
+    "w": 24,
+    "h": 360,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 162.0,
+    "y": 112,
+    "w": 296,
+    "h": 16,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 460.0,
+    "y": 471.0,
+    "w": 56,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 460.0,
+    "y": 453.0,
+    "w": 56,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 460.0,
+    "y": 435.0,
+    "w": 56,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 460.0,
+    "y": 417.0,
+    "w": 56,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 540.0,
+    "y": 471.0,
+    "w": 56,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 540.0,
+    "y": 453.0,
+    "w": 56,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 540.0,
+    "y": 435.0,
+    "w": 56,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 540.0,
+    "y": 417.0,
+    "w": 56,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 420,
+    "y": 444.0,
+    "w": 24,
+    "h": 72,
+    "material": "wood"
+   },
+   {
+    "x": 500,
+    "y": 444.0,
+    "w": 24,
+    "h": 72,
+    "material": "wood"
+   },
+   {
+    "x": 580,
+    "y": 444.0,
+    "w": 24,
+    "h": 72,
+    "material": "wood"
+   },
+   {
+    "x": 500.0,
+    "y": 399.0,
+    "w": 200,
+    "h": 18,
+    "material": "wood"
+   },
+   {
+    "x": 460.0,
+    "y": 381.0,
+    "w": 56,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 460.0,
+    "y": 363.0,
+    "w": 56,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 460.0,
+    "y": 345.0,
+    "w": 56,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 460.0,
+    "y": 327.0,
+    "w": 56,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 540.0,
+    "y": 381.0,
+    "w": 56,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 540.0,
+    "y": 363.0,
+    "w": 56,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 540.0,
+    "y": 345.0,
+    "w": 56,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 540.0,
+    "y": 327.0,
+    "w": 56,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 420,
+    "y": 354.0,
+    "w": 24,
+    "h": 72,
+    "material": "wood"
+   },
+   {
+    "x": 500,
+    "y": 354.0,
+    "w": 24,
+    "h": 72,
+    "material": "wood"
+   },
+   {
+    "x": 580,
+    "y": 354.0,
+    "w": 24,
+    "h": 72,
+    "material": "wood"
+   },
+   {
+    "x": 500.0,
+    "y": 309.0,
+    "w": 200,
+    "h": 18,
+    "material": "wood"
+   },
+   {
+    "x": 500,
+    "y": 284.0,
+    "w": 32,
+    "h": 32,
+    "material": "wood",
+    "target": true
+   },
+   {
+    "x": 800,
+    "y": 440.0,
+    "w": 60,
+    "h": 80,
+    "material": "concrete",
+    "protected": true
+   }
+  ],
+  "barrels": [],
+  "cars": [],
+  "solution": {
+   "charges": [
+    {
+     "x": 420,
+     "y": 450
+    },
+    {
+     "x": 580,
+     "y": 450,
+     "delay": 0.3
+    }
+   ],
+   "fireAt": 0
+  },
+  "hint": "Gülle, iki şarj ve korunan komşu. Hepsini birlikte düşün.",
+  "chargeKinds": [
+   "standard",
+   "precision"
+  ],
+  "balls": [
+   {
+    "hook": {
+     "x": 290,
+     "y": 128
+    },
+    "length": 240,
+    "angle": -1.0,
+    "radius": 24
+   }
+  ]
+ }
+]

@@ -4,5 +4,6 @@
   {"world": 3, "key": "london", "city": "Londra", "country": "Birleşik Krallık", "unlockStars": 40},
   {"world": 4, "key": "rome", "city": "Roma", "country": "İtalya", "unlockStars": 62},
   {"world": 5, "key": "tokyo", "city": "Tokyo", "country": "Japonya", "unlockStars": 84},
-  {"world": 6, "key": "istanbul", "city": "İstanbul", "country": "Türkiye", "unlockStars": 110}
+  {"world": 6, "key": "istanbul", "city": "İstanbul", "country": "Türkiye", "unlockStars": 110},
+  {"world": 7, "key": "berlin", "city": "Berlin", "country": "Almanya", "unlockStars": 135}
 ]

@@ -91,6 +91,15 @@ export class SoundSynth {
     this.noise(out, cave, { color: 'brown', filter: 'lowpass', from: 600, to: 90, sweep: 0.7, attack: 0.005, decay: 1.4, gain: 0.8 });
   }
 
+  /** A steel cable parting: a sharp twang and a ringing slap. */
+  ropeSnap(pan = 0): void {
+    const at = this.ctx.currentTime;
+    const out = this.voice(pan, 0.4);
+    this.noise(out, at, { color: 'white', filter: 'highpass', from: 3000, to: 1500, attack: 0.001, decay: 0.05, gain: 0.35 });
+    this.tone(out, at, { type: 'sawtooth', from: 520, to: 180, sweep: 0.25, attack: 0.002, decay: 0.3, gain: 0.07 });
+    this.metal(out, at + 0.01, 0.12, 340);
+  }
+
   /** A bomb's fall: a long whistle sliding down in pitch. */
   whistle(pan = 0): void {
     const at = this.ctx.currentTime;

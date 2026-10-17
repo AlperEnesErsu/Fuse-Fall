@@ -55,7 +55,12 @@ export class Coach {
     return h && 'world' in h ? h : undefined;
   }
 
-  start(steps: readonly CoachStep[]): void {
+  /**
+   * `low` moves the card from the top-left sky to the bottom-left, for jobs
+   * whose top-left is busy (a crane and its pulled-back ball).
+   */
+  start(steps: readonly CoachStep[], low = false): void {
+    this.card.classList.toggle('low', low);
     this.steps = steps;
     this.index = steps.length > 0 ? 0 : -1;
     this.render();

@@ -37,6 +37,7 @@ export class SoundDirector {
     events.on('jointBroken', (e) => this.jointBroken(e.position));
     events.on('targetDown', (e) => this.synth?.targetDown(this.targetsDown++, panOf(e.position)));
     events.on('chargePlaced', () => (this.targetsDown = 0));
+    events.on('ropeCut', (e) => this.synth?.ropeSnap(panOf(e.position)));
     events.on('carWrecked', (e) => this.synth?.carWreck(panOf(e.position)));
     events.on('bombReleased', (e) => this.synth?.whistle(panOf(e.position)));
     events.on('chargePlaced', () => this.synth?.arm());

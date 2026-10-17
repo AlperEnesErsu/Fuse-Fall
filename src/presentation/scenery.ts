@@ -356,7 +356,39 @@ const istanbul: Landmarks = (c, color, accent) => {
   for (const wy of [G - 170, G - 120, G - 70]) c.fillRect(gx - 4, wy, 8, 14);
 };
 
-const LANDMARKS: Readonly<Record<string, Landmarks>> = { ankara, paris, london, rome, tokyo, istanbul };
+const berlin: Landmarks = (c, color, accent) => {
+  c.fillStyle = color;
+  // Brandenburg Gate: six columns on a plinth, an attic, the quadriga on top.
+  const bx = 150;
+  c.fillRect(bx - 110, G - 20, 220, 20);
+  for (let i = 0; i < 6; i++) c.fillRect(bx - 100 + i * 38, G - 120, 14, 100);
+  c.fillRect(bx - 115, G - 140, 230, 22);
+  c.fillRect(bx - 60, G - 160, 120, 20);
+  c.fillRect(bx - 22, G - 184, 44, 24);
+  // Reichstag: a long block with corner towers and the glass dome.
+  const rx = 470;
+  c.fillRect(rx - 150, G - 90, 300, 90);
+  for (const dx of [-150, 120]) c.fillRect(rx + dx, G - 118, 30, 118);
+  c.beginPath();
+  c.arc(rx, G - 90, 52, Math.PI, 0);
+  c.fill();
+  c.fillStyle = accent;
+  for (let x = rx - 130; x < rx + 120; x += 24) c.fillRect(x, G - 70, 10, 16);
+  c.fillStyle = color;
+  // Fernsehturm: a slim shaft, the sphere, and the antenna.
+  const tx = 800;
+  c.fillRect(tx - 9, G - 300, 18, 300);
+  c.fillRect(tx - 22, G - 40, 44, 40);
+  c.beginPath();
+  c.arc(tx, G - 300, 30, 0, Math.PI * 2);
+  c.fill();
+  c.fillRect(tx - 4, G - 400, 8, 72);
+  c.fillRect(tx - 1.5, G - 440, 3, 40);
+  c.fillStyle = accent;
+  c.fillRect(tx - 30, G - 302, 60, 4);
+};
+
+const LANDMARKS: Readonly<Record<string, Landmarks>> = { ankara, paris, london, rome, tokyo, istanbul, berlin };
 
 /** Paints the whole backdrop for a city and time of day, in world coordinates. */
 export const paintScene = (c: Ctx, cityKey: string, sky: SkyState): void => {

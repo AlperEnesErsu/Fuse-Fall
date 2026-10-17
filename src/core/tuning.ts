@@ -42,6 +42,15 @@ export const TUNING = {
     /** Blast damage that sets a bomb off (sympathetic detonation). */
     trigger: 12,
   },
+  /** Wrecking balls: a ball still on its rope counts as moving for this long after Fire. */
+  wreckingBall: {
+    swingFor: 4.5,
+    /** Air drag per step: low, so a swing keeps most of its energy. */
+    airDrag: 0.0008,
+    /** Slower contacts are a nudge; faster ones do this much damage per px/s of the ball's speed. */
+    threshold: 90,
+    damagePerSpeed: 0.3,
+  },
   barrel: {
     radius: 16,
     blastRadius: 135,

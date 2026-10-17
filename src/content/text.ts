@@ -73,6 +73,16 @@ const EN_LEVELS: Readonly<Record<string, { readonly name: string; readonly hint:
   'w6-07': { name: 'Bosphorus Bridge', hint: 'A car shuttles across the bridge. Drop the bomb on the road and DETONATE as the car comes by.' },
   'w6-08': { name: 'Han Courtyard', hint: "Two wings, a protected fountain between them and a protected watchman's hut on the left. Detonate both bombs above the wings." },
   'w6-09': { name: 'Ferry Pier', hint: 'Drop the bomb beside the barrels. The chain brings the tower down.' },
+  'w7-01': { name: 'First Swing', hint: 'FIRE lets the crane go. The ball swings and hits the tower.' },
+  'w7-02': { name: 'Cut Loose', hint: 'The kiosk is protected and the tower out of reach. Cut the rope at the right moment and the ball flies.' },
+  'w7-03': { name: 'The Wall', hint: 'A brick wall at the bottom of the swing. The ball goes straight through.' },
+  'w7-04': { name: 'Two Cranes', hint: 'Two balls from both sides. The tower in the middle cannot hold.' },
+  'w7-05': { name: 'Ball and Fuse', hint: 'Concrete columns shrug off the ball. Crack them with a charge first.' },
+  'w7-06': { name: 'Chimney', hint: 'Strike the chimney high. The house on the left is protected; the ball passes over it.' },
+  'w7-07': { name: 'Over the Top', hint: 'The building in between is protected. Let the ball go as it rises so it clears the roof.' },
+  'w7-08': { name: 'Chain', hint: 'The ball hits the barrels on the stand; their blasts bring the depot down.' },
+  'w7-09': { name: 'Flying Start', hint: 'Send the ball flying onto the barrels. The chain brings the tower down; the kiosk is protected.' },
+  'w7-10': { name: 'Berlin Finale', hint: 'The ball, two charges and a protected neighbour. Think about all of them at once.' },
   'w6-10': { name: 'Istanbul Finale', hint: 'The apartment and the chimney come down together. Fuse on the middle column, bomb on top of the chimney.' },
 };
 
@@ -83,6 +93,7 @@ const EN_CITIES: Readonly<Record<string, { readonly city: string; readonly count
   rome: { city: 'Rome', country: 'Italy' },
   tokyo: { city: 'Tokyo', country: 'Japan' },
   istanbul: { city: 'Istanbul', country: 'Türkiye' },
+  berlin: { city: 'Berlin', country: 'Germany' },
 };
 
 /** Daily missions have their own id: callers pass the base mission for its text. */

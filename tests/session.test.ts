@@ -21,6 +21,7 @@ const level = (patch: Partial<LevelDefinition> = {}): LevelDefinition => ({
   ],
   barrels: [],
   cars: [],
+  balls: [],
   chargeKinds: ['standard'],
   footprint: undefined,
   dropZones: [{ x: 0, y: 0, w: 960, h: 200 }],
@@ -327,6 +328,32 @@ describe('anchored infrastructure', () => {
     run(TUNING.settle.hold + 0.2);
     expect(physics.state('block-3')).toBeDefined();
     expect(session.result).toMatchObject({ blocksTotal: 2, protectedTotal: 0 });
+  });
+});
+
+describe('wrecking balls', () => {
+  const crane = {
+    balls: [{ hook: { x: 150, y: 150 }, length: 200, angle: -0.8, radius: 24 }],
+    zones: [{ x: 0, y: 100, w: 960, h: 380 }],
+  };
+
+  it('let Fire release the crane even with no charge placed', () => {
+    const { session } = setup(crane);
+    expect(session.fire()).toEqual({ ok: true, value: undefined });
+  });
+
+  it('lose their rope to a blast at the hook, and keep it otherwise', () => {
+    const near = setup(crane);
+    near.session.placeCharge({ x: 150, y: 170 });
+    near.session.fire();
+    near.run(0.1);
+    expect(near.session.ropeLines).toEqual([]);
+    expect(near.physics.joints.has('rope-0')).toBe(false);
+    const far = setup(crane);
+    far.session.placeCharge({ x: 700, y: 450 });
+    far.session.fire();
+    far.run(0.1);
+    expect(far.session.ropeLines).toHaveLength(1);
   });
 });
 

@@ -19,6 +19,8 @@ export interface BodySpec {
   readonly kinematic?: boolean;
   readonly velocity?: Vec2;
   readonly angularVelocity?: number;
+  /** Air drag per step (0..1); the engine's default damps tumbling debris, a pendulum needs far less. */
+  readonly airDrag?: number;
 }
 
 export interface BodyState {
@@ -52,6 +54,8 @@ export interface PhysicsWorld {
   drainImpacts(): Impact[];
   /** Welds two bodies together at a world point (zero-length, rigid). */
   addJoint(id: string, a: string, b: string, at: Vec2): void;
+  /** A rope from a fixed point in the world to a body's centre: keeps its length, never stretches or snaps by itself. */
+  addRope(id: string, body: string, hook: Vec2, length: number): void;
   removeJoint(id: string): void;
   /** Current gap between a joint's two anchor points (px); undefined once gone. */
   jointStretch(id: string): number | undefined;

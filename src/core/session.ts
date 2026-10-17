@@ -11,7 +11,7 @@ import { findJoints, type JointDef } from './joints';
 import { TUNING } from './tuning';
 
 export type Phase = 'placing' | 'running' | 'finished';
-export type EntityKind = 'block' | 'debris' | 'barrel' | 'car' | 'bomb';
+export type EntityKind = 'block' | 'debris' | 'barrel' | 'car' | 'bomb' | 'ball';
 
 export interface Charge {
   readonly id: number;
@@ -194,6 +194,8 @@ export class LevelSession {
   /** Live joints, and which joints each entity takes part in. */
   private readonly joints = new Map<string, JointDef>();
   private readonly jointsOf = new Map<string, Set<string>>();
+  /** Wrecking ball ropes still holding: which ball, and the crane hook it hangs from. */
+  private readonly ropes = new Map<string, { readonly ball: string; readonly hook: Vec2 }>();
 
   constructor(
     readonly level: LevelDefinition,
@@ -248,6 +250,18 @@ export class LevelSession {
         driver: { def: c, direction, engine: c.speed > 0, wrecked: false },
       });
     }
+    level.balls.forEach((b, i) => {
+      const ball = this.spawn({
+        kind: 'ball',
+        shape: { kind: 'circle', r: b.radius },
+        position: vec(b.hook.x + Math.sin(b.angle) * b.length, b.hook.y + Math.cos(b.angle) * b.length),
+        angle: 0,
+        material: 'metal',
+      });
+      const id = `rope-${i}`;
+      this.physics.addRope(id, ball, b.hook, b.length);
+      this.ropes.set(id, { ball, hook: b.hook });
+    });
     this.structuralTotal = level.blocks.filter((b) => !b.protected && !b.anchored).length;
     this.targetTotal = level.blocks.filter((b) => b.target).length + level.cars.filter((c) => c.target).length;
   }
@@ -272,6 +286,16 @@ export class LevelSession {
     }
     for (const r of this.releases) armed.push({ position: r.position, kind: 'bomb' });
     return armed;
+  }
+
+  /** Ropes still holding their wrecking balls, for drawing: from the hook to the ball. */
+  get ropeLines(): { readonly hook: Vec2; readonly ball: Vec2 }[] {
+    const lines: { hook: Vec2; ball: Vec2 }[] = [];
+    for (const r of this.ropes.values()) {
+      const s = this.physics.state(r.ball);
+      if (s) lines.push({ hook: r.hook, ball: s.position });
+    }
+    return lines;
   }
 
   /** Free-fall bombs that are falling or lying live, waiting for the detonator. */
@@ -421,7 +445,8 @@ export class LevelSession {
 
   fire(): Result<void, FireError> {
     if (this.currentPhase !== 'placing') return err('not-placing');
-    if (this.chargeList.length === 0) return err('no-charges');
+    // With a wrecking ball on site, Fire also lets the crane go: that alone can be the whole job.
+    if (this.chargeList.length === 0 && this.level.balls.length === 0) return err('no-charges');
     this.currentPhase = 'running';
     this.firedAt = this.time;
     for (const c of this.chargeList) {
@@ -518,6 +543,10 @@ export class LevelSession {
     const cut = radius * TUNING.joints.cut;
     for (const [id, joint] of [...this.joints]) {
       if (joint.anchors.some((a) => distance(a, center) <= cut)) this.breakJoint(id);
+    }
+    // ...and wrecking ball ropes at their hooks.
+    for (const [id, rope] of [...this.ropes]) {
+      if (distance(rope.hook, center) <= cut) this.cutRope(id);
     }
 
     const broken: Entity[] = [];
@@ -663,9 +692,11 @@ export class LevelSession {
   private applyImpacts(): void {
     const broken = new Map<Entity, Vec2>();
     for (const impact of this.physics.drainImpacts()) {
-      const over = impact.speed - TUNING.impact.threshold;
+      // A wrecking ball hits with its whole mass: what it strikes takes damage from its full speed.
+      const ballHit = [impact.a, impact.b].some((id) => this.entities.get(id)?.kind === 'ball');
+      const over = impact.speed - (ballHit ? TUNING.wreckingBall.threshold : TUNING.impact.threshold);
       if (over <= 0) continue;
-      const amount = over * TUNING.impact.damagePerSpeed;
+      const amount = ballHit ? impact.speed * TUNING.wreckingBall.damagePerSpeed : over * TUNING.impact.damagePerSpeed;
       for (const id of [impact.a, impact.b]) {
         const e = this.entities.get(id);
         // Bombs have no impact fuse: only the detonator, their own fuse or another blast sets them off.
@@ -761,6 +792,8 @@ export class LevelSession {
     let calm = true;
     for (const e of this.entities.values()) {
       if (e.driver?.engine) continue; // a car driving its route never settles, by design
+      // A ball on its rope swings for ever: it holds the job open only while its first swings can still hit.
+      if (e.kind === 'ball' && this.roped(e.id) && this.elapsedSinceFire >= TUNING.wreckingBall.swingFor) continue;
       const s = this.physics.state(e.id);
       if (s && (length(s.velocity) > TUNING.settle.linear || Math.abs(s.angularVelocity) > TUNING.settle.angular)) {
         calm = false;
@@ -856,6 +889,19 @@ export class LevelSession {
     if (at && this.currentPhase === 'running') this.events.emit('jointBroken', { position: at });
   }
 
+  private cutRope(id: string): void {
+    const rope = this.ropes.get(id);
+    if (!rope) return;
+    this.ropes.delete(id);
+    this.physics.removeJoint(id);
+    this.events.emit('ropeCut', { position: rope.hook });
+  }
+
+  private roped(ball: string): boolean {
+    for (const r of this.ropes.values()) if (r.ball === ball) return true;
+    return false;
+  }
+
   // ---- footprint ---------------------------------------------------------
 
   private insideFootprint(x: number): boolean {
@@ -908,7 +954,7 @@ export class LevelSession {
         ? TUNING.barrel.trigger
         : spec.kind === 'bomb'
           ? TUNING.bomb.trigger
-        : spec.kind === 'debris' || spec.anchored
+        : spec.kind === 'debris' || spec.kind === 'ball' || spec.anchored
           ? Infinity
           : MATERIALS[spec.material].strength;
     this.entities.set(id, {
@@ -938,6 +984,7 @@ export class LevelSession {
       material: spec.material,
       isStatic: spec.anchored ?? false,
       ...(spec.kinematic ? { kinematic: true } : {}),
+      ...(spec.kind === 'ball' ? { airDrag: TUNING.wreckingBall.airDrag } : {}),
       ...(spec.motion ? { velocity: spec.motion.velocity, angularVelocity: spec.motion.angularVelocity } : {}),
     });
     return id;

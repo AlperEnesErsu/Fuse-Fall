@@ -693,8 +693,126 @@ def istanbul():
     return out
 
 
+def crane(l, hook_x, top, length, angle, radius=24):
+    """A crane: a fixed mast and jib, and a wrecking ball hanging from the hook,
+    pulled back by `angle` (radians from straight down; negative = to the left).
+    The mast stands behind the pulled-back ball, clear of its swing."""
+    import math
+    side = -1 if angle < 0 else 1
+    mast_x = round(hook_x + side * (length * abs(math.sin(angle)) + radius + 30))
+    assert 12 <= mast_x <= 948, f'crane mast at {mast_x} is off the world: shorten the rope or the angle'
+    l.col(mast_x, G, 24, G - top, 'metal', anchored=True)
+    x0, x1 = sorted((mast_x, hook_x))
+    l.b((x0 + x1) / 2, top - 8, (x1 - x0) + 40, 16, 'metal', anchored=True)
+    hook = dict(x=hook_x, y=top + 8)
+    l.d.setdefault('balls', []).append(dict(hook=hook, length=length, angle=angle, radius=radius))
+    return hook
+
+
+def hook_zone(l, hook):
+    """Where a rope-cutting charge goes: right at the crane hook."""
+    l.zone(hook['x'] - 24, hook['y'] - 6, 48, 40)
+
+
+def berlin():
+    out = []
+    P = 'precision'
+
+    # 1. First swing: Fire lets the crane go; the ball does the rest.
+    l = L(7, 1, 'İlk Gülle', 1, 1, 0.5, 'ATEŞLE vincin frenini bırakır. Gülle salınır ve kuleye çarpar.')
+    crane(l, 300, 120, 240, -1.1)
+    top = tower(l, 470, G, 70, 110); top = tower(l, 470, top, 60, 90); l.col(470, top, 34, 34, 'wood', True)
+    l.zone(420, 430, 100, 50)
+    l.sol(); out.append(l)
+
+    # 2. Cut loose: the kiosk under the swing is protected; the tower is out of reach unless the ball flies.
+    l = L(7, 2, 'Kesik Halat', 1, 1, 0.5, 'Kulübe korunuyor, kule erişilmez. Halatı doğru anda kes: gülle uçsun.')
+    hook = crane(l, 300, 120, 240, -1.1)
+    l.house(420, 50, 50)
+    top = tower(l, 585, G, 70, 120); l.col(585, top, 34, 34, 'wood', True)
+    hook_zone(l, hook)
+    l.sol((300, hook['y'] + 10, 1.15)); out.append(l)
+
+    # 3. The Wall: a brick wall right at the bottom of the swing; the ball goes straight through.
+    l = L(7, 3, 'Duvar', 1, 1, 0.6, 'Tuğla duvar salınımın en alt noktasında. Gülle tam ortadan geçer.')
+    crane(l, 280, 140, 230, -1.0)
+    top = infill(l, 330, 400, G, 108); l.col(365, top, 34, 34, 'wood', True)
+    l.zone(310, 430, 110, 50)
+    l.sol(); out.append(l)
+
+    # 4. Two cranes: one tower, a ball from each side.
+    l = L(7, 4, 'İki Vinç', 1, 1, 0.5, 'İki gülle iki yandan. Ortadaki kule dayanamaz.')
+    crane(l, 270, 120, 230, -1.0)
+    crane(l, 690, 120, 230, 1.0)
+    top = tower(l, 480, G, 80, 120); top = tower(l, 480, top, 70, 90); l.col(480, top, 34, 34, 'wood', True)
+    l.zone(430, 430, 100, 50)
+    l.sol(); out.append(l)
+
+    # 5. Ball and fuse: concrete is too strong for the ball alone; a charge cracks it first.
+    l = L(7, 5, 'Gülle ve Fitil', 2, 1, 0.5, 'Beton kolonlar gülleye dayanır. Önce bir şarjla çatlat.')
+    crane(l, 290, 130, 240, -1.0)
+    base = G
+    xs = [430, 510]
+    base = frame(l, xs, base, 100)
+    l.col(470, base, 34, 34, 'wood', True)
+    l.zone(400, 420, 140, 60)
+    l.sol((430, 450)); out.append(l)
+
+    # 6. Chimney: struck high from the left, it falls right; the neighbour sits safely under the swing.
+    l = L(7, 6, 'Baca', 1, 1, 0.5, 'Bacaya yüksekten vur. Soldaki ev korunuyor; gülle üstünden geçer.')
+    crane(l, 330, 80, 190, -1.2)
+    chimney(l, 480, 5, w=40, h=56)
+    l.house(210, 60, 70)
+    l.zone(440, 440, 80, 40)
+    l.sol(); out.append(l)
+
+    # 7. Over the top: a protected block stands between the crane and the target.
+    l = L(7, 7, 'Üstünden', 1, 1, 0.5, 'Aradaki bina korunuyor. Gülleyi yükselirken bırak, üstünden aşsın.')
+    hook = crane(l, 300, 110, 230, -1.2)
+    l.house(480, 60, 110)
+    top = tower(l, 615, G, 70, 100); l.col(615, top, 34, 34, 'wood', True)
+    hook_zone(l, hook)
+    l.sol((300, hook['y'] + 10, 1.2)); out.append(l)
+
+    # 8. Chain: barrels on a stand at the height of the swing; their blasts take the depot down.
+    l = L(7, 8, 'Zincir', 1, 1, 0.5, 'Gülle sehpadaki varillere çarpar; patlamalar depoyu yıkar.')
+    crane(l, 300, 140, 230, -1.0)
+    stand = l.col(360, G, 60, 95, 'wood')
+    for x in (346, 374):
+        l.d['barrels'].append(dict(x=x, y=stand - 16))
+    top = tower(l, 450, G, 80, 120, plank='metal'); l.col(450, top, 34, 34, 'wood', True)
+    l.zone(410, 430, 80, 50)
+    l.sol(); out.append(l)
+
+    # 9. Flying start: cut the rope so the ball lands on the barrels; their blasts reach the tower.
+    l = L(7, 9, 'Uçan Gülle', 1, 1, 0.5, 'Gülleyi varillerin üstüne uçur. Zincir kuleyi yıkar; kulübe korunuyor.')
+    hook = crane(l, 300, 120, 240, -1.1)
+    l.house(420, 50, 50)
+    stand = l.col(585, G, 60, 60, 'wood')
+    for x in (571, 599):
+        l.d['barrels'].append(dict(x=x, y=stand - 16))
+    top = tower(l, 700, G, 70, 130); l.col(700, top, 34, 34, 'wood', True)
+    hook_zone(l, hook)
+    l.sol((300, hook['y'] + 10, 1.15)); out.append(l)
+
+    # 10. Finale: a timber frame with brick infill; one charge leans it, two and the ball bring it down.
+    l = L(7, 10, 'Berlin Finali', 3, 2, 0.45, 'Gülle, iki şarj ve korunan komşu. Hepsini birlikte düşün.')
+    l.d['chargeKinds'] = ['standard', P]
+    hook = crane(l, 290, 120, 240, -1.0)
+    base = G
+    xs = [420, 500, 580]
+    for floor in range(2):
+        for k in range(2): infill(l, xs[k] + 12, xs[k + 1] - 12, base, 72)
+        base = frame(l, xs, base, 72, col_m='wood', deck_m='wood')
+    l.col(500, base, 32, 32, 'wood', True)
+    l.house(800, 60, 80)
+    l.zone(400, 420, 200, 60)
+    hook_zone(l, hook)
+    l.sol((420, 450), (580, 450, 0.3)); out.append(l)
+    return out
+
 outdir = sys.argv[1]
-for name, levels in (('ankara', ankara()), ('paris', paris()), ('london', london()), ('rome', rome()), ('tokyo', tokyo()), ('istanbul', istanbul())):
+for name, levels in (('ankara', ankara()), ('paris', paris()), ('london', london()), ('rome', rome()), ('tokyo', tokyo()), ('istanbul', istanbul()), ('berlin', berlin())):
     for l in levels:
         # Footprint jobs offer the implosion charge: it folds a structure onto its own site.
         if 'footprint' in l.d and 'implosion' not in l.d.get('chargeKinds', ['standard']):
