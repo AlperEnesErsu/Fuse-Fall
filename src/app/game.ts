@@ -6,8 +6,11 @@ import type { SaveRepository } from '../core/ports';
 import {
   isLevelUnlocked,
   levelsOf,
+  currentStreak,
+  recordDailyWin,
   recordScore,
   recordStars,
+  unlockAchievements,
   totalStars,
   updateSettings,
   worldStars,
@@ -25,7 +28,11 @@ import { T } from '../presentation/strings';
 import { Ui } from '../presentation/ui';
 import { Coach } from '../presentation/coach';
 import { TUTORIALS } from '../content/tutorials';
-import { FixedStepLoop } from './loop';
+import { ACHIEVEMENTS } from '../core/achievements';
+import { FIXED_STEP, FixedStepLoop } from './loop';
+import { newAchievements, type AttemptStats } from '../core/achievements';
+import { dailyChallenge, dayOf } from '../core/daily';
+import type { LevelResult } from '../core/scoring';
 
 const DRAG_THRESHOLD = 6;
 /** The delay timeline is taught in London (part 3); earlier parts are designed around the default sequence. */
@@ -34,6 +41,22 @@ const TIMELINE_FROM_WORLD = 3;
 const TOUCH_PICK_CSS_PX = 30;
 /** Pause after the level settles before the result panel slides in. */
 const RESULT_DELAY_MS = 450;
+/** Replays run at this fraction of real time. */
+const REPLAY_SPEED = 0.45;
+
+type Mode = { readonly kind: 'campaign' } | { readonly kind: 'daily'; readonly day: string; readonly baseId: string };
+
+/** One go at a mission: what it is, what the player did, and how to show it again. */
+interface Attempt {
+  readonly level: LevelDefinition;
+  readonly mode: Mode;
+  readonly replaying: boolean;
+  /** Captured at Fire, so the same physics can be re-simulated for the replay. */
+  plan: { readonly charges: readonly { position: Vec2; delay: number }[]; readonly fireSteps: number } | undefined;
+  stats: { barrelsBlown: number; carsWrecked: number };
+  /** The report shown after the attempt, re-shown when a replay ends. */
+  report: (() => void) | undefined;
+}
 
 interface PointerState {
   readonly chargeId: number | undefined;
@@ -54,6 +77,7 @@ export class Game {
   private readonly loop: FixedStepLoop;
   private progress: Progress;
   private session: LevelSession | undefined;
+  private attempt: Attempt | undefined;
   private pointer: PointerState | undefined;
   private hover: Vec2 | undefined;
   private time = 0;
@@ -75,13 +99,20 @@ export class Game {
     this.ui = new Ui(uiRoot, () => this.sound.unlock());
     this.coach = new Coach(uiRoot);
     this.loop = new FixedStepLoop({
-      timeScale: (dt) => this.juice.simDelta(dt),
+      timeScale: (dt) => this.juice.simDelta(dt) * (this.attempt?.replaying ? REPLAY_SPEED : 1),
       step: (dt) => this.session?.step(dt),
       frame: (realDt, simDt) => this.frame(realDt, simDt),
     });
-    this.events.on('explosion', (e) => this.buzz(e.source === 'charge' ? 45 : 30));
-    this.events.on('carWrecked', () => this.buzz(60));
+    this.events.on('explosion', (e) => {
+      this.buzz(e.source === 'charge' ? 45 : 30);
+      if (e.source === 'barrel' && this.attempt && !this.attempt.replaying) this.attempt.stats.barrelsBlown++;
+    });
+    this.events.on('carWrecked', () => {
+      this.buzz(60);
+      if (this.attempt && !this.attempt.replaying) this.attempt.stats.carsWrecked++;
+    });
     this.events.on('protectedDamaged', () => {
+      if (this.attempt?.replaying) return;
       this.sound.denied();
       this.buzz(120);
       this.ui.toast(T.report.reasons['collateral-damage'], 2200);
@@ -101,7 +132,35 @@ export class Game {
 
   private showMenu(): void {
     this.leaveLevel();
-    this.ui.menu(totalStars(this.progress), () => this.showCities(), () => this.showSettings());
+    const today = dayOf(new Date());
+    const daily = dailyChallenge(this.campaign, this.progress, today);
+    this.ui.menu({
+      totalStars: totalStars(this.progress),
+      daily: daily && {
+        name: daily.base.name,
+        streak: currentStreak(this.progress, today),
+        wonToday: this.progress.daily.lastWon === today,
+      },
+      achievements: { unlocked: this.progress.achievements.length, total: ACHIEVEMENTS.length },
+      onPlay: () => this.showCities(),
+      onDaily: () => this.startDaily(),
+      onAchievements: () => this.showAchievements(),
+      onSettings: () => this.showSettings(),
+    });
+  }
+
+  private showAchievements(): void {
+    this.leaveLevel();
+    this.ui.achievements(
+      ACHIEVEMENTS.map((a) => ({ title: a.title, description: a.description, unlocked: this.progress.achievements.includes(a.id) })),
+      () => this.showMenu(),
+    );
+  }
+
+  private startDaily(): void {
+    const today = dayOf(new Date());
+    const daily = dailyChallenge(this.campaign, this.progress, today);
+    if (daily) this.play(daily.level, { kind: 'daily', day: today, baseId: daily.base.id });
   }
 
   private showCities(): void {
@@ -145,8 +204,10 @@ export class Game {
 
   private leaveLevel(): void {
     this.session = undefined;
+    this.attempt = undefined;
     this.juice.reset();
     this.coach.stop();
+    this.ui.hideReplay();
   }
 
   private showSettings(): void {
@@ -162,22 +223,29 @@ export class Game {
     );
   }
 
-  /** Instant restart: a new session and physics world are cheap to build (FR-10). */
   private startLevel(id: string): void {
     const level = this.campaign.levels.find((l) => l.id === id);
-    const city = this.campaign.worlds.find((w) => w.world === level?.world);
-    if (!level || !city) return;
+    if (level) this.play(level, { kind: 'campaign' });
+  }
+
+  /** Instant restart: a new session and physics world are cheap to build (FR-10). */
+  private play(level: LevelDefinition, mode: Mode): void {
+    const base = mode.kind === 'daily' ? this.campaign.levels.find((l) => l.id === mode.baseId) : level;
+    const city = this.campaign.worlds.find((w) => w.world === level.world);
+    if (!city || !base) return;
     const cityLevels = levelsOf(this.campaign, level.world);
     this.currentWorld = level.world;
     this.juice.reset();
+    this.ui.hideReplay();
     this.pointer = undefined;
     // Each city runs from dawn (first level) to night (last level).
     this.renderer.setScene(city.key, cityLevels.length > 1 ? (level.order - 1) / (cityLevels.length - 1) : 0);
     this.session = new LevelSession(level, new MatterPhysicsWorld(), this.events);
+    this.attempt = { level, mode, replaying: false, plan: undefined, stats: { barrelsBlown: 0, carsWrecked: 0 }, report: undefined };
     this.ui.showHud(
       () => this.fire(),
-      () => this.startLevel(id),
-      () => this.showLevels(),
+      () => this.play(level, mode),
+      () => (mode.kind === 'daily' ? this.showMenu() : this.showLevels()),
       (chargeId, seconds) => {
         if (this.session?.setChargeDelay(chargeId, seconds).ok) {
           this.coach.notify('delay');
@@ -187,9 +255,12 @@ export class Game {
     );
     this.refreshHud();
     // New ideas are coached step by step until the mission is cleared once; otherwise a one-line hint.
-    const tutorial = this.progress.stars[id] ? undefined : TUTORIALS[id];
+    const cleared = (this.progress.stars[base.id] ?? 0) > 0;
+    const tutorial = cleared || mode.kind === 'daily' ? undefined : TUTORIALS[level.id];
     this.coach.start(tutorial ?? []);
-    if (!tutorial && this.progress.stars[id] === undefined) {
+    if (mode.kind === 'daily') {
+      this.ui.toast(T.dailyRule(level.charges.par), 3200);
+    } else if (!tutorial && !cleared) {
       const fallback = level.blocks.some((b) => b.protected)
         ? T.protectedHint
         : level.cars.length > 0
@@ -199,7 +270,38 @@ export class Game {
     }
   }
 
+  /** Re-simulates the attempt from its recorded plan and shows the collapse again in slow motion. */
+  private replay(): void {
+    const a = this.attempt;
+    if (!a?.plan) return;
+    this.juice.reset();
+    const session = new LevelSession(a.level, new MatterPhysicsWorld(), this.events);
+    for (const c of a.plan.charges) session.placeCharge(c.position, c.delay);
+    // Cars cruise while placing, so fast-forward to the exact step the player fired on.
+    for (let i = 0; i < a.plan.fireSteps; i++) session.step(FIXED_STEP);
+    session.fire();
+    this.session = session;
+    this.attempt = { ...a, replaying: true };
+    this.ui.hideScreen();
+    this.ui.showReplay(() => this.endReplay());
+  }
+
+  private endReplay(): void {
+    const a = this.attempt;
+    if (!a?.replaying) return;
+    this.attempt = { ...a, replaying: false };
+    this.ui.hideReplay();
+    a.report?.();
+  }
+
   private fire(): void {
+    const s = this.session;
+    if (s && this.attempt && s.phase === 'placing') {
+      this.attempt.plan = {
+        charges: s.charges.map((c) => ({ position: c.position, delay: c.delay })),
+        fireSteps: Math.round(s.clock / FIXED_STEP),
+      };
+    }
     if (this.session?.fire().ok) {
       this.coach.notify('fired');
       this.sound.fuse();
@@ -208,40 +310,71 @@ export class Game {
     }
   }
 
-  private onFinished(result: NonNullable<LevelSession['result']>): void {
+  private onFinished(result: LevelResult): void {
     const session = this.session;
-    if (!session) return;
-    const level = session.level;
+    const attempt = this.attempt;
+    if (!session || !attempt) return;
+    if (attempt.replaying) {
+      window.setTimeout(() => this.endReplay(), RESULT_DELAY_MS * 2);
+      return;
+    }
+    const level = attempt.level;
+    const today = dayOf(new Date());
     const previousBest = this.progress.best[level.id] ?? 0;
-    this.progress = recordScore(recordStars(this.progress, level.id, result.stars), level.id, result.score);
+    if (attempt.mode.kind === 'daily') {
+      this.progress = recordScore(this.progress, level.id, result.score);
+      if (result.success) this.progress = recordDailyWin(this.progress, attempt.mode.day);
+    } else {
+      this.progress = recordScore(recordStars(this.progress, level.id, result.stars), level.id, result.score);
+    }
+    const stats: AttemptStats = attempt.stats;
+    const earned = newAchievements({
+      progress: this.progress,
+      campaign: this.campaign,
+      result,
+      stats,
+      streak: currentStreak(this.progress, today),
+    });
+    this.progress = unlockAchievements(this.progress, earned.map((a) => a.id));
     this.saves.save(this.progress);
-    const next = this.nextLevel(level);
+
+    const daily = attempt.mode.kind === 'daily';
+    const next = daily ? undefined : this.nextLevel(level);
     const cityDone = levelsOf(this.campaign, level.world).every((l) => (this.progress.stars[l.id] ?? 0) > 0);
-    const lastInCity = next === undefined;
+    const lastInCity = !daily && next === undefined;
     const city = this.campaign.worlds.find((w) => w.world === level.world)?.city ?? '';
+    attempt.report = () =>
+      this.ui.report(
+        result,
+        {
+          city: daily ? T.dailyTitle : city,
+          order: level.order,
+          par: level.charges.par,
+          bonusCollapse: level.bonusCollapse,
+          best: Math.max(previousBest, result.score),
+          newBest: result.score > previousBest,
+          cityComplete: lastInCity && cityDone,
+        },
+        {
+          onRetry: () => this.play(level, attempt.mode),
+          onReplay: () => this.replay(),
+          onNext: daily
+            ? () => this.showMenu()
+            : !result.success
+              ? undefined
+              : next && isLevelUnlocked(this.progress, this.campaign, next.id)
+                ? () => this.startLevel(next.id)
+                : lastInCity
+                  ? () => this.showCities()
+                  : undefined,
+          nextLabel: daily ? T.menu : lastInCity ? T.cities : T.next,
+          onLevels: () => (daily ? this.showMenu() : this.showLevels()),
+        },
+      );
     window.setTimeout(() => {
       if (this.session !== session) return;
-      const info = {
-        city,
-        order: level.order,
-        par: level.charges.par,
-        bonusCollapse: level.bonusCollapse,
-        best: Math.max(previousBest, result.score),
-        newBest: result.score > previousBest,
-        cityComplete: lastInCity && cityDone,
-      };
-      this.ui.report(result, info, {
-        onRetry: () => this.startLevel(level.id),
-        onNext: !result.success
-          ? undefined
-          : next && isLevelUnlocked(this.progress, this.campaign, next.id)
-            ? () => this.startLevel(next.id)
-            : lastInCity
-              ? () => this.showCities()
-              : undefined,
-        nextLabel: lastInCity ? T.cities : T.next,
-        onLevels: () => this.showLevels(),
-      });
+      attempt.report?.();
+      if (earned.length > 0) this.ui.toast(T.achievementUnlocked(earned.map((a) => a.title).join(' · ')), 3200);
     }, RESULT_DELAY_MS);
   }
 

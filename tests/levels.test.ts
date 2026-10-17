@@ -68,6 +68,21 @@ describe('campaign content', () => {
     });
   });
 
+  // The daily mission allows only par charges, so every solution must fit within par.
+  it.each(cases)('%s is solvable within par', (_id, level) => {
+    expect(level.solution.charges.length).toBeLessThanOrEqual(level.charges.par);
+  });
+
+  // Replays re-simulate the same attempt, so physics must be deterministic.
+  it.each(cases.filter(([, l]) => ['w1-10', 'w2-10', 'w3-08'].includes(l.id)))('%s replays identically', (_id, level) => {
+    const snapshot = (s: LevelSession) =>
+      [...s.view()].map((e) => `${e.id}:${e.state.position.x.toFixed(3)},${e.state.position.y.toFixed(3)}`).join('|');
+    const a = playSolution(level);
+    const b = playSolution(level);
+    expect(snapshot(b)).toBe(snapshot(a));
+    expect(b.result).toEqual(a.result);
+  });
+
   it.each(cases)('%s is won by its solution', (_id, level) => {
     const session = playSolution(level);
     expect(session.phase).toBe('finished');

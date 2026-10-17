@@ -207,6 +207,11 @@ export class LevelSession {
     return this.finalResult;
   }
 
+  /** Simulated seconds since the session began (placing included). */
+  get clock(): number {
+    return this.time;
+  }
+
   get elapsedSinceFire(): number {
     return this.currentPhase === 'placing' ? 0 : this.time - this.firedAt;
   }

@@ -17,6 +17,10 @@ export interface Progress {
   readonly stars: Readonly<Record<string, Stars>>;
   /** Best score per level. Added after v0.2; older saves simply start empty. */
   readonly best: Readonly<Record<string, number>>;
+  /** Unlocked achievement ids. */
+  readonly achievements: readonly string[];
+  /** Daily mission streak: the last day (YYYY-MM-DD) a daily was won, and how many days in a row. */
+  readonly daily: { readonly lastWon: string | undefined; readonly streak: number };
   readonly settings: Settings;
 }
 
@@ -31,6 +35,8 @@ export const emptyProgress = (): Progress => ({
   version: PROGRESS_VERSION,
   stars: {},
   best: {},
+  achievements: [],
+  daily: { lastWon: undefined, streak: 0 },
   settings: DEFAULT_SETTINGS,
 });
 
@@ -70,11 +76,22 @@ export const parseProgress = (input: unknown): Result<Progress, ProgressError> =
       if (typeof value === 'number' && Number.isFinite(value) && value >= 0) best[id] = Math.round(value);
     }
   }
+  // Fields added after the first release are optional: older saves start them empty.
+  const achievements = Array.isArray(input.achievements)
+    ? input.achievements.filter((a): a is string => typeof a === 'string')
+    : [];
+  const d = isRecord(input.daily) ? input.daily : {};
+  const daily = {
+    lastWon: typeof d.lastWon === 'string' && DAY.test(d.lastWon) ? d.lastWon : undefined,
+    streak: typeof d.streak === 'number' && Number.isInteger(d.streak) && d.streak >= 0 ? d.streak : 0,
+  };
   const s = isRecord(input.settings) ? input.settings : {};
   return ok({
     version: PROGRESS_VERSION,
     stars,
     best,
+    achievements,
+    daily,
     settings: {
       sfxVolume: volume(s.sfxVolume, DEFAULT_SETTINGS.sfxVolume),
       screenShake: flag(s.screenShake, DEFAULT_SETTINGS.screenShake),
@@ -95,6 +112,33 @@ export const recordStars = (progress: Progress, levelId: string, stars: Stars): 
 export const recordScore = (progress: Progress, levelId: string, score: number): Progress => {
   if (score <= (progress.best[levelId] ?? 0)) return progress;
   return { ...progress, best: { ...progress.best, [levelId]: score } };
+};
+
+export const unlockAchievements = (progress: Progress, ids: readonly string[]): Progress => {
+  const fresh = ids.filter((id) => !progress.achievements.includes(id));
+  return fresh.length === 0 ? progress : { ...progress, achievements: [...progress.achievements, ...fresh] };
+};
+
+const DAY = /^\d{4}-\d{2}-\d{2}$/;
+
+/** The day before a YYYY-MM-DD date, computed on the calendar (not in milliseconds, so DST cannot shift it). */
+export const previousDay = (day: string): string => {
+  const [y, m, d] = day.split('-').map(Number);
+  const date = new Date(Date.UTC(y ?? 1970, (m ?? 1) - 1, (d ?? 1) - 1));
+  return date.toISOString().slice(0, 10);
+};
+
+/** Winning a daily extends the streak if yesterday was won too; winning twice in a day changes nothing. */
+export const recordDailyWin = (progress: Progress, day: string): Progress => {
+  const { lastWon, streak } = progress.daily;
+  if (lastWon === day) return progress;
+  return { ...progress, daily: { lastWon: day, streak: lastWon === previousDay(day) ? streak + 1 : 1 } };
+};
+
+/** A streak only counts while it is unbroken: yesterday or today must have been won. */
+export const currentStreak = (progress: Progress, today: string): number => {
+  const { lastWon, streak } = progress.daily;
+  return lastWon === today || lastWon === previousDay(today) ? streak : 0;
 };
 
 export const updateSettings = (progress: Progress, patch: Partial<Settings>): Progress => ({

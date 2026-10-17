@@ -82,8 +82,19 @@ export interface ReportInfo {
   readonly cityComplete: boolean;
 }
 
+export interface MenuState {
+  readonly totalStars: number;
+  readonly daily: { readonly name: string; readonly streak: number; readonly wonToday: boolean } | undefined;
+  readonly achievements: { readonly unlocked: number; readonly total: number };
+  readonly onPlay: () => void;
+  readonly onDaily: () => void;
+  readonly onAchievements: () => void;
+  readonly onSettings: () => void;
+}
+
 export interface ResultActions {
   readonly onRetry: () => void;
+  readonly onReplay: () => void;
   readonly onNext: (() => void) | undefined;
   readonly nextLabel: string;
   readonly onLevels: () => void;
@@ -105,6 +116,7 @@ export class Ui {
       }
     | undefined;
   private toastTimer = 0;
+  private readonly replayEl: HTMLElement;
 
   constructor(
     root: HTMLElement,
@@ -113,10 +125,12 @@ export class Ui {
     this.hud = h('div', { class: 'hud hidden' });
     this.screen = h('div', { class: 'screen hidden' });
     this.toastEl = h('div', { class: 'toast', role: 'status' });
+    this.replayEl = h('div', { class: 'replay hidden' });
+    root.append(this.replayEl);
     root.append(this.hud, this.screen, this.toastEl, h('div', { class: 'rotate' }, ICONS.phone(56), T.rotate));
   }
 
-  menu(totalStars: number, onPlay: () => void, onSettings: () => void): void {
+  menu(m: MenuState): void {
     this.hideHud();
     this.show(
       h(
@@ -126,11 +140,58 @@ export class Ui {
         h('div', { class: 'hazard' }),
         h('p', { class: 'subtitle' }, T.subtitle),
         h('p', { class: 'tagline' }, T.tagline),
-        this.button(T.play, onPlay, 'primary big'),
-        this.button(T.settings, onSettings),
-        h('p', { class: 'meta' }, `${T.totalStars(totalStars)} · ${T.offline}`),
+        this.button(T.play, m.onPlay, 'primary big'),
+        m.daily &&
+          h(
+            'button',
+            { class: `btn daily${m.daily.wonToday ? ' done' : ''}`, click: () => this.tap(m.onDaily) },
+            h('span', {}, T.daily),
+            h('small', {}, T.dailyInfo(m.daily.name, m.daily.streak, m.daily.wonToday)),
+          ),
+        h(
+          'div',
+          { class: 'menu-row' },
+          this.button(`${T.achievementsTitle} ${T.achievementsCount(m.achievements.unlocked, m.achievements.total)}`, m.onAchievements),
+          this.button(T.settings, m.onSettings),
+        ),
+        h('p', { class: 'meta' }, `${T.totalStars(m.totalStars)} · ${T.offline}`),
       ),
     );
+  }
+
+  achievements(list: readonly { title: string; description: string; unlocked: boolean }[], onBack: () => void): void {
+    this.hideHud();
+    this.show(
+      h(
+        'div',
+        { class: 'panel achievements' },
+        h('h2', {}, T.achievementsTitle),
+        h(
+          'ul',
+          { class: 'achievement-list' },
+          ...list.map((a) =>
+            h(
+              'li',
+              { class: a.unlocked ? 'unlocked' : '' },
+              a.unlocked ? ICONS.check(16) : ICONS.lock(16),
+              h('div', {}, h('strong', {}, a.title), h('span', {}, a.description)),
+            ),
+          ),
+        ),
+        this.button(T.back, onBack),
+      ),
+    );
+  }
+
+  /** Replay mode: no HUD or menus, just a label and a way out. */
+  showReplay(onSkip: () => void): void {
+    this.hideHud();
+    this.replayEl.replaceChildren(h('span', { class: 'label' }, T.replayLabel), this.button(T.skip, onSkip));
+    this.replayEl.classList.remove('hidden');
+  }
+
+  hideReplay(): void {
+    this.replayEl.classList.add('hidden');
   }
 
   /** Horizontally swipeable operation sites, one per city. */
@@ -382,6 +443,7 @@ export class Ui {
           'div',
           { class: 'actions' },
           this.button(T.retry, actions.onRetry, r.success ? '' : 'primary'),
+          this.button(T.replay, actions.onReplay),
           actions.onNext && this.button(actions.nextLabel, actions.onNext, 'primary'),
           this.button(T.levels, actions.onLevels),
         ),

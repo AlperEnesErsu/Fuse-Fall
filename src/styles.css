@@ -911,3 +911,96 @@ h2,
     outline-color: rgba(242, 177, 52, 0.25);
   }
 }
+
+/* ---- menu extras: daily mission, achievements, replay ---- */
+.menu-row {
+  display: flex;
+  gap: 8px;
+}
+.btn.daily {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  border-color: var(--accent);
+  min-width: min(320px, 70vw);
+}
+.btn.daily small {
+  font-family: var(--font);
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+.btn.daily.done {
+  border-color: var(--ok);
+}
+.achievement-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 8px;
+  width: min(620px, calc(100vw - 60px));
+}
+.achievement-list li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 8px 10px;
+  background: var(--panel-2);
+  border: 1px solid var(--edge);
+  border-radius: var(--radius);
+  color: var(--muted);
+}
+.achievement-list li.unlocked {
+  color: var(--text);
+  border-left: 3px solid var(--accent);
+}
+.achievement-list li.unlocked svg {
+  color: var(--ok);
+}
+.achievement-list div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.8rem;
+}
+.achievement-list strong {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+}
+.replay {
+  pointer-events: auto;
+  position: absolute;
+  top: max(12px, env(safe-area-inset-top));
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(15, 17, 20, 0.86);
+  border: 1px solid var(--edge);
+  border-left: 3px solid var(--danger);
+  border-radius: var(--radius);
+  padding: 6px 8px 6px 12px;
+}
+.replay .label {
+  letter-spacing: 0.2em;
+  font-size: 0.8rem;
+}
+.replay .label::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: var(--danger);
+  animation: coach-pulse 1s ease-in-out infinite;
+}
+.replay .btn {
+  padding: 6px 12px;
+}

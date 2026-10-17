@@ -145,6 +145,22 @@ Yapıyı incele → Patlayıcı yerleştir → Ateşle → Yıkımı izle → Pu
 | FR-31 | Endüstriyel görsel dil: kömür/çelik tonları, tek vurgu rengi olarak tehlike sarısı, dar büyük harfli başlıklar, SVG ikonlar, plastik patlayıcı görünümlü şarj, şerit desenli fünye düğmesi. | M |
 | FR-32 | Ortam müziği yok; katmanlı patlama sesi (çatlama, gürleme, alt bas, yankı, düşen moloz) ve mekanik arayüz sesleri. | M |
 
+### Sıralama, mobil ve oyuncuyu geri getirme (v0.4)
+
+| ID | Gereksinim | Öncelik |
+|---|---|---|
+| FR-33 | Her şarjın kendi ateşleme gecikmesi vardır (50 ms adım, 0–2000 ms). Yeni şarj varsayılan olarak bir öncekinden 350 ms sonra patlar. | M |
+| FR-34 | Gecikme çizelgesi: şarj başına bir şerit, sürükleyerek ayar. Londra'dan itibaren görünür; şarjların altında gecikme etiketi. | M |
+| FR-35 | Londra (Bölüm 3): 10 görev. Konvoy görevleri ayrı gecikmeler gerektirir; varsayılan sırayla kazanılamadığı testle doğrulanır. | M |
+| FR-36 | Tek yönlü trafik (`flow`) ve sabit altyapı blokları (`anchored`: hareketsiz, yıkılmaz, görev dışı). | M |
+| FR-37 | Android uygulaması (Capacitor): yatay, tam ekran, ağ izni yok, titreşim izni var. | M |
+| FR-38 | Yeni bir fikir getiren görevlerde adım adım eğitim (ilk görev, ilk korunan yapı, ilk araç, ilk gecikme görevi); görev bir kez geçilene kadar gösterilir, atlanabilir. | S |
+| FR-39 | Günlük görev: tarihten seçilir, çevrimdışı; yalnızca par kadar şarj. Tüm çözümlerin par içinde kaldığı testle doğrulanır. Günlük seri (takvim günüyle). | S |
+| FR-40 | Başarımlar (9 adet): kayda işlenir, açıldığında bildirilir, menüden listelenir. | S |
+| FR-41 | Tekrar izle: aynı girişimin fiziği yeniden simüle edilir ve yavaş çekimde gösterilir. Fizik deterministik olduğu için kayıt gerekmez (testle doğrulanır). | S |
+
+**Performans notu (NFR-01):** Yazılım GPU'lu emülatörde en ağır Ankara görevinde ortalama 23,9 → 35,3 FPS (efekt sprite önbelleği, dokunmatikte 1,5× çözünürlük). Bu sayılar gerçek cihazı temsil etmez; gerçek telefonda ölçüm henüz yapılmadı.
+
 ## 6. MVP kapsamı (Sürüm 0.1)
 
 - 1 dünya, 10 seviye

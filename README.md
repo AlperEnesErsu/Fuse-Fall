@@ -13,6 +13,15 @@ npm run check      # tsc + eslint + testler
 npm run coverage   # core + infrastructure kapsamı (eşik %80)
 ```
 
+## Android
+
+```bash
+npm run build && npx cap sync android
+cd android && ./gradlew assembleDebug   # JDK 21 gerekir (Android Studio'nun jbr klasörü)
+```
+
+APK: `android/app/build/outputs/apk/debug/app-debug.apk`. Proje yolu ASCII olmayan karakter ("Masaüstü") içerdiği için `android/gradle.properties` içinde `android.overridePathCheck=true` açık.
+
 ## Mimari
 
 ```
@@ -29,7 +38,8 @@ Bağımlılıklar içe doğru akar ve ESLint ile zorlanır. `core` Matter.js'i y
 ## İçerik
 
 - `src/content/cities.json`: bölümler (başkentler) ve açılma eşikleri. Seviyesi olmayan şehir "Yakında" görünür.
-- `src/content/levels/<şehir>.json`: şehrin seviyeleri. Bloklar, variller, arabalar (`cars`: rota `from`/`to`, `speed`) ve bir `solution` (`charges` + ateşleme anı `fireAt`).
+- `src/content/levels/<şehir>.json`: şehrin seviyeleri. Bloklar (`target`, `protected` ya da `anchored`), variller, arabalar (`cars`: rota `from`/`to`, `speed`, `mode`: `patrol`/`flow`) ve bir `solution` (`charges` + her şarjın `delay` değeri + ateşleme anı `fireAt`).
+- `src/content/tutorials.ts`: yeni fikir getiren görevlerin adım adım eğitimleri.
 - Yeni şehir: `cities.json`'a ekle, seviye paketini `src/content/levels.ts` içindeki `PACKS` listesine ekle, silüetini `src/presentation/scenery.ts` içinde çiz.
 
 `tests/levels.test.ts` her seviyenin ateşlenmeden ayakta durduğunu, çözümünün gerçek fizikle kazandığını ve araba seviyelerinde zamanlamanın gerçekten önemli olduğunu doğrular.
