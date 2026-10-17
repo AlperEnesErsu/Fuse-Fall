@@ -1,81 +1,25 @@
+import { en } from './i18n/en';
+import { tr, type Strings } from './i18n/tr';
+
+export type Language = 'tr' | 'en';
+export type LanguageSetting = Language | 'auto';
+
+const TABLES: Readonly<Record<Language, Strings>> = { tr, en };
+
 /**
- * All player-facing text, in one place for the future English translation (FR-20).
- * Tone: a professional demolition crew. Short, factual, a little dry.
+ * The active string table. Modules import this binding and always see the
+ * current language (ES module live binding), so switching needs no plumbing.
  */
-export const T = {
-  subtitle: 'KONTROLLÜ YIKIM',
-  tagline: 'Doğru yere doğru şarj. Gerisini fizik halleder.',
-  play: 'Operasyonlar',
-  daily: 'Günlük görev',
-  dailyTitle: 'Günlük görev',
-  dailyInfo: (name: string, streak: number, done: boolean) =>
-    `${name}${done ? ' · bugün tamam' : ''}${streak > 0 ? ` · ${streak} gün seri` : ''}`,
-  dailyRule: (par: number) => `Günlük kural: yalnızca ${par} şarj. Fazlası yok.`,
-  achievementsTitle: 'Başarımlar',
-  achievementsCount: (n: number, total: number) => `${n} / ${total}`,
-  achievementUnlocked: (titles: string) => `Başarım açıldı: ${titles}`,
-  replay: 'Tekrar izle',
-  replayLabel: 'TEKRAR · YAVAŞ ÇEKİM',
-  settings: 'Ayarlar',
-  back: 'Geri',
-  cities: 'Operasyon Sahaları',
-  levels: 'Görevler',
-  site: (n: number) => `SAHA ${String(n).padStart(2, '0')}`,
-  mission: (n: number) => String(n).padStart(2, '0'),
-  fire: 'ATEŞLE',
-  retry: 'Tekrar dene',
-  next: 'Sonraki görev',
-  menu: 'Menü',
-  charges: 'Şarj',
-  delayTitle: 'Ateşleme gecikmesi (ms)',
-  ms: (seconds: number) => `+${Math.round(seconds * 1000)} ms`,
-  targets: 'Hedef',
-  protectedLabel: 'Korunan',
-  offline: 'Çevrimdışı çalışır',
-  totalStars: (n: number) => `Toplam ★ ${n}`,
-  best: (n: number) => `En iyi ${n}`,
-  placeHint: 'Şarjı işaretli alana yerleştir.',
-  carHint: 'Araç rotasında ilerliyor. Doğru anda ateşle.',
-  protectedHint: 'Korunan yapılara hasar verme; sözleşme anında iptal olur.',
-  comingSoon: 'Yakında',
-  needsPrevious: (city: string) => `Önce ${city} tamamlanmalı`,
-  needsStars: (n: number) => `${n} yıldız daha gerekli`,
-  rotate: 'Yatay modda oyna',
-  sfx: 'Efekt sesi',
-  testSound: 'Patlama sesini dinle',
-  skip: 'Atla',
-  shake: 'Ekran sarsıntısı',
-  flashes: 'Flaş ve parlama',
-  haptics: 'Titreşim',
-  report: {
-    title: 'YIKIM RAPORU',
-    heading: (city: string, order: number) => `${city.toUpperCase()} · GÖREV ${String(order).padStart(2, '0')}`,
-    success: 'BAŞARILI',
-    failure: 'BAŞARISIZ',
-    reasons: {
-      'target-standing': 'Hedef ayakta kaldı.',
-      'collateral-damage': 'Korunan yapı hasar gördü. Sözleşme iptal.',
-    },
-    cityComplete: (city: string) => `${city} sahası tamamlandı.`,
-    targets: 'Hedefler',
-    charges: 'Kullanılan şarj',
-    par: (n: number) => `par ${n}`,
-    collapse: 'Yıkım oranı',
-    protectedRow: 'Korunan yapılar',
-    intact: 'Hasarsız',
-    damaged: (n: number) => `${n} hasarlı`,
-    none: '—',
-    duration: 'Süre',
-    seconds: (s: number) => `${s.toFixed(1).replace('.', ',')} sn`,
-    score: 'PUAN',
-    newBest: 'YENİ REKOR',
-    criteria: ['Hedefler indirildi', 'Par içinde kalındı', 'Yıkım bonusu'],
-  },
-  placement: {
-    'outside-zone': 'Sadece işaretli alana',
-    'too-close': 'Diğer şarja çok yakın',
-    'no-charges-left': 'Şarj kalmadı',
-    'not-placing': '',
-    'unknown-charge': '',
-  },
-} as const;
+export let T: Strings = tr;
+export let language: Language = 'tr';
+
+/** `auto` follows the device: Turkish devices get Turkish, everyone else English. */
+export const resolveLanguage = (setting: LanguageSetting, deviceLanguages: readonly string[]): Language =>
+  setting !== 'auto' ? setting : deviceLanguages.some((l) => l.toLowerCase().startsWith('tr')) ? 'tr' : 'en';
+
+export const setLanguage = (next: Language): void => {
+  language = next;
+  T = TABLES[next];
+  // Lets CSS uppercase Turkish letters correctly (i → İ).
+  document.documentElement.lang = next;
+};

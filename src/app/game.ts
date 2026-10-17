@@ -24,10 +24,11 @@ import { MatterPhysicsWorld } from '../infrastructure/matter-physics';
 import { SoundDirector } from '../presentation/audio';
 import { JuiceDirector } from '../presentation/juice';
 import { Renderer } from '../presentation/renderer';
-import { T } from '../presentation/strings';
+import { T, language, resolveLanguage, setLanguage } from '../presentation/strings';
 import { Ui } from '../presentation/ui';
 import { Coach } from '../presentation/coach';
-import { TUTORIALS } from '../content/tutorials';
+import { tutorialFor } from '../content/tutorials';
+import { contentText, type ContentText } from '../content/text';
 import { ACHIEVEMENTS } from '../core/achievements';
 import { FIXED_STEP, FixedStepLoop } from './loop';
 import { newAchievements, type AttemptStats } from '../core/achievements';
@@ -83,6 +84,8 @@ export class Game {
   private time = 0;
   /** The city the player last browsed, so "back" returns to it. */
   private currentWorld = 1;
+  /** Display text for missions and cities in the current language. */
+  private text: ContentText;
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
@@ -92,6 +95,7 @@ export class Game {
     private readonly vibrate: (ms: number) => void,
   ) {
     this.progress = saves.load();
+    this.text = this.applyLanguage();
     const settings = (): Settings => this.progress.settings;
     this.renderer = new Renderer(canvas);
     this.juice = new JuiceDirector(this.events, settings);
@@ -137,7 +141,7 @@ export class Game {
     this.ui.menu({
       totalStars: totalStars(this.progress),
       daily: daily && {
-        name: daily.base.name,
+        name: this.text.levelName(daily.base),
         streak: currentStreak(this.progress, today),
         wonToday: this.progress.daily.lastWon === today,
       },
@@ -152,7 +156,7 @@ export class Game {
   private showAchievements(): void {
     this.leaveLevel();
     this.ui.achievements(
-      ACHIEVEMENTS.map((a) => ({ title: a.title, description: a.description, unlocked: this.progress.achievements.includes(a.id) })),
+      ACHIEVEMENTS.map((a) => ({ ...T.achievements[a.id], unlocked: this.progress.achievements.includes(a.id) })),
       () => this.showMenu(),
     );
   }
@@ -167,13 +171,18 @@ export class Game {
     this.leaveLevel();
     const worlds = this.campaign.worlds;
     this.ui.cityMap(
-      worlds.map((world, i) => ({
-        world,
-        status: worldStatus(this.progress, this.campaign, world.world),
-        stars: worldStars(this.progress, this.campaign, world.world),
-        maxStars: levelsOf(this.campaign, world.world).length * 3,
-        previousCity: worlds[i - 1]?.city,
-      })),
+      worlds.map((world, i) => {
+        const previous = worlds[i - 1];
+        return {
+          world,
+          city: this.text.city(world),
+          country: this.text.country(world),
+          status: worldStatus(this.progress, this.campaign, world.world),
+          stars: worldStars(this.progress, this.campaign, world.world),
+          maxStars: levelsOf(this.campaign, world.world).length * 3,
+          previousCity: previous && this.text.city(previous),
+        };
+      }),
       Math.max(0, worlds.findIndex((w) => w.world === this.currentWorld)),
       (world) => this.showLevels(world),
       () => this.showMenu(),
@@ -189,10 +198,12 @@ export class Game {
     const levels = levelsOf(this.campaign, world);
     this.ui.levelSelect(
       def,
+      this.text.city(def),
       worldStars(this.progress, this.campaign, world),
       levels.length * 3,
       levels.map((level) => ({
         level,
+        name: this.text.levelName(level),
         stars: this.progress.stars[level.id] ?? 0,
         best: this.progress.best[level.id],
         unlocked: isLevelUnlocked(this.progress, this.campaign, level.id),
@@ -217,6 +228,10 @@ export class Game {
         this.progress = updateSettings(this.progress, patch);
         this.saves.save(this.progress);
         this.sound.applyVolumes();
+        if (patch.language !== undefined) {
+          this.text = this.applyLanguage();
+          this.showSettings();
+        }
       },
       () => this.sound.test(),
       () => this.showMenu(),
@@ -256,7 +271,7 @@ export class Game {
     this.refreshHud();
     // New ideas are coached step by step until the mission is cleared once; otherwise a one-line hint.
     const cleared = (this.progress.stars[base.id] ?? 0) > 0;
-    const tutorial = cleared || mode.kind === 'daily' ? undefined : TUTORIALS[level.id];
+    const tutorial = cleared || mode.kind === 'daily' ? undefined : tutorialFor(level.id, language);
     this.coach.start(tutorial ?? []);
     if (mode.kind === 'daily') {
       this.ui.toast(T.dailyRule(level.charges.par), 3200);
@@ -266,7 +281,7 @@ export class Game {
         : level.cars.length > 0
           ? T.carHint
           : T.placeHint;
-      this.ui.toast(level.hint ?? fallback, 3200);
+      this.ui.toast(this.text.levelHint(level) ?? fallback, 3200);
     }
   }
 
@@ -342,7 +357,8 @@ export class Game {
     const next = daily ? undefined : this.nextLevel(level);
     const cityDone = levelsOf(this.campaign, level.world).every((l) => (this.progress.stars[l.id] ?? 0) > 0);
     const lastInCity = !daily && next === undefined;
-    const city = this.campaign.worlds.find((w) => w.world === level.world)?.city ?? '';
+    const world = this.campaign.worlds.find((w) => w.world === level.world);
+    const city = world ? this.text.city(world) : '';
     attempt.report = () =>
       this.ui.report(
         result,
@@ -374,8 +390,23 @@ export class Game {
     window.setTimeout(() => {
       if (this.session !== session) return;
       attempt.report?.();
-      if (earned.length > 0) this.ui.toast(T.achievementUnlocked(earned.map((a) => a.title).join(' · ')), 3200);
+      if (earned.length > 0) {
+        this.ui.toast(T.achievementUnlocked(earned.map((a) => T.achievements[a.id].title).join(' · ')), 3200);
+      }
     }, RESULT_DELAY_MS);
+  }
+
+  /** A daily mission shows its base mission's name. */
+  private displayName(level: LevelDefinition): string {
+    const mode = this.attempt?.mode;
+    const base = mode?.kind === 'daily' ? this.campaign.levels.find((l) => l.id === mode.baseId) : undefined;
+    return this.text.levelName(base ?? level);
+  }
+
+  /** Picks the language from the saved choice (or the device) and returns the matching content text. */
+  private applyLanguage(): ContentText {
+    setLanguage(resolveLanguage(this.progress.settings.language, navigator.languages ?? [navigator.language]));
+    return contentText(language);
   }
 
   private nextLevel(level: LevelDefinition): LevelDefinition | undefined {
@@ -411,7 +442,7 @@ export class Game {
     if (!s) return;
     this.ui.updateHud({
       levelOrder: s.level.order,
-      levelName: s.level.name,
+      levelName: this.displayName(s.level),
       chargesUsed: s.charges.length,
       protectedTotal: s.level.blocks.filter((b) => b.protected).length,
       chargesMax: s.level.charges.max,

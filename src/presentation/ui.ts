@@ -48,6 +48,8 @@ const cityThumbnail = (key: string, progress: number): HTMLCanvasElement => {
 
 export interface CityCard {
   readonly world: WorldDefinition;
+  readonly city: string;
+  readonly country: string;
   readonly status: WorldStatus;
   readonly stars: number;
   readonly maxStars: number;
@@ -56,6 +58,7 @@ export interface CityCard {
 
 export interface LevelCard {
   readonly level: LevelDefinition;
+  readonly name: string;
   readonly stars: Stars;
   readonly best: number | undefined;
   readonly unlocked: boolean;
@@ -220,8 +223,8 @@ export class Ui {
           },
           cityThumbnail(card.world.key, 0.55),
           h('span', { class: 'city-part' }, T.site(card.world.world)),
-          h('span', { class: 'city-name' }, card.world.city),
-          h('span', { class: 'city-country' }, card.world.country),
+          h('span', { class: 'city-name' }, card.city),
+          h('span', { class: 'city-country' }, card.country),
           card.status.kind !== 'coming-soon'
             ? h('div', { class: 'progress' }, h('div', { class: 'bar', style: `width:${pct}%` }))
             : undefined,
@@ -246,6 +249,7 @@ export class Ui {
 
   levelSelect(
     world: WorldDefinition,
+    cityName: string,
     stars: number,
     maxStars: number,
     cards: readonly LevelCard[],
@@ -261,7 +265,7 @@ export class Ui {
           'div',
           { class: 'levels-head' },
           this.iconButton(ICONS.back(), onBack, T.cities),
-          h('div', {}, h('span', { class: 'city-part' }, T.site(world.world)), h('h2', {}, `${world.city} · ${T.levels}`)),
+          h('div', {}, h('span', { class: 'city-part' }, T.site(world.world)), h('h2', {}, `${cityName} · ${T.levels}`)),
           h('span', { class: 'meta push' }, `★ ${stars} / ${maxStars}`),
         ),
         h(
@@ -276,7 +280,7 @@ export class Ui {
                 click: () => this.tap(() => onPick(c.level.id)),
               },
               h('span', { class: 'num' }, c.unlocked ? T.mission(c.level.order) : ICONS.lock(18)),
-              h('span', { class: 'name' }, c.level.name),
+              h('span', { class: 'name' }, c.name),
               starRow(c.stars, 'sm'),
               c.best ? h('span', { class: 'best' }, String(c.best)) : undefined,
             ),
@@ -301,6 +305,20 @@ export class Ui {
         'div',
         { class: 'panel settings' },
         h('h2', {}, T.settings),
+        h(
+          'label',
+          { class: 'row' },
+          T.languageLabel,
+          this.select(
+            [
+              ['auto', T.languageAuto],
+              ['tr', 'Türkçe'],
+              ['en', 'English'],
+            ],
+            s.language,
+            (value) => onChange({ language: value as Settings['language'] }),
+          ),
+        ),
         h(
           'label',
           { class: 'row' },
@@ -476,6 +494,15 @@ export class Ui {
 
   private button(label: string, onClick: () => void, variant = ''): HTMLElement {
     return h('button', { class: `btn ${variant}`.trim(), click: () => this.tap(onClick) }, label);
+  }
+
+  private select(options: readonly (readonly [string, string])[], value: string, onChange: (value: string) => void): HTMLElement {
+    const el = h(
+      'select',
+      { change: (e) => onChange((e.target as HTMLSelectElement).value) },
+      ...options.map(([v, label]) => h('option', { value: v, ...(v === value ? { selected: 'true' } : {}) }, label)),
+    );
+    return el;
   }
 
   private iconButton(icon: SVGSVGElement, onClick: () => void, label: string): HTMLElement {

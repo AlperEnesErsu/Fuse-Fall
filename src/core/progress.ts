@@ -5,7 +5,11 @@ import type { WorldDefinition } from './world';
 
 export const PROGRESS_VERSION = 1;
 
+/** `auto` follows the device language. */
+export type LanguageChoice = 'auto' | 'tr' | 'en';
+
 export interface Settings {
+  readonly language: LanguageChoice;
   readonly sfxVolume: number;
   readonly screenShake: boolean;
   readonly flashes: boolean;
@@ -25,6 +29,7 @@ export interface Progress {
 }
 
 export const DEFAULT_SETTINGS: Settings = {
+  language: 'auto',
   sfxVolume: 0.8,
   screenShake: true,
   flashes: true,
@@ -93,6 +98,7 @@ export const parseProgress = (input: unknown): Result<Progress, ProgressError> =
     achievements,
     daily,
     settings: {
+      language: s.language === 'tr' || s.language === 'en' || s.language === 'auto' ? s.language : DEFAULT_SETTINGS.language,
       sfxVolume: volume(s.sfxVolume, DEFAULT_SETTINGS.sfxVolume),
       screenShake: flag(s.screenShake, DEFAULT_SETTINGS.screenShake),
       flashes: flag(s.flashes, DEFAULT_SETTINGS.flashes),

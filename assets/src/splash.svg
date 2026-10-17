@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2732 2732">
+  <defs>
+    <pattern id="hazard" width="56" height="56" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
+      <rect width="28" height="56" fill="#f2b134"/>
+      <rect x="28" width="28" height="56" fill="#16181c"/>
+    </pattern>
+  </defs>
+  <rect width="2732" height="2732" fill="#0f1114"/>
+  <text x="1366" y="1330" text-anchor="middle" font-family="Bahnschrift, 'Arial Narrow', sans-serif" font-weight="700" font-size="230" letter-spacing="28" fill="#ebe8e2">FUSE <tspan fill="#f2b134">&amp;</tspan> FALL</text>
+  <rect x="736" y="1400" width="1260" height="26" fill="url(#hazard)"/>
+</svg>
