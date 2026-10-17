@@ -79,6 +79,13 @@ export class SoundSynth {
     }
   }
 
+  /** A bomb's fall: a long whistle sliding down in pitch. */
+  whistle(pan = 0): void {
+    const at = this.ctx.currentTime;
+    const out = this.voice(pan, 0.3);
+    this.tone(out, at, { type: 'sine', from: 1500, to: 380, sweep: 1.6, attack: 0.05, decay: 1.6, gain: 0.06 });
+  }
+
   carWreck(pan = 0): void {
     const at = this.ctx.currentTime;
     const out = this.voice(pan, 0.35);

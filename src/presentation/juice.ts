@@ -44,7 +44,7 @@ export interface Scorch {
 
 /** Feel parameters. Tweak here; nothing else needs to change. */
 const FEEL = {
-  hitStop: { charge: 0.06, barrel: 0.04, vehicle: 0.045 },
+  hitStop: { charge: 0.06, barrel: 0.04, vehicle: 0.045, bomb: 0.07 },
   trauma: { explosion: 0.55, shatter: 0.06, hit: 0.05, decay: 1.5 },
   shakeMaxOffset: 16,
   shakeMaxAngle: 0.02,

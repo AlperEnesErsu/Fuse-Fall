@@ -28,6 +28,7 @@ export class SoundDirector {
     // A snapping joint: a short dry crack, rate-limited with the other impacts.
     events.on('jointBroken', (e) => this.hit({ position: e.position, material: 'concrete', intensity: 0.3 }));
     events.on('carWrecked', (e) => this.synth?.carWreck(panOf(e.position)));
+    events.on('bombReleased', (e) => this.synth?.whistle(panOf(e.position)));
     events.on('chargePlaced', () => this.synth?.arm());
     events.on('chargeRemoved', () => this.synth?.disarm());
     events.on('levelFinished', (e) => (e.result.success ? this.synth?.success(e.result.stars) : this.synth?.failure()));

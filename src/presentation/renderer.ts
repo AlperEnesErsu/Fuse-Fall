@@ -1,6 +1,7 @@
 import { WORLD } from '../core/level';
 import { hashString, type Vec2 } from '../core/math';
 import { chargeRadius, type EntityView, type LevelSession } from '../core/session';
+import { TUNING } from '../core/tuning';
 import type { ChargeKind } from '../core/level';
 import type { JuiceDirector } from './juice';
 import { MATERIAL_COLORS, PALETTE } from './palette';
@@ -223,7 +224,9 @@ export class Renderer {
     c.save();
     c.translate(position.x, position.y);
     c.rotate(angle);
-    if (e.shape.kind === 'circle') {
+    if (e.kind === 'bomb' && e.shape.kind === 'circle') {
+      this.bomb(e.shape.r, time, true);
+    } else if (e.shape.kind === 'circle') {
       this.barrel(e.shape.r, time);
     } else if (e.shape.kind === 'poly') {
       this.fragment(e.material, e.shape.vertices);
@@ -504,6 +507,59 @@ export class Renderer {
     }
   }
 
+  /** A bomb on its rack before release, with a dashed drop line straight down. */
+  private rackedBomb(p: Vec2, time: number): void {
+    const c = this.ctx;
+    c.save();
+    c.setLineDash([4, 6]);
+    c.strokeStyle = 'rgba(242, 177, 52, 0.45)';
+    c.lineWidth = 1.5;
+    c.beginPath();
+    c.moveTo(p.x, p.y + 14);
+    c.lineTo(p.x, WORLD.groundY);
+    c.stroke();
+    c.setLineDash([]);
+    c.strokeStyle = '#9aa1aa';
+    c.beginPath();
+    c.moveTo(p.x - 10, p.y - 18);
+    c.lineTo(p.x + 10, p.y - 18);
+    c.moveTo(p.x, p.y - 18);
+    c.lineTo(p.x, p.y - 10);
+    c.stroke();
+    c.translate(p.x, p.y);
+    this.bomb(TUNING.bomb.radius, time, false);
+    c.restore();
+  }
+
+  /** A free-fall bomb: olive body, tail fins, a red light that blinks fast once armed. */
+  private bomb(r: number, time: number, armed: boolean): void {
+    const c = this.ctx;
+    c.fillStyle = '#4d5733';
+    c.beginPath();
+    c.ellipse(0, 0, r * 0.9, r * 1.35, 0, 0, Math.PI * 2);
+    c.fill();
+    c.fillStyle = '#3b4328';
+    c.beginPath();
+    c.moveTo(-r * 0.8, -r * 1.1);
+    c.lineTo(r * 0.8, -r * 1.1);
+    c.lineTo(r * 0.5, -r * 1.7);
+    c.lineTo(-r * 0.5, -r * 1.7);
+    c.closePath();
+    c.fill();
+    c.fillStyle = PALETTE.accent;
+    c.fillRect(-r * 0.9, r * 0.2, r * 1.8, 2);
+    const on = armed ? Math.floor(time * 10) % 2 === 0 : Math.floor(time * 1.5) % 2 === 0;
+    c.fillStyle = on ? (armed ? '#ff3b30' : '#59d36b') : '#2a2d33';
+    c.beginPath();
+    c.arc(0, -r * 0.3, 2, 0, Math.PI * 2);
+    c.fill();
+    c.strokeStyle = 'rgba(0,0,0,0.5)';
+    c.lineWidth = 1;
+    c.beginPath();
+    c.ellipse(0, 0, r * 0.9, r * 1.35, 0, 0, Math.PI * 2);
+    c.stroke();
+  }
+
   private barrel(r: number, time: number): void {
     const c = this.ctx;
     c.fillStyle = PALETTE.barrel;
@@ -540,6 +596,7 @@ export class Renderer {
     c.setLineDash([6, 6]);
     c.lineWidth = 1.5;
     for (const { position: centre, kind } of centres) {
+      if (kind === 'bomb') continue; // a falling bomb goes off wherever it is; its drop line says where it starts
       const hits = session.protectedReachedFrom(centre, kind);
       hits.forEach((id) => threatened.add(id));
       const danger = hits.length > 0;
@@ -559,14 +616,18 @@ export class Renderer {
     if (placing) {
       session.charges.forEach((ch, i) => {
         if (overlay.drag?.id === ch.id) return;
-        this.charge(ch.position, i + 1, false, overlay.time, ch.kind);
+        if (ch.kind === 'bomb') this.rackedBomb(ch.position, overlay.time);
+        else this.charge(ch.position, i + 1, false, overlay.time, ch.kind);
         this.delayTag(ch.position, ch.delay);
       });
       const dragged = session.charges.find((ch) => ch.id === overlay.drag?.id);
       if (overlay.drag && dragged) this.charge(overlay.drag.position, 0, false, overlay.time, dragged.kind, 0.7);
       if (overlay.ghost && !overlay.drag) this.ghost(overlay.ghost.position, overlay.ghost.valid);
     } else {
-      for (const a of session.armedCharges) this.charge(a.position, 0, true, overlay.time, a.kind);
+      for (const a of session.armedCharges) {
+        if (a.kind === 'bomb') this.rackedBomb(a.position, overlay.time);
+        else this.charge(a.position, 0, true, overlay.time, a.kind);
+      }
     }
   }
 

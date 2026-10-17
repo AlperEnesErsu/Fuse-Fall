@@ -1049,3 +1049,71 @@ h2,
     right: calc(max(18px, env(safe-area-inset-right)) + 98px);
   }
 }
+
+/* The detonator: same place as the fire button, brighter and pulsing while bombs fall. */
+.detonate-btn {
+  background:
+    linear-gradient(#ff4a3d, #c8221a) padding-box,
+    repeating-linear-gradient(-45deg, var(--accent) 0 8px, #16181c 8px 16px) border-box;
+  animation: detonate-pulse 0.6s ease-in-out infinite;
+}
+@keyframes detonate-pulse {
+  50% {
+    transform: scale(1.06);
+  }
+}
+
+/* ---- Free Site ---- */
+.btn.freesite {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: min(320px, 70vw);
+}
+.btn.freesite small {
+  font-family: var(--font);
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+.freesite-setup {
+  align-items: stretch;
+  max-width: min(640px, calc(100vw - 32px));
+}
+.label.section {
+  color: var(--muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.chip {
+  pointer-events: auto;
+  font: 600 0.82rem var(--font);
+  color: var(--text);
+  background: var(--panel-2);
+  border: 1px solid var(--edge);
+  border-radius: 999px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+.chip.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 16px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}

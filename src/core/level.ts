@@ -1,6 +1,6 @@
 import { isMaterialId, type MaterialId } from './materials';
 
-export const CHARGE_KINDS = ['standard', 'precision'] as const;
+export const CHARGE_KINDS = ['standard', 'precision', 'bomb'] as const;
 export type ChargeKind = (typeof CHARGE_KINDS)[number];
 const isChargeKind = (v: unknown): v is ChargeKind => typeof v === 'string' && (CHARGE_KINDS as readonly string[]).includes(v);
 import type { Rect, Vec2 } from './math';
@@ -63,6 +63,8 @@ export interface Footprint {
 
 export interface LevelSolution {
   readonly charges: readonly SolutionCharge[];
+  /** Seconds after Fire at which the detonator is pressed (free-fall bombs). */
+  readonly detonateAt: readonly number[];
   /** Seconds after the level starts to press Fire (matters when cars move). */
   readonly fireAt: number;
 }
@@ -78,6 +80,8 @@ export interface LevelDefinition {
   /** Fraction of blocks that must collapse for the third star. */
   readonly bonusCollapse: number;
   readonly zones: readonly Rect[];
+  /** Where free-fall bombs may be hung (usually sky above the structure). */
+  readonly dropZones: readonly Rect[];
   readonly blocks: readonly BlockDef[];
   readonly barrels: readonly Vec2[];
   readonly cars: readonly CarDef[];
@@ -201,7 +205,9 @@ const solution = (v: unknown, path: string, maxCharges: number): LevelSolution =
     return { ...point(s, at), delay: o.delay === undefined ? undefined : num(o.delay, `${at}.delay`, 0, 2), kind };
   });
   if (charges.length === 0 || charges.length > maxCharges) fail(`${path}.charges`, 'solution must use 1..max charges');
-  return { charges, fireAt: o.fireAt === undefined ? 0 : num(o.fireAt, `${path}.fireAt`, 0, 30) };
+  const detonateAt =
+    o.detonateAt === undefined ? [] : arr(o.detonateAt, `${path}.detonateAt`).map((t, i) => num(t, `${path}.detonateAt[${i}]`, 0, 10));
+  return { charges, detonateAt, fireAt: o.fireAt === undefined ? 0 : num(o.fireAt, `${path}.fireAt`, 0, 30) };
 };
 
 const footprint = (v: unknown, path: string): Footprint => {
@@ -245,6 +251,7 @@ export const parseLevel = (input: unknown): Result<LevelDefinition, LevelError> 
       charges: { max, par },
       bonusCollapse: num(o.bonusCollapse, `${p}.bonusCollapse`, 0, 1),
       zones,
+      dropZones: o.dropZones === undefined ? [] : arr(o.dropZones, `${p}.dropZones`).map((z, i) => rect(z, `${p}.dropZones[${i}]`)),
       blocks,
       barrels: o.barrels === undefined ? [] : arr(o.barrels, `${p}.barrels`).map((b, i) => point(b, `${p}.barrels[${i}]`)),
       cars,

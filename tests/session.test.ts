@@ -23,7 +23,8 @@ const level = (patch: Partial<LevelDefinition> = {}): LevelDefinition => ({
   cars: [],
   chargeKinds: ['standard'],
   footprint: undefined,
-  solution: { charges: [{ x: 100, y: 450, delay: undefined, kind: 'standard' }], fireAt: 0 },
+  dropZones: [{ x: 0, y: 0, w: 960, h: 200 }],
+  solution: { charges: [{ x: 100, y: 450, delay: undefined, kind: 'standard' }], fireAt: 0, detonateAt: [] },
   ...patch,
 });
 
@@ -418,5 +419,61 @@ describe('blast contact', () => {
   it('follows rotation', () => {
     expect(circleTouches({ x: 0, y: 200 }, 100, beam, { x: 0, y: 0 }, Math.PI / 2)).toBe(true);
     expect(circleTouches({ x: 0, y: 200 }, 100, beam, { x: 0, y: 0 }, 0)).toBe(false);
+  });
+});
+
+describe('free-fall bombs', () => {
+  const withBombs = { chargeKinds: ['standard', 'bomb'] as const };
+  const explosions = (log: { type: string; payload: unknown }[]) =>
+    log.filter((e) => e.type === 'explosion').map((e) => (e.payload as { source: string }).source);
+
+  it('hang only in drop zones', () => {
+    const { session } = setup(withBombs);
+    expect(session.placeCharge({ x: 100, y: 450 }, undefined, 'bomb')).toEqual({ ok: false, error: 'outside-zone' });
+    expect(session.placeCharge({ x: 500, y: 100 }, undefined, 'bomb').ok).toBe(true);
+    expect(session.placeCharge({ x: 600, y: 100 }, undefined, 'standard')).toEqual({ ok: false, error: 'outside-zone' });
+  });
+
+  it('are released on Fire and wait for the detonator', () => {
+    const { session, physics, log, run } = setup(withBombs);
+    session.placeCharge({ x: 500, y: 100 }, 0, 'bomb');
+    session.fire();
+    run(1 / 60);
+    expect(physics.idsOf('bomb-')).toHaveLength(1);
+    expect(session.liveBombs).toBe(1);
+    run(1);
+    expect(explosions(log)).toEqual([]);
+    expect(session.phase).toBe('running'); // a live bomb keeps the job open
+    expect(session.detonateBombs()).toBe(1);
+    run(1 / 60);
+    expect(explosions(log)).toEqual(['bomb']);
+    expect(session.liveBombs).toBe(0);
+  });
+
+  it('do not go off on impact', () => {
+    const { session, physics, log, run } = setup(withBombs);
+    session.placeCharge({ x: 500, y: 100 }, 0, 'bomb');
+    session.fire();
+    run(1 / 60);
+    physics.pendingImpacts = [{ a: 'bomb-3', b: 'ground', speed: 3000, point: { x: 500, y: 480 } }];
+    run(1 / 60);
+    expect(explosions(log)).toEqual([]);
+  });
+
+  it('go off by themselves when the fuse runs out', () => {
+    const { session, log, run } = setup(withBombs);
+    session.placeCharge({ x: 500, y: 100 }, 0, 'bomb');
+    session.fire();
+    run(TUNING.bomb.fuse + 0.1);
+    expect(explosions(log)).toEqual(['bomb']);
+  });
+
+  it('are set off by a nearby blast', () => {
+    const { session, log, run } = setup({ ...withBombs, zones: [{ x: 400, y: 0, w: 300, h: 480 }] });
+    session.placeCharge({ x: 500, y: 100 }, 0, 'bomb');
+    session.placeCharge({ x: 520, y: 140 }, 0.2, 'standard');
+    session.fire();
+    run(0.4);
+    expect(explosions(log)).toEqual(['charge', 'bomb']);
   });
 });

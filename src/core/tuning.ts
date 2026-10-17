@@ -18,6 +18,17 @@ export const TUNING = {
     pressure: 0.5,
     damage: 110,
   },
+  /** A free-fall bomb: released on Fire, falls under gravity, set off by the detonator or its fuse. */
+  bomb: {
+    radius: 11,
+    blastRadius: 140,
+    pressure: 1.05,
+    damage: 115,
+    /** Seconds after release before the fuse sets it off by itself. */
+    fuse: 4,
+    /** Blast damage that sets a bomb off (sympathetic detonation). */
+    trigger: 12,
+  },
   barrel: {
     radius: 16,
     blastRadius: 135,

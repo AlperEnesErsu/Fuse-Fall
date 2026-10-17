@@ -2,7 +2,7 @@ import type { MaterialId } from './materials';
 import type { Vec2 } from './math';
 import type { LevelResult } from './scoring';
 
-export type BlastSource = 'charge' | 'barrel' | 'vehicle';
+export type BlastSource = 'charge' | 'barrel' | 'vehicle' | 'bomb';
 
 /** Everything the presentation layer may react to. Game rules never call effects directly. */
 export interface GameEvents {
@@ -15,6 +15,8 @@ export interface GameEvents {
   blockShattered: { readonly position: Vec2; readonly material: MaterialId; readonly size: number };
   targetDown: { readonly position: Vec2; readonly remaining: number };
   protectedDamaged: { readonly position: Vec2 };
+  /** A free-fall bomb left its rack and is falling. */
+  bombReleased: { readonly position: Vec2 };
   /** A mortar joint or weld snapped. */
   jointBroken: { readonly position: Vec2 };
   levelFinished: { readonly result: LevelResult };

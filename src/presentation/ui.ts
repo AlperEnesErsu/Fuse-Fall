@@ -72,6 +72,7 @@ export interface HudState {
   readonly chargesMax: number;
   readonly par: number;
   readonly targetsLeft: number;
+  readonly showTargets: boolean;
   readonly protectedTotal: number;
   readonly canFire: boolean;
 }
@@ -92,8 +93,19 @@ export interface MenuState {
   readonly achievements: { readonly unlocked: number; readonly total: number };
   readonly onPlay: () => void;
   readonly onDaily: () => void;
+  readonly onFreeSite: () => void;
   readonly onAchievements: () => void;
   readonly onSettings: () => void;
+}
+
+export interface HudActions {
+  readonly kinds: readonly ChargeKind[];
+  readonly onFire: () => void;
+  readonly onDetonate: () => void;
+  readonly onRetry: () => void;
+  readonly onMenu: () => void;
+  readonly onDelay: (chargeId: number, seconds: number) => void;
+  readonly onKind: (kind: ChargeKind) => void;
 }
 
 export interface ResultActions {
@@ -116,6 +128,7 @@ export class Ui {
         targets: HTMLElement;
         guarded: HTMLElement;
         fire: HTMLButtonElement;
+        detonate: HTMLButtonElement;
         timeline: DelayTimeline;
         kinds: HTMLElement;
       }
@@ -154,6 +167,12 @@ export class Ui {
             h('small', {}, T.dailyInfo(m.daily.name, m.daily.streak, m.daily.wonToday)),
           ),
         h(
+          'button',
+          { class: 'btn freesite', click: () => this.tap(m.onFreeSite) },
+          h('span', {}, T.freeSite),
+          h('small', {}, T.freeSiteTagline),
+        ),
+        h(
           'div',
           { class: 'menu-row' },
           this.button(`${T.achievementsTitle} ${T.achievementsCount(m.achievements.unlocked, m.achievements.total)}`, m.onAchievements),
@@ -184,6 +203,62 @@ export class Ui {
           ),
         ),
         this.button(T.back, onBack),
+      ),
+    );
+  }
+
+  /** Free Site setup: choose a city and a structure, then start. */
+  freeSite(
+    cities: readonly { world: number; name: string }[],
+    templates: readonly { id: string; name: string }[],
+    chosen: { world: number; template: string },
+    onPick: (pick: { world: number; template: string }) => void,
+    onStart: () => void,
+    onBack: () => void,
+  ): void {
+    this.hideHud();
+    const chip = (label: string, active: boolean, pick: () => void) =>
+      h('button', { class: `chip${active ? ' active' : ''}`, click: () => this.tap(pick) }, label);
+    this.show(
+      h(
+        'div',
+        { class: 'panel freesite-setup' },
+        h('div', { class: 'levels-head' }, this.iconButton(ICONS.back(), onBack, T.back), h('h2', {}, T.freeSite)),
+        h('p', { class: 'meta' }, T.freeSiteTagline),
+        h('span', { class: 'label section' }, T.cityLabel),
+        h('div', { class: 'chips' }, ...cities.map((c) => chip(c.name, c.world === chosen.world, () => onPick({ ...chosen, world: c.world })))),
+        h('span', { class: 'label section' }, T.structureLabel),
+        h(
+          'div',
+          { class: 'chips' },
+          ...templates.map((t) => chip(t.name, t.id === chosen.template, () => onPick({ ...chosen, template: t.id }))),
+        ),
+        this.button(T.start, onStart, 'primary big'),
+      ),
+    );
+  }
+
+  /** End of a Free Site run: a short summary and quick ways to go again. */
+  freeSiteDone(r: LevelResult, a: { onReset: () => void; onReplay: () => void; onSetup: () => void }): void {
+    this.show(
+      h(
+        'div',
+        { class: 'panel freesite-done' },
+        h('h2', {}, T.freeSiteDone),
+        h(
+          'div',
+          { class: 'stats' },
+          h('span', {}, `${T.report.collapse} %${Math.round(r.collapseRatio * 100)}`),
+          h('span', {}, `${T.report.charges} ${r.chargesUsed}`),
+          h('span', {}, `${T.report.duration} ${T.report.seconds(r.duration)}`),
+        ),
+        h(
+          'div',
+          { class: 'actions' },
+          this.button(T.reset, a.onReset, 'primary'),
+          this.button(T.replay, a.onReplay),
+          this.button(T.structureLabel, a.onSetup),
+        ),
       ),
     );
   }
@@ -343,14 +418,7 @@ export class Ui {
     );
   }
 
-  showHud(
-    onFire: () => void,
-    onRetry: () => void,
-    onMenu: () => void,
-    onDelay: (chargeId: number, seconds: number) => void,
-    kinds: readonly ChargeKind[],
-    onKind: (kind: ChargeKind) => void,
-  ): void {
+  showHud(a: HudActions): void {
     this.hideScreen();
     const name = h('div', { class: 'hud-name' });
     const charges = h('div', { class: 'stat' });
@@ -358,17 +426,23 @@ export class Ui {
     const guarded = h('div', { class: 'stat guarded' });
     const fire = h(
       'button',
-      { class: 'fire-btn', 'aria-label': T.fire, click: () => this.tap(onFire) },
+      { class: 'fire-btn', 'aria-label': T.fire, click: () => this.tap(a.onFire) },
       ICONS.detonator(30),
       h('span', {}, T.fire),
     ) as HTMLButtonElement;
-    const timeline = new DelayTimeline(TUNING.charge.delay.max, onDelay);
+    const detonate = h(
+      'button',
+      { class: 'fire-btn detonate-btn hidden', 'aria-label': T.detonate, click: () => this.tap(a.onDetonate) },
+      ICONS.detonator(30),
+      h('span', {}, T.detonate),
+    ) as HTMLButtonElement;
+    const timeline = new DelayTimeline(TUNING.charge.delay.max, a.onDelay);
     // Charge type switch, only where the job offers more than one type.
     const kindSwitch = h(
       'div',
-      { class: `kind-toggle${kinds.length > 1 ? '' : ' hidden'}`, role: 'radiogroup', 'aria-label': T.chargeKindLabel },
-      ...kinds.map((k) =>
-        h('button', { 'data-kind': k, role: 'radio', click: () => this.tap(() => onKind(k)) }, T.chargeKinds[k]),
+      { class: `kind-toggle${a.kinds.length > 1 ? '' : ' hidden'}`, role: 'radiogroup', 'aria-label': T.chargeKindLabel },
+      ...a.kinds.map((k) =>
+        h('button', { 'data-kind': k, role: 'radio', click: () => this.tap(() => a.onKind(k)) }, T.chargeKinds[k]),
       ),
     );
     this.hud.replaceChildren(
@@ -379,15 +453,16 @@ export class Ui {
         h(
           'div',
           { class: 'hud-actions' },
-          this.iconButton(ICONS.retry(), onRetry, T.retry),
-          this.iconButton(ICONS.menu(), onMenu, T.menu),
+          this.iconButton(ICONS.retry(), a.onRetry, T.retry),
+          this.iconButton(ICONS.menu(), a.onMenu, T.menu),
         ),
       ),
       timeline.element,
       kindSwitch,
       fire,
+      detonate,
     );
-    this.hudParts = { name, charges, targets, guarded, fire, timeline, kinds: kindSwitch };
+    this.hudParts = { name, charges, targets, guarded, fire, detonate, timeline, kinds: kindSwitch };
     this.hud.classList.remove('hidden');
   }
 
@@ -401,6 +476,7 @@ export class Ui {
       ),
     );
     this.hudParts.targets.replaceChildren(h('span', { class: 'label' }, T.targets), String(s.targetsLeft));
+    this.hudParts.targets.classList.toggle('hidden', !s.showTargets);
     this.hudParts.guarded.replaceChildren(h('span', { class: 'label' }, T.protectedLabel), String(s.protectedTotal));
     this.hudParts.guarded.classList.toggle('hidden', s.protectedTotal === 0);
     this.hudParts.fire.disabled = !s.canFire;
@@ -415,6 +491,11 @@ export class Ui {
     for (const b of this.hudParts?.kinds.querySelectorAll('button') ?? []) {
       b.setAttribute('aria-checked', String(b.getAttribute('data-kind') === kind));
     }
+  }
+
+  /** The detonator replaces the fire button while free-fall bombs are live. */
+  setDetonateVisible(visible: boolean): void {
+    this.hudParts?.detonate.classList.toggle('hidden', !visible);
   }
 
   setFireVisible(visible: boolean): void {

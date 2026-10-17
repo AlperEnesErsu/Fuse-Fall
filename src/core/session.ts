@@ -11,7 +11,7 @@ import { findJoints, type JointDef } from './joints';
 import { TUNING } from './tuning';
 
 export type Phase = 'placing' | 'running' | 'finished';
-export type EntityKind = 'block' | 'debris' | 'barrel' | 'car';
+export type EntityKind = 'block' | 'debris' | 'barrel' | 'car' | 'bomb';
 
 export interface Charge {
   readonly id: number;
@@ -88,10 +88,18 @@ interface Entity {
   readonly maxHp: number;
   down: boolean;
   readonly driver: Driver | undefined;
+  /** Free-fall bombs: when the fuse sets it off by itself. */
+  readonly fuseAt: number | undefined;
 }
 
 /** What exploded: each charge kind has its own blast; barrels and wrecks have theirs. */
 type BlastKind = ChargeKind | 'barrel' | 'vehicle';
+
+/** A bomb waiting on its rack for its release time. */
+interface Release {
+  readonly at: number;
+  readonly position: Vec2;
+}
 
 interface Detonation {
   readonly at: number;
@@ -115,6 +123,7 @@ interface SpawnSpec {
   /** Debris broken off a structure to demolish: still counts as its material for the footprint. */
   readonly fromStructure?: boolean;
   readonly kinematic?: boolean;
+  readonly fuseAt?: number;
 }
 
 const BLASTS: Readonly<Record<BlastKind, { radius: number; pressure: number; damage: number }>> = {
@@ -122,6 +131,7 @@ const BLASTS: Readonly<Record<BlastKind, { radius: number; pressure: number; dam
   precision: { radius: TUNING.precision.radius, pressure: TUNING.precision.pressure, damage: TUNING.precision.damage },
   barrel: { radius: TUNING.barrel.blastRadius, pressure: TUNING.barrel.pressure, damage: TUNING.barrel.damage },
   vehicle: { radius: TUNING.vehicle.blastRadius, pressure: TUNING.vehicle.pressure, damage: TUNING.vehicle.damage },
+  bomb: { radius: TUNING.bomb.blastRadius, pressure: TUNING.bomb.pressure, damage: TUNING.bomb.damage },
 };
 
 const sourceOf = (blast: BlastKind): BlastSource => (blast === 'standard' || blast === 'precision' ? 'charge' : blast);
@@ -148,6 +158,7 @@ export class LevelSession {
   private readonly entities = new Map<string, Entity>();
   private readonly chargeList: Charge[] = [];
   private readonly pending: Detonation[] = [];
+  private readonly releases: Release[] = [];
   private readonly rng: () => number;
   private nextChargeId = 1;
   private nextEntityId = 1;
@@ -236,13 +247,35 @@ export class LevelSession {
     return this.level.charges.max - this.chargeList.length;
   }
 
-  /** Charges that were fired but whose fuse is still burning. */
+  /** Charges that were fired but whose fuse is still burning, and bombs still on their rack. */
   get armedCharges(): { readonly position: Vec2; readonly kind: ChargeKind }[] {
     const armed: { position: Vec2; kind: ChargeKind }[] = [];
     for (const d of this.pending) {
       if (d.blast === 'standard' || d.blast === 'precision') armed.push({ position: d.position, kind: d.blast });
     }
+    for (const r of this.releases) armed.push({ position: r.position, kind: 'bomb' });
     return armed;
+  }
+
+  /** Free-fall bombs that are falling or lying live, waiting for the detonator. */
+  get liveBombs(): number {
+    let n = 0;
+    for (const e of this.entities.values()) if (e.kind === 'bomb') n++;
+    return n + this.releases.length;
+  }
+
+  /** The detonator: sets off every released bomb where it is now. */
+  detonateBombs(): number {
+    if (this.currentPhase !== 'running') return 0;
+    let n = 0;
+    for (const e of [...this.entities.values()]) {
+      if (e.kind !== 'bomb') continue;
+      const s = this.physics.state(e.id);
+      this.removeEntity(e);
+      if (s) this.pending.push({ at: this.time, position: s.position, blast: 'bomb' });
+      n++;
+    }
+    return n;
   }
 
   get result(): LevelResult | undefined {
@@ -312,9 +345,11 @@ export class LevelSession {
     return this.chargeList.find((c) => distance(c.position, position) <= radius);
   }
 
-  canPlaceAt(position: Vec2, ignore?: number): Result<void, PlacementError> {
+  canPlaceAt(position: Vec2, ignore?: number, kind: ChargeKind = 'standard'): Result<void, PlacementError> {
     if (this.currentPhase !== 'placing') return err('not-placing');
-    if (!this.level.zones.some((z) => rectContains(z, position))) return err('outside-zone');
+    // Bombs hang in the drop zones; everything else is set in the charge zones.
+    const zones = kind === 'bomb' ? this.level.dropZones : this.level.zones;
+    if (!zones.some((z) => rectContains(z, position))) return err('outside-zone');
     const crowded = this.chargeList.some(
       (c) => c.id !== ignore && distance(c.position, position) < TUNING.charge.placementSpacing,
     );
@@ -325,7 +360,7 @@ export class LevelSession {
   placeCharge(position: Vec2, delay?: number, kind: ChargeKind = 'standard'): Result<Charge, PlacementError> {
     if (this.currentPhase === 'placing' && this.chargesLeft <= 0) return err('no-charges-left');
     if (this.currentPhase === 'placing' && !this.level.chargeKinds.includes(kind)) return err('kind-unavailable');
-    const allowed = this.canPlaceAt(position);
+    const allowed = this.canPlaceAt(position, undefined, kind);
     if (!allowed.ok) return allowed;
     const latest = this.chargeList.reduce((m, c) => Math.max(m, c.delay), -TUNING.charge.delay.defaultStep);
     const charge = {
@@ -343,7 +378,7 @@ export class LevelSession {
     const index = this.chargeList.findIndex((c) => c.id === id);
     const current = this.chargeList[index];
     if (!current) return err('unknown-charge');
-    const allowed = this.canPlaceAt(position, id);
+    const allowed = this.canPlaceAt(position, id, current.kind);
     if (!allowed.ok) return allowed;
     const moved = { ...current, position };
     this.chargeList[index] = moved;
@@ -373,7 +408,8 @@ export class LevelSession {
     this.currentPhase = 'running';
     this.firedAt = this.time;
     for (const c of this.chargeList) {
-      this.pending.push({ at: this.time + c.delay, position: c.position, blast: c.kind });
+      if (c.kind === 'bomb') this.releases.push({ at: this.time + c.delay, position: c.position });
+      else this.pending.push({ at: this.time + c.delay, position: c.position, blast: c.kind });
     }
     return ok(undefined);
   }
@@ -389,6 +425,7 @@ export class LevelSession {
       this.cruise(dt);
       return;
     }
+    this.releaseDue();
     this.detonateDue();
     this.drive();
     this.cruise(dt, true);
@@ -411,6 +448,30 @@ export class LevelSession {
         this.pending.splice(i, 1);
         this.explode(d.position, d.blast);
       }
+    }
+  }
+
+  /** Drops bombs whose release time has come, and lets bombs whose fuse ran out go off. */
+  private releaseDue(): void {
+    for (let i = this.releases.length - 1; i >= 0; i--) {
+      const r = this.releases[i];
+      if (!r || r.at > this.time) continue;
+      this.releases.splice(i, 1);
+      this.spawn({
+        kind: 'bomb',
+        shape: { kind: 'circle', r: TUNING.bomb.radius },
+        position: r.position,
+        angle: 0,
+        material: 'metal',
+        fuseAt: this.time + TUNING.bomb.fuse,
+      });
+      this.events.emit('bombReleased', { position: r.position });
+    }
+    for (const e of [...this.entities.values()]) {
+      if (e.kind !== 'bomb' || e.fuseAt === undefined || e.fuseAt > this.time) continue;
+      const s = this.physics.state(e.id);
+      this.removeEntity(e);
+      if (s) this.pending.push({ at: this.time, position: s.position, blast: 'bomb' });
     }
   }
 
@@ -464,6 +525,12 @@ export class LevelSession {
   private breakEntity(e: Entity, blastOrigin: Vec2 | undefined): void {
     const state = this.physics.state(e.id);
     if (!state) return;
+    if (e.kind === 'bomb') {
+      // Sympathetic detonation: a blast sets off a bomb it reaches.
+      this.removeEntity(e);
+      this.pending.push({ at: this.time + 0.05, position: state.position, blast: 'bomb' });
+      return;
+    }
     if (e.kind === 'barrel') {
       this.removeEntity(e);
       this.pending.push({ at: this.time + TUNING.barrel.delay, position: state.position, blast: 'barrel' });
@@ -562,7 +629,8 @@ export class LevelSession {
       const amount = over * TUNING.impact.damagePerSpeed;
       for (const id of [impact.a, impact.b]) {
         const e = this.entities.get(id);
-        if (!e || e.kind === 'debris') continue;
+        // Bombs have no impact fuse: only the detonator, their own fuse or another blast sets them off.
+        if (!e || e.kind === 'debris' || e.kind === 'bomb') continue;
         const intensity = Math.min(1, over / 900);
         if (intensity >= TUNING.impact.reportAbove) {
           this.events.emit('blockHit', { position: impact.point, material: e.material, intensity });
@@ -647,7 +715,7 @@ export class LevelSession {
   }
 
   private checkSettled(dt: number): void {
-    if (this.pending.length > 0) {
+    if (this.pending.length > 0 || this.liveBombs > 0) {
       this.calmFor = 0;
       return;
     }
@@ -783,6 +851,8 @@ export class LevelSession {
     const maxHp =
       spec.kind === 'barrel'
         ? TUNING.barrel.trigger
+        : spec.kind === 'bomb'
+          ? TUNING.bomb.trigger
         : spec.kind === 'debris' || spec.anchored
           ? Infinity
           : MATERIALS[spec.material].strength;
@@ -802,6 +872,7 @@ export class LevelSession {
       maxHp,
       down: false,
       driver: spec.driver,
+      fuseAt: spec.fuseAt,
     });
     this.physics.add({
       id,

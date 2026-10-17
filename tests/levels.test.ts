@@ -29,7 +29,12 @@ export const playSolution = (
   }
   for (let t = 0; t + STEP / 2 < fireAt; t += STEP) session.step(STEP);
   expect(session.fire().ok).toBe(true);
-  for (let t = 0; t < 20 && session.phase !== 'finished'; t += STEP) session.step(STEP);
+  // Press the detonator at the recorded moments (free-fall bombs), on the same fixed steps the game uses.
+  const presses = level.solution.detonateAt.map((t) => Math.round(t / STEP));
+  for (let k = 1; k <= 20 / STEP && session.phase !== 'finished'; k++) {
+    session.step(STEP);
+    if (presses.includes(k)) session.detonateBombs();
+  }
   return session;
 };
 

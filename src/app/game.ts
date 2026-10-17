@@ -28,6 +28,7 @@ import { T, language, resolveLanguage, setLanguage } from '../presentation/strin
 import { Ui } from '../presentation/ui';
 import { Coach } from '../presentation/coach';
 import { tutorialFor } from '../content/tutorials';
+import { SANDBOX_TEMPLATES, sandboxLevel } from '../content/sandbox';
 import { contentText, type ContentText } from '../content/text';
 import { ACHIEVEMENTS } from '../core/achievements';
 import { FIXED_STEP, FixedStepLoop } from './loop';
@@ -47,7 +48,8 @@ const REPLAY_SPEED = 0.45;
 
 type Mode =
   | { readonly kind: 'campaign' }
-  | { readonly kind: 'daily'; readonly day: string; readonly baseId: string };
+  | { readonly kind: 'daily'; readonly day: string; readonly baseId: string }
+  | { readonly kind: 'sandbox'; readonly template: string };
 
 /** One go at a mission: what it is, what the player did, and how to show it again. */
 interface Attempt {
@@ -59,6 +61,8 @@ interface Attempt {
     | {
         readonly charges: readonly { position: Vec2; delay: number; kind: ChargeKind }[];
         readonly fireSteps: number;
+        /** Detonator presses, in fixed steps after Fire. */
+        readonly presses: number[];
       }
     | undefined;
   stats: { barrelsBlown: number; carsWrecked: number };
@@ -113,7 +117,7 @@ export class Game {
     this.coach = new Coach(uiRoot);
     this.loop = new FixedStepLoop({
       timeScale: (dt) => this.juice.simDelta(dt) * (this.attempt?.replaying ? REPLAY_SPEED : 1),
-      step: (dt) => this.session?.step(dt),
+      step: (dt) => this.stepSession(dt),
       frame: (realDt, simDt) => this.frame(realDt, simDt),
     });
     this.events.on('explosion', (e) => {
@@ -156,6 +160,7 @@ export class Game {
       achievements: { unlocked: this.progress.achievements.length, total: ACHIEVEMENTS.length },
       onPlay: () => this.showCities(),
       onDaily: () => this.startDaily(),
+      onFreeSite: () => this.showFreeSite(),
       onAchievements: () => this.showAchievements(),
       onSettings: () => this.showSettings(),
     });
@@ -168,6 +173,26 @@ export class Game {
         ...T.achievements[a.id],
         unlocked: this.progress.achievements.includes(a.id),
       })),
+      () => this.showMenu(),
+    );
+  }
+
+  /** Free Site setup: pick an opened city and a structure. */
+  private showFreeSite(world = this.currentWorld, template = SANDBOX_TEMPLATES[0]?.id ?? ''): void {
+    this.leaveLevel();
+    const cities = this.campaign.worlds
+      .filter((w) => worldStatus(this.progress, this.campaign, w.world).kind === 'open')
+      .map((w) => ({ world: w.world, name: this.text.city(w) }));
+    const chosen = cities.some((c) => c.world === world) ? world : (cities[0]?.world ?? 1);
+    this.ui.freeSite(
+      cities,
+      SANDBOX_TEMPLATES.map((t) => ({ id: t.id, name: t.name[language] })),
+      { world: chosen, template },
+      (pick) => this.showFreeSite(pick.world, pick.template),
+      () => {
+        const t = SANDBOX_TEMPLATES.find((x) => x.id === template);
+        if (t) this.play(sandboxLevel(t, chosen), { kind: 'sandbox', template });
+      },
       () => this.showMenu(),
     );
   }
@@ -282,23 +307,24 @@ export class Game {
       stats: { barrelsBlown: 0, carsWrecked: 0 },
       report: undefined,
     };
-    this.ui.showHud(
-      () => this.fire(),
-      () => this.play(level, mode),
-      () => (mode.kind === 'daily' ? this.showMenu() : this.showLevels()),
-      (chargeId, seconds) => {
+    this.ui.showHud({
+      kinds: level.chargeKinds,
+      onFire: () => this.fire(),
+      onDetonate: () => this.detonate(),
+      onRetry: () => this.play(level, mode),
+      onMenu: () => (mode.kind === 'campaign' ? this.showLevels() : mode.kind === 'sandbox' ? this.showFreeSite(level.world, mode.template) : this.showMenu()),
+      onDelay: (chargeId, seconds) => {
         if (this.session?.setChargeDelay(chargeId, seconds).ok) {
           this.coach.notify('delay');
           this.refreshHud();
         }
       },
-      level.chargeKinds,
-      (kind) => {
+      onKind: (kind) => {
         this.chargeKind = kind;
         this.ui.setChargeKind(kind);
         this.coach.notify('kind');
       },
-    );
+    });
     this.chargeKind = level.chargeKinds[0] ?? 'standard';
     this.ui.setChargeKind(this.chargeKind);
     this.refreshHud();
@@ -306,10 +332,14 @@ export class Game {
     const cleared = (this.progress.stars[base.id] ?? 0) > 0;
     const tutorial = cleared || mode.kind === 'daily' ? undefined : tutorialFor(level.id, language);
     this.coach.start(tutorial ?? []);
-    if (mode.kind === 'daily') {
+    if (mode.kind === 'sandbox') {
+      this.ui.toast(T.freeSiteHint, 3600);
+    } else if (mode.kind === 'daily') {
       this.ui.toast(T.dailyRule(level.charges.par), 3200);
     } else if (!tutorial && !cleared) {
-      const fallback = level.cars.some((c) => c.protected)
+      const fallback = level.chargeKinds.includes('bomb')
+        ? T.bombHint
+        : level.cars.some((c) => c.protected)
         ? T.trainHint
         : level.footprint
           ? T.footprintHint
@@ -352,6 +382,7 @@ export class Game {
       this.attempt.plan = {
         charges: s.charges.map((c) => ({ position: c.position, delay: c.delay, kind: c.kind })),
         fireSteps: Math.round(s.clock / FIXED_STEP),
+        presses: [],
       };
     }
     if (this.session?.fire().ok) {
@@ -362,12 +393,44 @@ export class Game {
     }
   }
 
+  /** The detonator: sets off every falling bomb now, and remembers when for the replay. */
+  private detonate(): void {
+    const s = this.session;
+    if (!s || s.phase !== 'running' || this.attempt?.replaying) return;
+    if (s.detonateBombs() > 0) this.attempt?.plan?.presses.push(Math.round(s.elapsedSinceFire / FIXED_STEP));
+  }
+
+  /** One fixed step; during a replay, the recorded detonator presses happen at the same step. */
+  private stepSession(dt: number): void {
+    const s = this.session;
+    if (!s) return;
+    s.step(dt);
+    const a = this.attempt;
+    if (a?.replaying && a.plan && s.phase === 'running') {
+      const k = Math.round(s.elapsedSinceFire / FIXED_STEP);
+      if (a.plan.presses.includes(k)) s.detonateBombs();
+    }
+  }
+
   private onFinished(result: LevelResult): void {
     const session = this.session;
     const attempt = this.attempt;
     if (!session || !attempt) return;
     if (attempt.replaying) {
       window.setTimeout(() => this.endReplay(), RESULT_DELAY_MS * 2);
+      return;
+    }
+    if (attempt.mode.kind === 'sandbox') {
+      const mode = attempt.mode;
+      attempt.report = () =>
+        this.ui.freeSiteDone(result, {
+          onReset: () => this.play(attempt.level, mode),
+          onReplay: () => this.replay(),
+          onSetup: () => this.showFreeSite(attempt.level.world, mode.template),
+        });
+      window.setTimeout(() => {
+        if (this.session === session) attempt.report?.();
+      }, RESULT_DELAY_MS);
       return;
     }
     const level = attempt.level;
@@ -505,11 +568,13 @@ export class Game {
       chargesMax: s.level.charges.max,
       par: s.level.charges.par,
       targetsLeft: s.targetsRemaining,
+      showTargets: s.level.blocks.some((b) => b.target) || s.level.cars.some((c) => c.target),
       canFire: s.phase === 'placing' && s.charges.length > 0,
     });
+    this.ui.setDetonateVisible(s.phase === 'running' && s.liveBombs > 0 && !this.attempt?.replaying);
     this.ui.updateTimeline(
       s.charges.map((c, i) => ({ id: c.id, label: i + 1, delay: c.delay })),
-      s.phase === 'placing' && s.level.world >= TIMELINE_FROM_WORLD,
+      s.phase === 'placing' && (s.level.world >= TIMELINE_FROM_WORLD || this.attempt?.mode.kind === 'sandbox'),
     );
   }
 
@@ -573,7 +638,8 @@ export class Game {
       if (!this.session) return;
       if (e.key === ' ' || e.key === 'Enter') {
         e.preventDefault();
-        this.fire();
+        if (this.session.phase === 'running') this.detonate();
+        else this.fire();
       } else if (e.key === 'r' || e.key === 'R') this.startLevel(this.session.level.id);
       else if (e.key === 'Escape') this.showLevels();
     });
