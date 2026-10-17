@@ -255,6 +255,13 @@ Yapıyı incele → Patlayıcı yerleştir → Ateşle → Yıkımı izle → Pu
 | FR-84 | **Serbest Şantiye trafiği:** isteğe bağlı üst geçit, yapının en yüksek noktasının üstünde; üç araç akar, vurulan aracın yakıt tankı patlar. | S |
 | FR-85 | **Hurda teklifleri:** ödüllü reklam (atölyede +60 hurda, raporda iş hurdasını ×2; günde en fazla 5) ve hurda paketleri (500 / 1500 / 4000). Satın alınan hurda harcanır ama kariyer rütbesine sayılmaz. Oyun reklam ağıyla ya da ödeme sistemiyle doğrudan konuşmaz: `OfferStore` portunun bir adaptörü konuşur. Gerçek adaptör bağlanana kadar mağaza sürümü hiçbir teklif göstermez; geliştirme sürümü akışı sahte bir sağlayıcıyla dener. | M |
 
+### Madrid: tramvaylar (v1.5)
+
+| ID | Gereksinim | Öncelik |
+|---|---|---|
+| FR-86 | **Tramvay:** rayda giden araç (tren gibi betikli: itilmez, yer çekiminden etkilenmez, ATEŞLE'den sonra da yoluna devam eder). Hedef ya da korunan olabilir; gidip gelir ya da tek yönlü akar. Yeterli hasarla yerinde hurdaya döner (hedefse düşmüş sayılır), hafif hasarla olduğu yerde durur. Hat boyunca ray ve havai hat çizilir; hedef tramvay kırmızı, korunan tramvay krem ve turkuaz köşelidir. | M |
+| FR-87 | Madrid (Bölüm 8, 160 yıldızla açılır): 10 görev, hepsi hareketli hedef: iki hat, korunan tramvaya refakat (hassas şarj), tramvay ve kule, yıkım güllesi, gökten bomba, araç ve tramvay konvoyu, varil köprüsü, arka arkaya iki tramvay, korunan üst hat altında final. Silüet: Puerta de Alcalá, Metrópolis, Cuatro Torres. Eğitim: ilk tramvay (Görev 1). Her görevde aynı yerleşim 1-2 saniye geç ateşlenince kazanmaz (testle doğrulanır). | M |
+
 ## 6. MVP kapsamı (Sürüm 0.1)
 
 - 1 dünya, 10 seviye

@@ -1,0 +1,1088 @@
+[
+ {
+  "id": "w8-01",
+  "name": "İlk Tramvay",
+  "world": 8,
+  "order": 1,
+  "charges": {
+   "max": 1,
+   "par": 1
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 447,
+    "y": 313,
+    "w": 65,
+    "h": 39
+   }
+  ],
+  "blocks": [
+   {
+    "x": 220,
+    "y": 425.0,
+    "w": 30,
+    "h": 110,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 740,
+    "y": 425.0,
+    "w": 30,
+    "h": 110,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 480.0,
+    "y": 360.0,
+    "w": 570,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   }
+  ],
+  "barrels": [],
+  "cars": [
+   {
+    "x": 300,
+    "y": 335.0,
+    "w": 120,
+    "h": 30,
+    "from": 290,
+    "to": 670,
+    "speed": 80,
+    "style": "tram",
+    "target": true
+   }
+  ],
+  "solution": {
+   "charges": [
+    {
+     "x": 480,
+     "y": 338.0
+    }
+   ],
+   "fireAt": 2.25
+  },
+  "hint": "Tramvay rayda gidip geliyor. Şarjı hatta koy, tramvay üstüne gelince ATEŞLE."
+ },
+ {
+  "id": "w8-02",
+  "name": "İki Hat",
+  "world": 8,
+  "order": 2,
+  "charges": {
+   "max": 2,
+   "par": 2
+  },
+  "bonusCollapse": 0.45,
+  "zones": [
+   {
+    "x": 299,
+    "y": 324,
+    "w": 73,
+    "h": 38
+   },
+   {
+    "x": 688,
+    "y": 224,
+    "w": 65,
+    "h": 38
+   }
+  ],
+  "blocks": [
+   {
+    "x": 80,
+    "y": 430.0,
+    "w": 30,
+    "h": 100,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 440,
+    "y": 430.0,
+    "w": 30,
+    "h": 100,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 260.0,
+    "y": 370.0,
+    "w": 410,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 520,
+    "y": 380.0,
+    "w": 30,
+    "h": 200,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 900,
+    "y": 380.0,
+    "w": 30,
+    "h": 200,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 710.0,
+    "y": 270.0,
+    "w": 430,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   }
+  ],
+  "barrels": [],
+  "cars": [
+   {
+    "x": 160,
+    "y": 345.0,
+    "w": 120,
+    "h": 30,
+    "from": 150,
+    "to": 380,
+    "speed": 70,
+    "style": "tram",
+    "target": true
+   },
+   {
+    "x": 600,
+    "y": 245.0,
+    "w": 120,
+    "h": 30,
+    "from": 590,
+    "to": 830,
+    "speed": 140,
+    "style": "tram",
+    "target": true
+   }
+  ],
+  "solution": {
+   "charges": [
+    {
+     "x": 720,
+     "y": 248.0,
+     "delay": 0
+    },
+    {
+     "x": 340,
+     "y": 348.0,
+     "delay": 1.7
+    }
+   ],
+   "fireAt": 0.85
+  },
+  "hint": "Alt hat yavaş, üst hat hızlı. Tek ateşlemede iki tramvayı da yakala."
+ },
+ {
+  "id": "w8-03",
+  "name": "Refakat",
+  "world": 8,
+  "order": 3,
+  "charges": {
+   "max": 1,
+   "par": 1
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 530,
+    "y": 294,
+    "w": 80,
+    "h": 38
+   }
+  ],
+  "blocks": [
+   {
+    "x": 40,
+    "y": 415.0,
+    "w": 30,
+    "h": 130,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 520,
+    "y": 415.0,
+    "w": 30,
+    "h": 130,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 920,
+    "y": 415.0,
+    "w": 30,
+    "h": 130,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 160,
+    "y": 330.0,
+    "w": 600,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 800,
+    "y": 330.0,
+    "w": 600,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   }
+  ],
+  "barrels": [],
+  "cars": [
+   {
+    "x": 370,
+    "y": 315.0,
+    "w": 120,
+    "h": 30,
+    "from": -300,
+    "to": 1260,
+    "speed": 120,
+    "style": "tram",
+    "protected": true,
+    "mode": "flow"
+   },
+   {
+    "x": 200,
+    "y": 315.0,
+    "w": 120,
+    "h": 30,
+    "from": -300,
+    "to": 1260,
+    "speed": 120,
+    "style": "tram",
+    "target": true,
+    "mode": "flow"
+   }
+  ],
+  "solution": {
+   "charges": [
+    {
+     "x": 570,
+     "y": 318,
+     "kind": "precision"
+    }
+   ],
+   "fireAt": 3.066666666666667
+  },
+  "hint": "Öndeki tramvay korunuyor. Hassas şarjla yalnızca arkadakini durdur.",
+  "chargeKinds": [
+   "standard",
+   "precision"
+  ]
+ },
+ {
+  "id": "w8-04",
+  "name": "Tramvay ve Kule",
+  "world": 8,
+  "order": 4,
+  "charges": {
+   "max": 2,
+   "par": 2
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 258,
+    "y": 314,
+    "w": 64,
+    "h": 38
+   },
+   {
+    "x": 656,
+    "y": 408,
+    "w": 127,
+    "h": 72
+   }
+  ],
+  "blocks": [
+   {
+    "x": 80,
+    "y": 425.0,
+    "w": 30,
+    "h": 110,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 500,
+    "y": 425.0,
+    "w": 30,
+    "h": 110,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 290.0,
+    "y": 360.0,
+    "w": 470,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 685.0,
+    "y": 415.0,
+    "w": 20,
+    "h": 130,
+    "material": "wood"
+   },
+   {
+    "x": 755.0,
+    "y": 415.0,
+    "w": 20,
+    "h": 130,
+    "material": "wood"
+   },
+   {
+    "x": 720,
+    "y": 340.0,
+    "w": 110,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 720,
+    "y": 313.0,
+    "w": 34,
+    "h": 34,
+    "material": "wood",
+    "target": true
+   }
+  ],
+  "barrels": [],
+  "cars": [
+   {
+    "x": 400,
+    "y": 335.0,
+    "w": 120,
+    "h": 30,
+    "from": 140,
+    "to": 440,
+    "speed": 90,
+    "style": "tram",
+    "target": true
+   }
+  ],
+  "solution": {
+   "charges": [
+    {
+     "x": 290,
+     "y": 338.0,
+     "delay": 0
+    },
+    {
+     "x": 700,
+     "y": 470,
+     "delay": 0.35
+    }
+   ],
+   "fireAt": 2.1
+  },
+  "hint": "Kule hemen, tramvay şarjın üstüne geldiğinde. Ateşleme anını tramvaya göre seç."
+ },
+ {
+  "id": "w8-05",
+  "name": "Gülle Durağı",
+  "world": 8,
+  "order": 5,
+  "charges": {
+   "max": 1,
+   "par": 1
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 446,
+    "y": 102,
+    "w": 48,
+    "h": 40
+   }
+  ],
+  "blocks": [
+   {
+    "x": 40,
+    "y": 435.0,
+    "w": 30,
+    "h": 90,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 520,
+    "y": 435.0,
+    "w": 30,
+    "h": 90,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 920,
+    "y": 435.0,
+    "w": 30,
+    "h": 90,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 160,
+    "y": 370.0,
+    "w": 600,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 800,
+    "y": 370.0,
+    "w": 600,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 209,
+    "y": 290.0,
+    "w": 24,
+    "h": 380,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 339.5,
+    "y": 92,
+    "w": 301,
+    "h": 16,
+    "material": "metal",
+    "anchored": true
+   }
+  ],
+  "barrels": [],
+  "cars": [
+   {
+    "x": -250,
+    "y": 355.0,
+    "w": 120,
+    "h": 30,
+    "from": -300,
+    "to": 1260,
+    "speed": 120,
+    "style": "tram",
+    "target": true,
+    "mode": "flow"
+   }
+  ],
+  "solution": {
+   "charges": [],
+   "fireAt": 3.8
+  },
+  "hint": "ATEŞLE vinci bırakır. Gülle salınırken tramvay alttan geçiyor olmalı; tramvay gelmeden ateşle.",
+  "balls": [
+   {
+    "hook": {
+     "x": 470,
+     "y": 108
+    },
+    "length": 232,
+    "angle": -1.1,
+    "radius": 24
+   }
+  ]
+ },
+ {
+  "id": "w8-06",
+  "name": "Gökten Tramvaya",
+  "world": 8,
+  "order": 6,
+  "charges": {
+   "max": 1,
+   "par": 1
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 0,
+    "y": 0,
+    "w": 1,
+    "h": 1
+   }
+  ],
+  "blocks": [
+   {
+    "x": 200,
+    "y": 430.0,
+    "w": 30,
+    "h": 100,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 740,
+    "y": 430.0,
+    "w": 30,
+    "h": 100,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 470.0,
+    "y": 370.0,
+    "w": 590,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   }
+  ],
+  "barrels": [],
+  "cars": [
+   {
+    "x": 300,
+    "y": 345.0,
+    "w": 120,
+    "h": 30,
+    "from": 260,
+    "to": 680,
+    "speed": 90,
+    "style": "tram",
+    "target": true
+   }
+  ],
+  "solution": {
+   "charges": [
+    {
+     "x": 480,
+     "y": 60,
+     "delay": 0,
+     "kind": "bomb"
+    }
+   ],
+   "fireAt": 1.25,
+   "detonateAt": [
+    0.8
+   ]
+  },
+  "hint": "Bombayı hattın üstüne as. Tramvay altına girince PATLAT.",
+  "chargeKinds": [
+   "bomb"
+  ],
+  "dropZones": [
+   {
+    "x": 420,
+    "y": 24,
+    "w": 120,
+    "h": 70
+   }
+  ]
+ },
+ {
+  "id": "w8-07",
+  "name": "Karma Konvoy",
+  "world": 8,
+  "order": 7,
+  "charges": {
+   "max": 2,
+   "par": 2
+  },
+  "bonusCollapse": 0.45,
+  "zones": [
+   {
+    "x": 310,
+    "y": 334,
+    "w": 70,
+    "h": 38
+   },
+   {
+    "x": 680,
+    "y": 224,
+    "w": 70,
+    "h": 38
+   }
+  ],
+  "blocks": [
+   {
+    "x": 80,
+    "y": 435.0,
+    "w": 30,
+    "h": 90,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 440,
+    "y": 435.0,
+    "w": 30,
+    "h": 90,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 260.0,
+    "y": 380.0,
+    "w": 410,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 520,
+    "y": 380.0,
+    "w": 30,
+    "h": 200,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 900,
+    "y": 380.0,
+    "w": 30,
+    "h": 200,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 710.0,
+    "y": 270.0,
+    "w": 430,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   }
+  ],
+  "barrels": [],
+  "cars": [
+   {
+    "x": 120,
+    "y": 358.0,
+    "w": 56,
+    "h": 24,
+    "from": 110,
+    "to": 410,
+    "speed": 90,
+    "target": true
+   },
+   {
+    "x": 600,
+    "y": 245.0,
+    "w": 120,
+    "h": 30,
+    "from": 590,
+    "to": 830,
+    "speed": 120,
+    "style": "tram",
+    "target": true
+   }
+  ],
+  "solution": {
+   "charges": [
+    {
+     "x": 710,
+     "y": 248.0,
+     "delay": 0
+    },
+    {
+     "x": 348,
+     "y": 358.0,
+     "delay": 1.6
+    }
+   ],
+   "fireAt": 0.9
+  },
+  "hint": "Altta araç, üstte tramvay. İki şarjın gecikmesini ikisine göre kur."
+ },
+ {
+  "id": "w8-08",
+  "name": "Depo Köprüsü",
+  "world": 8,
+  "order": 8,
+  "charges": {
+   "max": 1,
+   "par": 1
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 220,
+    "y": 254.0,
+    "w": 50,
+    "h": 38
+   }
+  ],
+  "blocks": [
+   {
+    "x": 200,
+    "y": 397.0,
+    "w": 30,
+    "h": 166,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 740,
+    "y": 397.0,
+    "w": 30,
+    "h": 166,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 470.0,
+    "y": 304.0,
+    "w": 590,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 300,
+    "y": 425.0,
+    "w": 30,
+    "h": 110,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 660,
+    "y": 425.0,
+    "w": 30,
+    "h": 110,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 480.0,
+    "y": 360.0,
+    "w": 410,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   }
+  ],
+  "barrels": [
+   {
+    "x": 300,
+    "y": 278.0
+   },
+   {
+    "x": 360,
+    "y": 278.0
+   },
+   {
+    "x": 420,
+    "y": 278.0
+   }
+  ],
+  "cars": [
+   {
+    "x": 600,
+    "y": 335.0,
+    "w": 120,
+    "h": 30,
+    "from": 300,
+    "to": 640,
+    "speed": 100,
+    "style": "tram",
+    "target": true
+   }
+  ],
+  "solution": {
+   "charges": [
+    {
+     "x": 245,
+     "y": 282.0
+    }
+   ],
+   "fireAt": 3.6
+  },
+  "hint": "Köprüdeki variller zincirleme patlar. Zinciri tramvay altlarına gelirken başlat."
+ },
+ {
+  "id": "w8-09",
+  "name": "Gece Hattı",
+  "world": 8,
+  "order": 9,
+  "charges": {
+   "max": 2,
+   "par": 2
+  },
+  "bonusCollapse": 0.45,
+  "zones": [
+   {
+    "x": 453,
+    "y": 265,
+    "w": 83,
+    "h": 37
+   }
+  ],
+  "blocks": [
+   {
+    "x": 40,
+    "y": 400.0,
+    "w": 30,
+    "h": 160,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 520,
+    "y": 400.0,
+    "w": 30,
+    "h": 160,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 920,
+    "y": 400.0,
+    "w": 30,
+    "h": 160,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 160,
+    "y": 300.0,
+    "w": 600,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 800,
+    "y": 300.0,
+    "w": 600,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   }
+  ],
+  "barrels": [],
+  "cars": [
+   {
+    "x": 330,
+    "y": 285.0,
+    "w": 120,
+    "h": 30,
+    "from": -300,
+    "to": 1260,
+    "speed": 160,
+    "style": "tram",
+    "target": true,
+    "mode": "flow"
+   },
+   {
+    "x": 100,
+    "y": 285.0,
+    "w": 120,
+    "h": 30,
+    "from": -300,
+    "to": 1260,
+    "speed": 160,
+    "style": "tram",
+    "target": true,
+    "mode": "flow"
+   }
+  ],
+  "solution": {
+   "charges": [
+    {
+     "x": 480,
+     "y": 288,
+     "delay": 0
+    },
+    {
+     "x": 510,
+     "y": 288,
+     "delay": 1.6
+    }
+   ],
+   "fireAt": 0.9333333333333333
+  },
+  "hint": "İki tramvay arka arkaya. İkinci gecikmeyi aradaki mesafeye göre ayarla."
+ },
+ {
+  "id": "w8-10",
+  "name": "Madrid Finali",
+  "world": 8,
+  "order": 10,
+  "charges": {
+   "max": 3,
+   "par": 2
+  },
+  "bonusCollapse": 0.45,
+  "zones": [
+   {
+    "x": 280,
+    "y": 315,
+    "w": 60,
+    "h": 37
+   },
+   {
+    "x": 668,
+    "y": 410,
+    "w": 105,
+    "h": 70
+   }
+  ],
+  "blocks": [
+   {
+    "x": 40,
+    "y": 350.0,
+    "w": 30,
+    "h": 260,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 600,
+    "y": 350.0,
+    "w": 30,
+    "h": 260,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 940,
+    "y": 350.0,
+    "w": 30,
+    "h": 260,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 160,
+    "y": 200.0,
+    "w": 600,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 800,
+    "y": 200.0,
+    "w": 600,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 120,
+    "y": 425.0,
+    "w": 30,
+    "h": 110,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 500,
+    "y": 425.0,
+    "w": 30,
+    "h": 110,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 310.0,
+    "y": 360.0,
+    "w": 430,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 670.0,
+    "y": 420.0,
+    "w": 20,
+    "h": 120,
+    "material": "wood"
+   },
+   {
+    "x": 730.0,
+    "y": 420.0,
+    "w": 20,
+    "h": 120,
+    "material": "wood"
+   },
+   {
+    "x": 700,
+    "y": 350.0,
+    "w": 100,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 700,
+    "y": 324.0,
+    "w": 32,
+    "h": 32,
+    "material": "wood",
+    "target": true
+   },
+   {
+    "x": 880,
+    "y": 450.0,
+    "w": 50,
+    "h": 60,
+    "material": "concrete",
+    "protected": true
+   }
+  ],
+  "barrels": [],
+  "cars": [
+   {
+    "x": -100,
+    "y": 185.0,
+    "w": 120,
+    "h": 30,
+    "from": -300,
+    "to": 1260,
+    "speed": 200,
+    "style": "tram",
+    "protected": true,
+    "mode": "flow"
+   },
+   {
+    "x": 200,
+    "y": 335.0,
+    "w": 120,
+    "h": 30,
+    "from": 180,
+    "to": 440,
+    "speed": 90,
+    "style": "tram",
+    "target": true
+   }
+  ],
+  "solution": {
+   "charges": [
+    {
+     "x": 320,
+     "y": 338.0,
+     "delay": 0
+    },
+    {
+     "x": 720,
+     "y": 470,
+     "delay": 0.35
+    }
+   ],
+   "fireAt": 4.0
+  },
+  "hint": "Üst hattaki tramvay ve sağdaki ev korunuyor. Alttaki tramvayı ve kuleyi indir."
+ }
+]

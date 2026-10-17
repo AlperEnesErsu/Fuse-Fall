@@ -208,6 +208,25 @@ const TUTORIALS: Readonly<Record<string, readonly TutorialStep[]>> = {
     },
     { text: { tr: 'ATEŞLE.', en: 'FIRE.' }, highlight: { selector: '.fire-btn' }, until: 'fired' },
   ],
+  // The first tram: a moving target, caught by the moment of firing.
+  'w8-01': [
+    {
+      text: {
+        tr: 'Kırmızı tramvay hedef; rayda gidip geliyor ve vurulana kadar durmaz. Şarjı hattın üstüne koy.',
+        en: 'The red tram is the target; it runs back and forth and only stops when hit. Put the charge on the line.',
+      },
+      highlight: { world: { x: 480, y: 338 }, radius: 30 },
+      until: 'placed',
+    },
+    {
+      text: {
+        tr: 'Tramvayı izle. Tam şarjın üstüne geldiğinde ATEŞLE.',
+        en: 'Watch the tram. FIRE just as it rolls over the charge.',
+      },
+      highlight: { selector: '.fire-btn' },
+      until: 'fired',
+    },
+  ],
   // The first free-fall bomb and the detonator.
   'w6-01': [
     {

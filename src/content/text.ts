@@ -83,6 +83,16 @@ const EN_LEVELS: Readonly<Record<string, { readonly name: string; readonly hint:
   'w7-08': { name: 'Chain', hint: 'The ball hits the barrels on the stand; their blasts bring the depot down.' },
   'w7-09': { name: 'Flying Start', hint: 'Send the ball flying onto the barrels. The chain brings the tower down; the kiosk is protected.' },
   'w7-10': { name: 'Berlin Finale', hint: 'The ball, two charges and a protected neighbour. Think about all of them at once.' },
+  'w8-01': { name: 'First Tram', hint: 'The tram shuttles along its rails. Put the charge on the line and FIRE as the tram rolls over it.' },
+  'w8-02': { name: 'Two Lines', hint: 'The lower line is slow, the upper one fast. Catch both trams with one firing.' },
+  'w8-03': { name: 'Escort', hint: 'The tram in front is protected. Stop only the one behind it with a precision charge.' },
+  'w8-04': { name: 'Tram and Tower', hint: 'The tower at once, the tram when it reaches the charge. Time the firing to the tram.' },
+  'w8-05': { name: 'Ball Stop', hint: 'FIRE lets the crane go. The tram must pass under the swing; fire before it arrives.' },
+  'w8-06': { name: 'Bomb from the Sky', hint: 'Hang the bomb above the line. DETONATE as the tram rolls underneath.' },
+  'w8-07': { name: 'Mixed Convoy', hint: 'A car below, a tram above. Set both delays to suit each of them.' },
+  'w8-08': { name: 'Depot Bridge', hint: 'The barrels on the bridge go off in a chain. Start it as the tram comes under them.' },
+  'w8-09': { name: 'Night Line', hint: 'Two trams in a row. Set the second delay to the gap between them.' },
+  'w8-10': { name: 'Madrid Finale', hint: 'The tram on the upper line and the house on the right are protected. Bring down the lower tram and the tower.' },
   'w6-10': { name: 'Istanbul Finale', hint: 'The apartment and the chimney come down together. Fuse on the middle column, bomb on top of the chimney.' },
 };
 
@@ -94,6 +104,7 @@ const EN_CITIES: Readonly<Record<string, { readonly city: string; readonly count
   tokyo: { city: 'Tokyo', country: 'Japan' },
   istanbul: { city: 'Istanbul', country: 'Türkiye' },
   berlin: { city: 'Berlin', country: 'Germany' },
+  madrid: { city: 'Madrid', country: 'Spain' },
 };
 
 /** Daily missions have their own id: callers pass the base mission for its text. */

@@ -11,6 +11,9 @@ import { paintScene, SCENE_MARGIN, skyAt } from './scenery';
 import { flame, puff } from './sprites';
 import { bevel, fillMaterial, glassPane, steelBeam } from './materials-art';
 
+/** Height of a tram's overhead wire above its roof. */
+const TRAM_WIRE = 16;
+
 export interface Overlay {
   /** Placement preview under the pointer. */
   readonly ghost: { readonly position: Vec2; readonly valid: boolean } | undefined;
@@ -305,6 +308,7 @@ export class Renderer {
       this.fragment(e.material, e.shape.vertices);
     } else if (e.car) {
       if (e.car.style === 'train') this.train(e, e.shape.w, e.shape.h, threatened);
+      else if (e.car.style === 'tram') this.tram(e, e.shape.w, e.shape.h, threatened);
       else this.car(e, e.shape.w, e.shape.h);
     } else {
       this.block(e, e.shape.w, e.shape.h, threatened);
@@ -348,17 +352,67 @@ export class Renderer {
     c.fillRect(-r * 0.18, -r - 5, r * 0.36, 7);
   }
 
-  /** Rails under every train route, across the whole view. */
+  /** Rails under every rail route: trains across the whole view, trams along their line under the overhead wire. */
   private tracks(session: LevelSession): void {
     const c = this.ctx;
     for (const car of session.level.cars) {
-      if (car.style !== 'train') continue;
+      if (car.style === 'car') continue;
       const y = car.y + car.h / 2;
+      const from = car.style === 'train' ? -SCENE_MARGIN : Math.max(-SCENE_MARGIN, car.from - car.w / 2);
+      const to = car.style === 'train' ? WORLD.width + SCENE_MARGIN : Math.min(WORLD.width + SCENE_MARGIN, car.to + car.w / 2);
       c.fillStyle = '#3a3330';
-      for (let x = -SCENE_MARGIN; x < WORLD.width + SCENE_MARGIN; x += 18) c.fillRect(x, y + 1, 10, 4);
+      for (let x = from; x < to; x += 18) c.fillRect(x, y + 1, 10, 4);
       c.fillStyle = '#9aa1aa';
-      c.fillRect(-SCENE_MARGIN, y - 1, WORLD.width + 2 * SCENE_MARGIN, 2);
+      c.fillRect(from, y - 1, to - from, 2);
+      if (car.style === 'tram') {
+        c.strokeStyle = 'rgba(30, 32, 36, 0.75)';
+        c.lineWidth = 1.2;
+        c.beginPath();
+        c.moveTo(from, car.y - car.h / 2 - TRAM_WIRE);
+        c.lineTo(to, car.y - car.h / 2 - TRAM_WIRE);
+        c.stroke();
+      }
     }
+  }
+
+  /** A low-floor city tram: rounded body, window band, pantograph to the wire. Targets are red, protected ones cream with teal corners. */
+  private tram(e: EntityView, w: number, h: number, threatened: boolean): void {
+    const c = this.ctx;
+    const wrecked = e.car?.wrecked === true;
+    const body = wrecked ? '#3b3b46' : e.target ? PALETTE.target : '#efe6d2';
+    c.fillStyle = body;
+    c.beginPath();
+    c.roundRect(-w / 2, -h / 2, w, h - 4, 7);
+    c.fill();
+    c.fillStyle = wrecked ? '#222229' : 'rgba(210, 240, 255, 0.85)';
+    for (let x = -w / 2 + 8; x < w / 2 - 14; x += 18) c.fillRect(x, -h / 2 + 5, 12, h * 0.32);
+    c.fillStyle = wrecked ? '#2a2a30' : e.target ? '#f4f1ea' : '#c0392b';
+    c.fillRect(-w / 2 + 2, h / 2 - 11, w - 4, 3);
+    c.fillStyle = '#16161e';
+    for (const x of [-w * 0.32, w * 0.32]) c.fillRect(x - 9, h / 2 - 5, 18, 5);
+    // Pantograph up to the wire; it drops when the tram is wrecked.
+    c.strokeStyle = '#2b2d31';
+    c.lineWidth = 1.5;
+    c.beginPath();
+    if (wrecked) {
+      c.moveTo(-12, -h / 2);
+      c.lineTo(10, -h / 2 - 4);
+    } else {
+      c.moveTo(-8, -h / 2);
+      c.lineTo(4, -h / 2 - TRAM_WIRE / 2);
+      c.lineTo(-8, -h / 2 - TRAM_WIRE);
+      c.moveTo(-16, -h / 2 - TRAM_WIRE);
+      c.lineTo(0, -h / 2 - TRAM_WIRE);
+    }
+    c.stroke();
+    if (e.target) {
+      c.strokeStyle = e.down ? PALETTE.targetDown : '#ffffff';
+      c.lineWidth = 2.5;
+      c.beginPath();
+      c.arc(0, 0, h * 0.3, 0, Math.PI * 2);
+      c.stroke();
+    }
+    if (e.protected) this.protectedCorners(w, h, e.compromised || threatened);
   }
 
   /** A Shinkansen-style train: white body, blue stripe, window row, long nose. Protected: teal corners, red when hit. */
@@ -397,8 +451,13 @@ export class Renderer {
     }
     c.restore();
     // Protected marking, not mirrored.
-    const mark = e.compromised || threatened ? PALETTE.invalid : PALETTE.protect;
-    c.strokeStyle = mark;
+    this.protectedCorners(w, h, e.compromised || threatened);
+  }
+
+  /** Teal corner brackets around protected traffic; red once threatened or hit. */
+  private protectedCorners(w: number, h: number, alarm: boolean): void {
+    const c = this.ctx;
+    c.strokeStyle = alarm ? PALETTE.invalid : PALETTE.protect;
     c.lineWidth = 2.5;
     c.beginPath();
     for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]] as const) {

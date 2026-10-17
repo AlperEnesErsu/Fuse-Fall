@@ -388,7 +388,65 @@ const berlin: Landmarks = (c, color, accent) => {
   c.fillRect(tx - 30, G - 302, 60, 4);
 };
 
-const LANDMARKS: Readonly<Record<string, Landmarks>> = { ankara, paris, london, rome, tokyo, istanbul, berlin };
+const madrid: Landmarks = (c, color, accent) => {
+  c.fillStyle = color;
+  // Puerta de Alcalá: a wide gate of five openings, the middle three arched, a pediment and statues on top.
+  const px = 160;
+  c.fillRect(px - 120, G - 110, 240, 110);
+  c.fillRect(px - 126, G - 124, 252, 16);
+  c.beginPath();
+  c.moveTo(px - 50, G - 124);
+  c.lineTo(px, G - 150);
+  c.lineTo(px + 50, G - 124);
+  c.fill();
+  for (const dx of [-90, 90]) c.fillRect(px + dx - 6, G - 140, 12, 16);
+  c.fillStyle = accent;
+  for (const dx of [-112, 92]) c.fillRect(px + dx, G - 60, 20, 60);
+  for (const dx of [-60, 0, 60]) {
+    c.beginPath();
+    c.moveTo(px + dx - 16, G);
+    c.lineTo(px + dx - 16, G - 56);
+    c.arc(px + dx, G - 56, 16, Math.PI, 0);
+    c.lineTo(px + dx + 16, G);
+    c.fill();
+  }
+  c.fillStyle = color;
+  // Metrópolis: a wedge of a building with a round corner tower, its dome and the winged statue.
+  const mx = 450;
+  c.fillRect(mx - 80, G - 120, 160, 120);
+  c.fillRect(mx - 30, G - 170, 60, 50);
+  c.beginPath();
+  c.arc(mx, G - 170, 30, Math.PI, 0);
+  c.fill();
+  c.fillRect(mx - 3, G - 216, 6, 18);
+  c.beginPath();
+  c.moveTo(mx - 16, G - 214);
+  c.lineTo(mx, G - 206);
+  c.lineTo(mx + 16, G - 214);
+  c.lineTo(mx, G - 204);
+  c.fill();
+  c.fillStyle = accent;
+  for (let wx = mx - 70; wx < mx + 70; wx += 20) c.fillRect(wx, G - 100, 8, 14);
+  c.fillStyle = color;
+  // Cuatro Torres: four towers, one with the arch on top, one with a rounded crown.
+  const towers = [
+    { x: 690, w: 46, h: 300 },
+    { x: 760, w: 44, h: 330 },
+    { x: 830, w: 48, h: 310 },
+    { x: 900, w: 42, h: 280 },
+  ];
+  for (const t of towers) c.fillRect(t.x - t.w / 2, G - t.h, t.w, t.h);
+  c.fillStyle = accent; // Torre Cepsa's open arch
+  c.fillRect(690 - 15, G - 300 + 4, 30, 26);
+  c.fillStyle = color;
+  c.beginPath();
+  c.ellipse(830, G - 310, 24, 16, 0, Math.PI, 0);
+  c.fill();
+  c.fillStyle = accent;
+  for (const t of towers) for (let wy = G - t.h + 40; wy < G - 20; wy += 40) c.fillRect(t.x - t.w / 2 + 6, wy, t.w - 12, 2);
+};
+
+const LANDMARKS: Readonly<Record<string, Landmarks>> = { ankara, paris, london, rome, tokyo, istanbul, berlin, madrid };
 
 /** Paints the whole backdrop for a city and time of day, in world coordinates. */
 export const paintScene = (c: Ctx, cityKey: string, sky: SkyState): void => {

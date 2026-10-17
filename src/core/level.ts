@@ -42,8 +42,15 @@ export interface CarDef {
   readonly mode: 'patrol' | 'flow';
   /** Third-party traffic (a scheduled train): must come through the job untouched. */
   readonly protected: boolean;
-  readonly style: 'car' | 'train';
+  /** Trains and trams run on rails: scripted all the way, immune to pushes, stopped only by damage. */
+  readonly style: VehicleStyle;
 }
+
+export const VEHICLE_STYLES = ['car', 'train', 'tram'] as const;
+export type VehicleStyle = (typeof VEHICLE_STYLES)[number];
+
+/** Rail vehicles keep to their track whatever hits them; cars are driven physically after Fire. */
+export const onRails = (c: Pick<CarDef, 'style'>): boolean => c.style !== 'car';
 
 /** Vehicles may run on past the screen edges, so traffic enters and leaves naturally. */
 export const ROUTE_OVERRUN = 400;
@@ -202,7 +209,7 @@ const car = (v: unknown, path: string): CarDef => {
     target: o.target === undefined ? false : o.target === true || fail(`${path}.target`, 'expected boolean'),
     mode: o.mode === undefined || o.mode === 'patrol' ? 'patrol' : o.mode === 'flow' ? 'flow' : fail(`${path}.mode`, 'expected patrol or flow'),
     protected: o.protected === undefined ? false : o.protected === true || fail(`${path}.protected`, 'expected boolean'),
-    style: o.style === undefined || o.style === 'car' ? 'car' : o.style === 'train' ? 'train' : fail(`${path}.style`, 'expected car or train'),
+    style: o.style === undefined ? 'car' : (VEHICLE_STYLES as readonly unknown[]).includes(o.style) ? (o.style as VehicleStyle) : fail(`${path}.style`, 'expected car, train or tram'),
   };
   if (def.target && def.protected) fail(path, 'a vehicle cannot be both a target and protected');
   if (def.from > def.to) fail(path, 'from must not exceed to');

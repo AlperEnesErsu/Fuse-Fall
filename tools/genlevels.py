@@ -811,7 +811,141 @@ def berlin():
     l.sol((420, 450), (580, 450, 0.3)); out.append(l)
     return out
 
-def scale_zones(l, levels_total=70):
+
+# ---- Madrid: trams on the move ---------------------------------------------------
+TRAM = dict(w=120, h=30)
+
+
+def tram(l, x, top, frm, to, speed, target=True, guarded=False, mode=None):
+    """A tram on its rails along a deck whose top is `top`: scripted all the way, it stops only when hit."""
+    c = dict(x=x, y=top - TRAM['h'] / 2, w=TRAM['w'], h=TRAM['h'], **{'from': frm}, to=to, speed=speed, style='tram')
+    if target: c['target'] = True
+    if guarded: c['protected'] = True
+    if mode: c['mode'] = mode
+    l.d['cars'].append(c); return c
+
+
+def tram_line(l, x1, x2, height):
+    """An anchored tram deck on two piers; returns its top."""
+    return road(l, x1, x2, height, anchored=True)
+
+
+def tram_viaduct(l, top, piers=(40, 520, 920)):
+    """An anchored tram viaduct across the whole view (two 600 px spans); returns its top."""
+    for x in piers:
+        l.col(x, G, 30, G - top - 20, 'concrete', anchored=True)
+    l.col(160, top + 10, 600, 20, 'metal', anchored=True)
+    l.col(800, top + 10, 600, 20, 'metal', anchored=True)
+    return top
+
+
+# Measured fire times (tools: a throwaway probe playing the level at each time).
+BALL5 = 3.8
+BOMB6 = (1.25, 0.8)
+DEPOT8 = 3.6
+
+
+def madrid():
+    out = []
+    P = 'precision'
+    B = 'bomb'
+
+    # 1. First tram: one charge on the line, fired as the tram rolls over it.
+    l = L(8, 1, 'İlk Tramvay', 1, 1, 0.5, 'Tramvay rayda gidip geliyor. Şarjı hatta koy, tramvay üstüne gelince ATEŞLE.')
+    deck = tram_line(l, 220, 740, 110)
+    c = tram(l, 300, deck, 290, 670, 80)
+    l.zone(440, deck - 40, 80, 38)
+    t = time_to(c, 480); l.sol((480, deck - 12), fireAt=t); out.append(l)
+
+    # 2. Two lines: two trams, two speeds, one Fire.
+    l = L(8, 2, 'İki Hat', 2, 2, 0.45, 'Alt hat yavaş, üst hat hızlı. Tek ateşlemede iki tramvayı da yakala.')
+    low = tram_line(l, 80, 440, 100)
+    high = tram_line(l, 520, 900, 200)
+    a = tram(l, 160, low, 150, 380, 70)
+    b = tram(l, 600, high, 590, 830, 140)
+    l.zone(290, low - 40, 90, 38); l.zone(680, high - 40, 80, 38)
+    t = time_to(b, 720); d2 = q(time_to(a, 340, t) - t)
+    l.sol((720, high - 12, 0), (340, low - 12, d2), fireAt=t); out.append(l)
+
+    # 3. Escort: the tram in front is protected; only a precision charge spares it.
+    l = L(8, 3, 'Refakat', 1, 1, 0.5, 'Öndeki tramvay korunuyor. Hassas şarjla yalnızca arkadakini durdur.')
+    l.d['chargeKinds'] = ['standard', P]
+    top = tram_viaduct(l, 330)
+    tram(l, 370, top, -300, 1260, 120, target=False, guarded=True, mode='flow')
+    c = tram(l, 200, top, -300, 1260, 120, mode='flow')
+    l.zone(520, top - 40, 100, 38)
+    t = time_to(c, 570); l.sol((570, top - 12, None, P), fireAt=t); out.append(l)
+
+    # 4. Tram and tower: the tower goes at once, the tram when it comes round.
+    l = L(8, 4, 'Tramvay ve Kule', 2, 2, 0.5, 'Kule hemen, tramvay şarjın üstüne geldiğinde. Ateşleme anını tramvaya göre seç.')
+    deck = tram_line(l, 80, 500, 110)
+    c = tram(l, 400, deck, 140, 440, 90)
+    top = tower(l, 720, G, 70, 130); l.col(720, top, 34, 34, 'wood', True)
+    l.zone(250, deck - 40, 80, 38); l.zone(640, 400, 160, 80)
+    t = time_to(c, 290); l.sol((290, deck - 12, 0), (700, 470, 0.35), fireAt=t); out.append(l)
+
+    # 5. The ball meets the tram: Fire lets the crane go; the tram must reach the low end of the swing.
+    l = L(8, 5, 'Gülle Durağı', 1, 1, 0.5, 'ATEŞLE vinci bırakır. Gülle salınırken tramvay alttan geçiyor olmalı; tramvay gelmeden ateşle.')
+    top = tram_viaduct(l, 370)
+    hook = crane(l, 470, 100, top - 30 - 108, -1.1)
+    tram(l, -250, top, -300, 1260, 120, mode='flow')
+    hook_zone(l, hook)
+    l.sol(fireAt=BALL5); out.append(l)
+
+    # 6. A bomb for the tram: drop it on the line and detonate as the tram rolls under.
+    l = L(8, 6, 'Gökten Tramvaya', 1, 1, 0.5, 'Bombayı hattın üstüne as. Tramvay altına girince PATLAT.')
+    l.d['chargeKinds'] = [B]
+    deck = tram_line(l, 200, 740, 100)
+    tram(l, 300, deck, 260, 680, 90)
+    l.d['dropZones'] = [dict(x=420, y=24, w=120, h=70)]; l.zone(0, 0, 1, 1)
+    l.sol((480, 60, 0, B), fireAt=BOMB6[0], detonateAt=[BOMB6[1]]); out.append(l)
+
+    # 7. Convoy: a car below and a tram above, one Fire.
+    l = L(8, 7, 'Karma Konvoy', 2, 2, 0.45, 'Altta araç, üstte tramvay. İki şarjın gecikmesini ikisine göre kur.')
+    low = road(l, 80, 440, 90, anchored=True)
+    high = tram_line(l, 520, 900, 200)
+    car = l.car(120, low, 110, 410, 90)
+    b = tram(l, 600, high, 590, 830, 120)
+    l.zone(300, low - 40, 90, 38); l.zone(670, high - 40, 90, 38)
+    t = time_to(b, 710); d2 = q(time_to(car, 330 + BEHIND, t) - t)
+    l.sol((710, high - 12, 0), (330 + BEHIND, low - 12, d2), fireAt=t); out.append(l)
+
+    # 8. Depot: barrels on the bridge over the line; the chain reaches down to the tram.
+    l = L(8, 8, 'Depo Köprüsü', 1, 1, 0.5, 'Köprüdeki variller zincirleme patlar. Zinciri tramvay altlarına gelirken başlat.')
+    over = road(l, 200, 740, 166, anchored=True)
+    deck = tram_line(l, 300, 660, 110)
+    c = tram(l, 600, deck, 300, 640, 100)
+    for x in (300, 360, 420): l.barrel(x, over)
+    l.zone(220, over - 40, 50, 38)
+    l.sol((245, over - 12), fireAt=DEPOT8); out.append(l)
+
+    # 9. Night line: two trams in a row on one line, two delays.
+    l = L(8, 9, 'Gece Hattı', 2, 2, 0.45, 'İki tramvay arka arkaya. İkinci gecikmeyi aradaki mesafeye göre ayarla.')
+    top = tram_viaduct(l, 300)
+    a = tram(l, 330, top, -300, 1260, 160, mode='flow')
+    b = tram(l, 100, top, -300, 1260, 160, mode='flow')
+    l.zone(440, top - 40, 110, 38)
+    t = time_to(a, 480); d2 = q(time_to(b, 510, t) - t)
+    l.sol((480, top - 12, 0), (510, top - 12, d2), fireAt=t); out.append(l)
+
+    # 10. Finale: a tram below a protected line, a tower beside a protected house.
+    l = L(8, 10, 'Madrid Finali', 3, 2, 0.45, 'Üst hattaki tramvay ve sağdaki ev korunuyor. Alttaki tramvayı ve kuleyi indir.')
+    top = tram_viaduct(l, 200, piers=(40, 600, 940))
+    guard = tram(l, -100, top, -300, 1260, 200, target=False, guarded=True, mode='flow')
+    deck = tram_line(l, 120, 500, 110)
+    c = tram(l, 200, deck, 180, 440, 90)
+    tt = tower(l, 700, G, 60, 120); l.col(700, tt, 32, 32, 'wood', True)
+    l.house(880, 50, 60)
+    l.zone(270, deck - 40, 80, 38); l.zone(650, 400, 140, 80)
+    # Fire as the low tram crosses the zone with the protected tram well away overhead.
+    t = 0.0
+    while not (300 <= car_x(c, t) <= 320 and abs(car_x(guard, t) - car_x(c, t)) > 320): t += 1 / 60
+    t = round(t * 60) / 60
+    l.sol((round(car_x(c, t)), deck - 12, 0), (720, 470, 0.35), fireAt=t); out.append(l)
+    return out
+
+
+def scale_zones(l, levels_total=80):
     """Charge zones follow the difficulty curve: roomy on the first jobs, tight on the
     last. Every solution charge stays inside its zone (with a margin), small special
     zones (crane hooks) keep their size, and zones never go below the ground."""
@@ -832,7 +966,7 @@ def scale_zones(l, levels_total=70):
 
 
 outdir = sys.argv[1]
-for name, levels in (('ankara', ankara()), ('paris', paris()), ('london', london()), ('rome', rome()), ('tokyo', tokyo()), ('istanbul', istanbul()), ('berlin', berlin())):
+for name, levels in (('ankara', ankara()), ('paris', paris()), ('london', london()), ('rome', rome()), ('tokyo', tokyo()), ('istanbul', istanbul()), ('berlin', berlin()), ('madrid', madrid())):
     for l in levels:
         # Footprint jobs offer the implosion charge: it folds a structure onto its own site.
         if 'footprint' in l.d and 'implosion' not in l.d.get('chargeKinds', ['standard']):

@@ -1,5 +1,5 @@
 import type { BlastSource, EventBus, GameEvents } from './events';
-import { WORLD, type CarDef, type ChargeKind, type LevelDefinition } from './level';
+import { WORLD, onRails, type CarDef, type ChargeKind, type LevelDefinition, type VehicleStyle } from './level';
 import { MATERIALS, type MaterialId } from './materials';
 import { createRng, distance, hashString, rectContains, sub, length, scale, vec, type Vec2 } from './math';
 import type { BodyState, PhysicsWorld, Shape } from './ports';
@@ -48,7 +48,7 @@ export interface EntityView {
 }
 
 export interface CarView {
-  readonly style: 'car' | 'train';
+  readonly style: VehicleStyle;
   readonly driving: boolean;
   readonly wrecked: boolean;
   readonly direction: 1 | -1;
@@ -245,8 +245,8 @@ export class LevelSession {
         material: 'vehicle',
         target: c.target,
         guarded: c.protected,
-        // Trains run on rails.
-        kinematic: c.style === 'train',
+        // Trains and trams run on rails.
+        kinematic: onRails(c),
         driver: { def: c, direction, engine: c.speed > 0, wrecked: false },
       });
     }
@@ -577,7 +577,11 @@ export class LevelSession {
         this.physics.kick(e.id, dv, spin * lightness);
       }
       const amount = spec.damage * falloff;
-      if (e.driver && amount > TUNING.vehicle.stallDamage) e.driver.engine = false;
+      if (e.driver?.engine && amount > TUNING.vehicle.stallDamage) {
+        e.driver.engine = false;
+        // A rail vehicle brakes to a stop where it stands.
+        if (onRails(e.driver.def)) this.physics.setPose(e.id, state.position, vec(0, 0));
+      }
       if (this.damage(e, amount)) broken.push(e);
     }
     for (const e of broken) this.breakEntity(e, center);
@@ -609,6 +613,7 @@ export class LevelSession {
       this.compromise(e, state.position);
       e.driver.engine = false;
       e.driver.wrecked = true;
+      if (onRails(e.driver.def)) this.physics.setPose(e.id, state.position, vec(0, 0));
       this.events.emit('carWrecked', { position: state.position });
       this.pending.push({ at: this.time + TUNING.vehicle.delay, position: state.position, blast: 'vehicle' });
       if (e.target) this.markDown(e, state.position);
@@ -646,14 +651,14 @@ export class LevelSession {
 
   /**
    * Scripted driving: every vehicle while the world is frozen (exact, so timing
-   * is learnable), and trains always, because trains run on rails.
+   * is learnable), and rail vehicles always, because they run on rails.
    */
   private cruise(dt: number, railOnly = false): void {
     for (const e of this.entities.values()) {
       const d = e.driver;
       const s = this.physics.state(e.id);
       if (!d?.engine || !s) continue;
-      if (railOnly && d.def.style !== 'train') continue;
+      if (railOnly && !onRails(d.def)) continue;
       let x = s.position.x + d.direction * d.def.speed * dt;
       if (d.def.mode === 'flow') {
         if (x >= d.def.to) x = d.def.from + (x - d.def.to);
@@ -670,7 +675,7 @@ export class LevelSession {
     for (const e of this.entities.values()) {
       const d = e.driver;
       const s = this.physics.state(e.id);
-      if (!d?.engine || !s || d.def.style === 'train') continue;
+      if (!d?.engine || !s || onRails(d.def)) continue;
       if (Math.abs(s.angle) > TUNING.vehicle.maxTilt || s.position.y > d.def.y + 8) {
         d.engine = false;
         continue;

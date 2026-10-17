@@ -18,7 +18,7 @@ const cases = levels.map((l) => [l.id, l] as const);
 
 describe('campaign content', () => {
   it('ships ten ordered levels for each playable city', () => {
-    for (const world of [1, 2, 3, 4, 5]) {
+    for (const world of [1, 2, 3, 4, 5, 6, 7, 8]) {
       expect(levelsOf(campaign, world).map((l) => l.order)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
     }
   });
@@ -116,6 +116,36 @@ describe('campaign content', () => {
       expect(playSolution(level, level.solution.fireAt, []).result?.cleared).toBe(false);
     },
   );
+
+  // Madrid trams: the moment of firing is the puzzle. The same placement a little late misses the tram.
+  // (Patrol jobs are also covered by "needs good timing"; this adds the one-way lines and the crane.)
+  it.each([
+    ['w8-01', 1],
+    ['w8-02', 1],
+    ['w8-03', 1],
+    ['w8-04', 1],
+    ['w8-05', 2],
+    ['w8-06', 1],
+    ['w8-07', 1],
+    ['w8-08', 2],
+    ['w8-09', 1],
+    ['w8-10', 1],
+  ] as const)('%s needs good timing on the tram', (id, late) => {
+    const level = levels.find((l) => l.id === id);
+    if (!level) throw new Error(`missing ${id}`);
+    const result = playSolution(level, level.solution.fireAt + late).result;
+    expect(result?.cleared, JSON.stringify(result)).toBe(false);
+  });
+
+  // Rail vehicles keep to their track: a tram hit hard enough is wrecked where it stands, never thrown.
+  it('w8-01 wrecks the tram on its rails', () => {
+    const level = levels.find((l) => l.id === 'w8-01');
+    if (!level) throw new Error('missing w8-01');
+    const session = playSolution(level);
+    const tram = [...session.view()].find((e) => e.car?.style === 'tram');
+    expect(tram?.car?.wrecked).toBe(true);
+    expect(tram?.state.position.y).toBeCloseTo(level.cars[0]?.y ?? 0, 5);
+  });
 
   // Detonator puzzles: left to their fuses, the same falling bombs do not win.
   it.each(cases.filter(([, l]) => ['w6-02', 'w6-04', 'w6-05', 'w6-08', 'w6-10'].includes(l.id)))('%s needs the detonator', (_id, level) => {
