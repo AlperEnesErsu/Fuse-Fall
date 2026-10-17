@@ -2,6 +2,7 @@ import type { EventBus, GameEvents } from '../core/events';
 import { WORLD } from '../core/level';
 import type { Vec2 } from '../core/math';
 import type { Settings } from '../core/progress';
+import { HEAVY_LANDING, landingWeight } from './juice';
 import { SoundSynth } from './sound-synth';
 
 /** Stereo position from the world x: sounds come from where things happen. */
@@ -17,6 +18,9 @@ export class SoundDirector {
   private volume: GainNode | undefined;
   private synth: SoundSynth | undefined;
   private lastHit = 0;
+  private lastCrack = 0;
+  private lastCreak = 0;
+  private lastCollapse = 0;
 
   constructor(
     events: EventBus<GameEvents>,
@@ -25,8 +29,7 @@ export class SoundDirector {
     events.on('explosion', (e) => this.synth?.explosion(e.power, panOf(e.position)));
     events.on('blockShattered', (e) => this.synth?.shatter(e.material, e.size / 60, panOf(e.position)));
     events.on('blockHit', (e) => this.hit(e));
-    // A snapping joint: a short dry crack, rate-limited with the other impacts.
-    events.on('jointBroken', (e) => this.hit({ position: e.position, material: 'concrete', intensity: 0.3 }));
+    events.on('jointBroken', (e) => this.jointBroken(e.position));
     events.on('carWrecked', (e) => this.synth?.carWreck(panOf(e.position)));
     events.on('bombReleased', (e) => this.synth?.whistle(panOf(e.position)));
     events.on('chargePlaced', () => this.synth?.arm());
@@ -70,10 +73,29 @@ export class SoundDirector {
   }
 
   private hit(e: GameEvents['blockHit']): void {
-    // Rate-limit thuds so a collapsing pile does not turn into white noise.
     const now = this.ctx?.currentTime ?? 0;
+    // A heavy body landing gets the full ground-shaking thud, at most a few per second.
+    const weight = landingWeight(e);
+    if (weight > HEAVY_LANDING && now - this.lastCollapse > 0.16) {
+      this.lastCollapse = now;
+      this.synth?.collapse(weight, panOf(e.position));
+      return;
+    }
+    // Rate-limit thuds so a collapsing pile does not turn into white noise.
     if (now - this.lastHit < 0.035) return;
     this.lastHit = now;
     this.synth?.impact(e.material, e.intensity, panOf(e.position));
+  }
+
+  /** A snapping joint: a dry crack; the first ones in a while also groan under the load. */
+  private jointBroken(p: Vec2): void {
+    const now = this.ctx?.currentTime ?? 0;
+    if (now - this.lastCreak > 0.7) {
+      this.lastCreak = now;
+      this.synth?.creak(panOf(p));
+    }
+    if (now - this.lastCrack < 0.035) return;
+    this.lastCrack = now;
+    this.synth?.impact('concrete', 0.3, panOf(p));
   }
 }

@@ -137,6 +137,52 @@ export class SoundSynth {
     this.tone(out, at, { type: 'sine', from: 95, to: 60, attack: 0.002, decay: 0.1, gain: 0.3 * i });
   }
 
+  /**
+   * A heavy body hitting the ground: a deep "woomph" felt more than heard,
+   * a burst of crushed material and gravel settling after it.
+   */
+  collapse(weight: number, pan = 0): void {
+    const at = this.ctx.currentTime;
+    const r = this.rng;
+    const w = Math.min(1.5, weight);
+    const out = this.voice(pan, 0.55);
+    this.tone(out, at, { type: 'sine', from: 62 + r() * 8, to: 28, sweep: 0.5, attack: 0.004, decay: 0.7, gain: 0.75 * w });
+    this.noise(out, at, { color: 'brown', filter: 'lowpass', from: 420, to: 70, sweep: 0.8, attack: 0.006, decay: 1.1, gain: 0.7 * w });
+    this.noise(out, at, { color: 'brown', filter: 'bandpass', from: 220, to: 120, attack: 0.003, decay: 0.25, gain: 0.5 * w, q: 1.1 });
+    for (let i = 0; i < 10; i++) {
+      const f = 500 + r() * 1400;
+      this.noise(this.voice(pan + (r() - 0.5) * 0.6, 0.4), at + 0.05 + Math.pow(r(), 1.5) * 0.6, {
+        color: 'white', filter: 'bandpass', from: f, to: f * 0.8, attack: 0.001, decay: 0.02 + r() * 0.05, gain: (0.04 + r() * 0.08) * w, q: 2.5,
+      });
+    }
+  }
+
+  /** Structure under strain: a stick-slip groan through a resonant body. */
+  creak(pan = 0): void {
+    const at = this.ctx.currentTime;
+    const r = this.rng;
+    const out = this.voice(pan, 0.5);
+    const osc = this.ctx.createOscillator();
+    osc.type = 'sawtooth';
+    const duration = 0.35 + r() * 0.25;
+    // Stick-slip: the pitch stutters downwards instead of gliding.
+    let f = 85 + r() * 40;
+    osc.frequency.setValueAtTime(f, at);
+    for (let t = 0.04; t < duration; t += 0.03 + r() * 0.05) {
+      f *= 0.93 + r() * 0.1;
+      osc.frequency.linearRampToValueAtTime(f, at + t);
+    }
+    const body = this.ctx.createBiquadFilter();
+    body.type = 'bandpass';
+    body.Q.value = 6;
+    body.frequency.setValueAtTime(900 + r() * 400, at);
+    body.frequency.exponentialRampToValueAtTime(500, at + duration);
+    const env = this.envelope(at, 0.06, duration * 0.4, duration * 0.6, 0.16);
+    osc.connect(body).connect(env).connect(out);
+    osc.start(at);
+    osc.stop(at + duration + 0.12);
+  }
+
   /** Detonator-style arming click: mechanical, short, not musical. */
   arm(): void {
     const at = this.ctx.currentTime;

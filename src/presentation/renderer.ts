@@ -80,10 +80,12 @@ export class Renderer {
     const shake = juice.shake();
     const zoom = 1 + juice.zoom;
     c.setTransform(this.scale, 0, 0, this.scale, this.offsetX, this.offsetY);
-    c.translate(WORLD.width / 2 + shake.x, WORLD.height / 2 + shake.y);
+    // Zoom about the focus of the action (a critical break), or the centre.
+    const pivot = juice.focus ?? { x: WORLD.width / 2, y: WORLD.height / 2 };
+    c.translate(pivot.x + shake.x, pivot.y + shake.y);
     c.rotate(shake.angle);
     c.scale(zoom, zoom);
-    c.translate(-WORLD.width / 2, -WORLD.height / 2);
+    c.translate(-pivot.x, -pivot.y);
 
     const m = SCENE_MARGIN;
     c.drawImage(this.paintedBackdrop(), -m, -m, WORLD.width + 2 * m, WORLD.height + 2 * m);
@@ -737,6 +739,13 @@ export class Renderer {
             c.globalAlpha = alpha * warmth;
             c.drawImage(puff('#a4602c'), p.x - radius, p.y - radius, radius * 2, radius * 2);
           }
+          break;
+        }
+        case 'dust': {
+          // Swells to several times its size; eases in, then thins out slowly like settling dust.
+          const radius = p.size * (0.7 + 2.2 * Math.sqrt(t));
+          c.globalAlpha = Math.min(1, t / 0.12) * Math.pow(1 - t, 1.6) * 0.42;
+          c.drawImage(puff(p.color), p.x - radius, p.y - radius, radius * 2, radius * 2);
           break;
         }
         case 'smoke':

@@ -633,7 +633,7 @@ export class LevelSession {
         if (!e || e.kind === 'debris' || e.kind === 'bomb') continue;
         const intensity = Math.min(1, over / 900);
         if (intensity >= TUNING.impact.reportAbove) {
-          this.events.emit('blockHit', { position: impact.point, material: e.material, intensity });
+          this.events.emit('blockHit', { position: impact.point, material: e.material, intensity, size: Math.sqrt(area(e.shape)) });
         }
         if (this.damage(e, amount)) broken.set(e, impact.point);
       }

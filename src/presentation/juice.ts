@@ -42,6 +42,12 @@ export interface Scorch {
   readonly h: number;
 }
 
+/** How hard a body landed, scaled by its size: about 1 for a column slamming down. */
+export const landingWeight = (e: GameEvents['blockHit']): number => e.intensity * (e.size / 50);
+
+/** Landings heavier than this raise a ground-hugging dust cloud and a deep thud. */
+export const HEAVY_LANDING = 0.25;
+
 /** Feel parameters. Tweak here; nothing else needs to change. */
 const FEEL = {
   hitStop: { charge: 0.06, barrel: 0.04, vehicle: 0.045, bomb: 0.07 },
@@ -52,6 +58,8 @@ const FEEL = {
   flash: { explosion: 0.22, decay: 9 },
   zoomPunch: { explosion: 0.035, decay: 6 },
   slowMo: { scale: 0.3, duration: 0.9 },
+  /** The first big structural break of an attempt: a beat of slow motion and a push-in on it. */
+  critical: { minSize: 40, slowScale: 0.3, slowFor: 0.22, zoom: 0.09, holdFor: 0.55, release: 3 },
   maxScorches: 24,
 } as const;
 
@@ -68,10 +76,17 @@ export class JuiceDirector {
   readonly scorches: Scorch[] = [];
   private hitStop = 0;
   private slowMoLeft = 0;
+  private criticalSlowLeft = 0;
+  private criticalHold = 0;
+  private criticalDone = false;
+  private focusZoom = 0;
+  private punch = 0;
   private trauma = 0;
   private shakeTime = 0;
+  private lastCloudAt = -1;
   flash = 0;
-  zoom = 0;
+  /** Where the camera pushes in, while it does. */
+  focus: Vec2 | undefined;
 
   constructor(
     events: EventBus<GameEvents>,
@@ -82,11 +97,13 @@ export class JuiceDirector {
     events.on('blockHit', (e) => {
       this.addTrauma(FEEL.trauma.hit * e.intensity);
       this.dust(e.position, Math.ceil(4 * e.intensity), DEBRIS_COLORS[e.material]);
+      const weight = landingWeight(e);
+      if (weight > HEAVY_LANDING) this.landingCloud(e.position, weight, e.material);
     });
     events.on('carWrecked', (e) => this.burningWreck(e.position));
     events.on('jointBroken', (e) => this.dust(e.position, 2, ['#c9c2b6']));
     events.on('targetDown', (e) => {
-      this.dust(e.position, 10, ['#b9b2a6']);
+      this.dust(e.position, 14, ['#b9b2a6']);
       if (e.remaining === 0) this.slowMoLeft = FEEL.slowMo.duration;
     });
   }
@@ -96,6 +113,10 @@ export class JuiceDirector {
     if (this.hitStop > 0) {
       this.hitStop -= realDt;
       return 0;
+    }
+    if (this.criticalSlowLeft > 0) {
+      this.criticalSlowLeft -= realDt;
+      return realDt * FEEL.critical.slowScale;
     }
     if (this.slowMoLeft > 0) {
       this.slowMoLeft -= realDt;
@@ -123,7 +144,19 @@ export class JuiceDirector {
     this.trauma = Math.max(0, this.trauma - FEEL.trauma.decay * realDt);
     this.shakeTime += realDt;
     this.flash = decay(this.flash, FEEL.flash.decay, realDt);
-    this.zoom = decay(this.zoom, FEEL.zoomPunch.decay, realDt);
+    this.punch = decay(this.punch, FEEL.zoomPunch.decay, realDt);
+    if (this.criticalHold > 0) {
+      this.criticalHold -= realDt;
+      this.focusZoom += (FEEL.critical.zoom - this.focusZoom) * Math.min(1, realDt * 12);
+    } else {
+      this.focusZoom = decay(this.focusZoom, FEEL.critical.release, realDt);
+      if (this.focusZoom === 0) this.focus = undefined;
+    }
+  }
+
+  /** Extra camera zoom: the blast punch, or the push-in on a critical break. */
+  get zoom(): number {
+    return Math.max(this.punch, this.settings().screenShake ? this.focusZoom : 0);
   }
 
   /** Camera offset from trauma². Smooth pseudo-noise instead of jitter feels heavier. */
@@ -155,9 +188,15 @@ export class JuiceDirector {
     this.scorches.length = 0;
     this.hitStop = 0;
     this.slowMoLeft = 0;
+    this.criticalSlowLeft = 0;
+    this.criticalHold = 0;
+    this.criticalDone = false;
+    this.focusZoom = 0;
+    this.focus = undefined;
+    this.punch = 0;
     this.trauma = 0;
     this.flash = 0;
-    this.zoom = 0;
+    this.lastCloudAt = -1;
   }
 
   private addTrauma(amount: number): void {
@@ -169,7 +208,7 @@ export class JuiceDirector {
     this.hitStop = Math.max(this.hitStop, FEEL.hitStop[source]);
     this.addTrauma(FEEL.trauma.explosion * power);
     this.flash = Math.max(this.flash, FEEL.flash.explosion * power);
-    this.zoom = Math.max(this.zoom, FEEL.zoomPunch.explosion * power);
+    this.punch = Math.max(this.punch, FEEL.zoomPunch.explosion * power);
     this.lights.push({ x: p.x, y: p.y, radius: radius * 2.4, age: 0, life: 0.35 });
     this.shockwaves.push({ x: p.x, y: p.y, radius: radius * 1.25, age: 0, life: 0.3 });
 
@@ -229,8 +268,8 @@ export class JuiceDirector {
       for (let i = 0; i < 18; i++) {
         const dir = i % 2 === 0 ? 1 : -1;
         this.particles.spawn({
-          x: p.x, y: WORLD.groundY - 4, vx: dir * (220 + r() * 420), vy: -r() * 40,
-          life: 0.9 + r() * 0.7, size: 8 + r() * 12, color: '#8a8073', style: 'smoke', gravity: -6, drag: 2.6,
+          x: p.x, y: WORLD.groundY - 6, vx: dir * (220 + r() * 420), vy: -r() * 40,
+          life: 1.6 + r() * 1.4, size: 10 + r() * 12, color: '#9a8f80', style: 'dust', gravity: -6, drag: 2.2,
         });
       }
       this.scorch(p.x, WORLD.groundY, radius * 0.9, 10);
@@ -261,7 +300,48 @@ export class JuiceDirector {
         gravity: 1100, drag: 0.8, spin: (r() - 0.5) * 20, ground: true,
       });
     }
-    if (material === 'concrete' || material === 'wood') this.dust(p, 8, colors);
+    if (material !== 'glass' && material !== 'metal' && material !== 'vehicle') this.dust(p, 8, colors);
+    if (!this.criticalDone && size >= FEEL.critical.minSize && material !== 'glass') this.criticalBreak(p, colors);
+  }
+
+  /** The structure lets go: a beat of slow motion, a push-in, and a burst of pulverised material. */
+  private criticalBreak(p: Vec2, colors: readonly string[]): void {
+    this.criticalDone = true;
+    this.criticalSlowLeft = FEEL.critical.slowFor;
+    this.criticalHold = FEEL.critical.holdFor;
+    this.focus = { x: p.x, y: p.y };
+    const r = Math.random;
+    for (let i = 0; i < 12; i++) {
+      const a = r() * Math.PI * 2;
+      this.particles.spawn({
+        x: p.x, y: p.y, vx: Math.cos(a) * (40 + r() * 90), vy: Math.sin(a) * 50 - 20,
+        life: 1.8 + r() * 1.4, size: 10 + r() * 10, color: colors[0] ?? '#b9b2a6', style: 'dust', gravity: -8, drag: 1.4,
+      });
+    }
+  }
+
+  /**
+   * A heavy body hits the ground: a cloud rolls out low along the ground in both
+   * directions and slowly climbs, like the base of a collapse.
+   */
+  private landingCloud(p: Vec2, weight: number, material: MaterialId): void {
+    // A collapsing pile lands many times a second; one cloud per beat is enough.
+    if (this.shakeTime - this.lastCloudAt < 0.09) return;
+    this.lastCloudAt = this.shakeTime;
+    const r = Math.random;
+    const w = Math.min(1.6, weight);
+    const color = LANDING_DUST[material] ?? '#ada392';
+    const nearGround = p.y > WORLD.groundY - 50;
+    const count = Math.round(5 + 6 * w);
+    for (let i = 0; i < count; i++) {
+      const dir = i % 2 === 0 ? 1 : -1;
+      this.particles.spawn({
+        x: p.x + (r() - 0.5) * 20, y: (nearGround ? WORLD.groundY - 8 : p.y) - r() * 10,
+        vx: dir * (30 + r() * 140) * w, vy: -10 - r() * 25,
+        life: 2.4 + r() * 2, size: (12 + r() * 14) * (0.7 + 0.4 * w), color, style: 'dust', gravity: -5, drag: 1.1,
+      });
+    }
+    this.addTrauma(0.08 * w);
   }
 
   /** A wrecked car keeps burning: flames and a long column of dark smoke. */
@@ -286,12 +366,19 @@ export class JuiceDirector {
     for (let i = 0; i < count; i++) {
       this.particles.spawn({
         x: p.x, y: p.y, vx: (r() - 0.5) * 110, vy: -r() * 60,
-        life: 0.8 + r() * 0.8, size: 7 + r() * 9, color: colors[0] ?? PALETTE.smoke, style: 'smoke',
+        life: 1.2 + r() * 1.2, size: 8 + r() * 10, color: colors[0] ?? PALETTE.smoke, style: 'dust',
         gravity: -10, drag: 2,
       });
     }
   }
 }
+
+/** Dust colours of pulverised material: lighter and greyer than the solid surface. */
+const LANDING_DUST: Partial<Record<MaterialId, string>> = {
+  brick: '#b8917c',
+  wood: '#a89474',
+  concrete: '#b3ab9f',
+};
 
 /** Exponential decay that snaps to zero once imperceptible. */
 const decay = (value: number, rate: number, dt: number): number => {

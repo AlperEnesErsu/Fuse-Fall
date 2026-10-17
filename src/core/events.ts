@@ -11,7 +11,8 @@ export interface GameEvents {
   /** `power` is normalised: 1 = standard charge. */
   explosion: { readonly position: Vec2; readonly radius: number; readonly power: number; readonly source: BlastSource };
   carWrecked: { readonly position: Vec2 };
-  blockHit: { readonly position: Vec2; readonly material: MaterialId; readonly intensity: number };
+  /** `size` is the body's linear size (square root of its area), so feedback can scale with mass. */
+  blockHit: { readonly position: Vec2; readonly material: MaterialId; readonly intensity: number; readonly size: number };
   blockShattered: { readonly position: Vec2; readonly material: MaterialId; readonly size: number };
   targetDown: { readonly position: Vec2; readonly remaining: number };
   protectedDamaged: { readonly position: Vec2 };

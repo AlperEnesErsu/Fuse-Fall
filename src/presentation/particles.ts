@@ -1,5 +1,8 @@
-/** `plume` is smoke that starts lit by fire and cools to its own colour. */
-export type ParticleStyle = 'spark' | 'smoke' | 'plume' | 'chip' | 'glint';
+/**
+ * `plume` is smoke that starts lit by fire and cools to its own colour.
+ * `dust` is a soft, slowly swelling cloud of pulverised material.
+ */
+export type ParticleStyle = 'spark' | 'smoke' | 'plume' | 'dust' | 'chip' | 'glint';
 
 export interface ParticleSpawn {
   x: number;
