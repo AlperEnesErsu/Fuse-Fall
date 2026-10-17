@@ -1,0 +1,972 @@
+[
+ {
+  "id": "w4-01",
+  "name": "Hassas Şarj",
+  "world": 4,
+  "order": 1,
+  "charges": {
+   "max": 2,
+   "par": 1
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 460,
+    "y": 380,
+    "w": 120,
+    "h": 100
+   }
+  ],
+  "blocks": [
+   {
+    "x": 485.0,
+    "y": 420.0,
+    "w": 20,
+    "h": 120,
+    "material": "wood"
+   },
+   {
+    "x": 555.0,
+    "y": 420.0,
+    "w": 20,
+    "h": 120,
+    "material": "wood"
+   },
+   {
+    "x": 520,
+    "y": 350.0,
+    "w": 110,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 520,
+    "y": 322.0,
+    "w": 36,
+    "h": 36,
+    "material": "wood",
+    "target": true
+   },
+   {
+    "x": 660,
+    "y": 440.0,
+    "w": 60,
+    "h": 80,
+    "material": "concrete",
+    "protected": true
+   }
+  ],
+  "barrels": [],
+  "cars": [],
+  "solution": {
+   "charges": [
+    {
+     "x": 500,
+     "y": 450,
+     "kind": "precision"
+    }
+   ],
+   "fireAt": 0
+  },
+  "hint": "Komşu bina çok yakın: standart şarjın çemberi ona değer. Hassas şarja geç.",
+  "chargeKinds": [
+   "standard",
+   "precision"
+  ]
+ },
+ {
+  "id": "w4-02",
+  "name": "Dar Şantiye",
+  "world": 4,
+  "order": 2,
+  "charges": {
+   "max": 3,
+   "par": 1
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 450,
+    "y": 380,
+    "w": 140,
+    "h": 100
+   }
+  ],
+  "blocks": [
+   {
+    "x": 480.0,
+    "y": 420.0,
+    "w": 20,
+    "h": 120,
+    "material": "wood"
+   },
+   {
+    "x": 560.0,
+    "y": 420.0,
+    "w": 20,
+    "h": 120,
+    "material": "wood"
+   },
+   {
+    "x": 520,
+    "y": 350.0,
+    "w": 120,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 490.0,
+    "y": 295.0,
+    "w": 20,
+    "h": 90,
+    "material": "wood"
+   },
+   {
+    "x": 550.0,
+    "y": 295.0,
+    "w": 20,
+    "h": 90,
+    "material": "wood"
+   },
+   {
+    "x": 520,
+    "y": 240.0,
+    "w": 100,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 520,
+    "y": 212.0,
+    "w": 36,
+    "h": 36,
+    "material": "wood",
+    "target": true
+   }
+  ],
+  "barrels": [],
+  "cars": [],
+  "solution": {
+   "charges": [
+    {
+     "x": 560,
+     "y": 450,
+     "kind": "precision"
+    }
+   ],
+   "fireAt": 0
+  },
+  "hint": "Enkaz şeritli alanda kalmalı. Hassas şarj daha az savurur.",
+  "chargeKinds": [
+   "standard",
+   "precision"
+  ],
+  "footprint": {
+   "from": 400,
+   "to": 640,
+   "ratio": 0.8
+  }
+ },
+ {
+  "id": "w4-03",
+  "name": "Kemerli Avlu",
+  "world": 4,
+  "order": 3,
+  "charges": {
+   "max": 2,
+   "par": 1
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 400,
+    "y": 380,
+    "w": 240,
+    "h": 100
+   }
+  ],
+  "blocks": [
+   {
+    "x": 430,
+    "y": 425.0,
+    "w": 24,
+    "h": 110,
+    "material": "wood"
+   },
+   {
+    "x": 520,
+    "y": 425.0,
+    "w": 24,
+    "h": 110,
+    "material": "wood"
+   },
+   {
+    "x": 610,
+    "y": 425.0,
+    "w": 24,
+    "h": 110,
+    "material": "wood"
+   },
+   {
+    "x": 520.0,
+    "y": 361.0,
+    "w": 220,
+    "h": 18,
+    "material": "wood"
+   },
+   {
+    "x": 520,
+    "y": 334.0,
+    "w": 36,
+    "h": 36,
+    "material": "wood",
+    "target": true
+   }
+  ],
+  "barrels": [],
+  "cars": [],
+  "solution": {
+   "charges": [
+    {
+     "x": 470,
+     "y": 450,
+     "kind": "precision"
+    }
+   ],
+   "fireAt": 0
+  },
+  "hint": "Üç ayaklı yapı. Doğru ayağı kesersen kendi içine çöker.",
+  "chargeKinds": [
+   "standard",
+   "precision"
+  ],
+  "footprint": {
+   "from": 380,
+   "to": 660,
+   "ratio": 0.8
+  }
+ },
+ {
+  "id": "w4-04",
+  "name": "Mermer Sütunlar",
+  "world": 4,
+  "order": 4,
+  "charges": {
+   "max": 3,
+   "par": 2
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 470,
+    "y": 360,
+    "w": 160,
+    "h": 120
+   }
+  ],
+  "blocks": [
+   {
+    "x": 500,
+    "y": 410.0,
+    "w": 24,
+    "h": 140,
+    "material": "concrete"
+   },
+   {
+    "x": 600,
+    "y": 410.0,
+    "w": 24,
+    "h": 140,
+    "material": "concrete"
+   },
+   {
+    "x": 550.0,
+    "y": 331.0,
+    "w": 140,
+    "h": 18,
+    "material": "wood"
+   },
+   {
+    "x": 550,
+    "y": 304.0,
+    "w": 36,
+    "h": 36,
+    "material": "wood",
+    "target": true
+   },
+   {
+    "x": 330,
+    "y": 445.0,
+    "w": 70,
+    "h": 70,
+    "material": "concrete",
+    "protected": true
+   }
+  ],
+  "barrels": [],
+  "cars": [],
+  "solution": {
+   "charges": [
+    {
+     "x": 560,
+     "y": 450,
+     "kind": "precision"
+    },
+    {
+     "x": 620,
+     "y": 450,
+     "kind": "precision"
+    }
+   ],
+   "fireAt": 0
+  },
+  "hint": "Soldaki tarihi yapı korunuyor ve şantiye dar.",
+  "chargeKinds": [
+   "standard",
+   "precision"
+  ],
+  "footprint": {
+   "from": 440,
+   "to": 700,
+   "ratio": 0.8
+  }
+ },
+ {
+  "id": "w4-05",
+  "name": "Pazar Yeri",
+  "world": 4,
+  "order": 5,
+  "charges": {
+   "max": 3,
+   "par": 2
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 390,
+    "y": 380,
+    "w": 270,
+    "h": 100
+   }
+  ],
+  "blocks": [
+   {
+    "x": 410.0,
+    "y": 425.0,
+    "w": 20,
+    "h": 110,
+    "material": "wood"
+   },
+   {
+    "x": 470.0,
+    "y": 425.0,
+    "w": 20,
+    "h": 110,
+    "material": "wood"
+   },
+   {
+    "x": 440,
+    "y": 360.0,
+    "w": 100,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 440,
+    "y": 333.0,
+    "w": 34,
+    "h": 34,
+    "material": "wood",
+    "target": true
+   },
+   {
+    "x": 570.0,
+    "y": 425.0,
+    "w": 20,
+    "h": 110,
+    "material": "wood"
+   },
+   {
+    "x": 630.0,
+    "y": 425.0,
+    "w": 20,
+    "h": 110,
+    "material": "wood"
+   },
+   {
+    "x": 600,
+    "y": 360.0,
+    "w": 100,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 600,
+    "y": 333.0,
+    "w": 34,
+    "h": 34,
+    "material": "wood",
+    "target": true
+   }
+  ],
+  "barrels": [],
+  "cars": [],
+  "solution": {
+   "charges": [
+    {
+     "x": 420,
+     "y": 450,
+     "kind": "precision"
+    },
+    {
+     "x": 580,
+     "y": 450,
+     "kind": "precision"
+    }
+   ],
+   "fireAt": 0
+  },
+  "hint": "İki yapı aynı şantiyede. İkisini de alanın içine indir.",
+  "chargeKinds": [
+   "standard",
+   "precision"
+  ],
+  "footprint": {
+   "from": 370,
+   "to": 680,
+   "ratio": 0.85
+  }
+ },
+ {
+  "id": "w4-06",
+  "name": "Tiber Köprüsü",
+  "world": 4,
+  "order": 6,
+  "charges": {
+   "max": 2,
+   "par": 2
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 390,
+    "y": 380,
+    "w": 300,
+    "h": 100
+   }
+  ],
+  "blocks": [
+   {
+    "x": 420,
+    "y": 420.0,
+    "w": 24,
+    "h": 120,
+    "material": "wood"
+   },
+   {
+    "x": 660,
+    "y": 420.0,
+    "w": 24,
+    "h": 120,
+    "material": "wood"
+   },
+   {
+    "x": 540,
+    "y": 352.0,
+    "w": 290,
+    "h": 16,
+    "material": "wood"
+   }
+  ],
+  "barrels": [],
+  "cars": [
+   {
+    "x": 480,
+    "y": 332.0,
+    "w": 56,
+    "h": 24,
+    "from": 450,
+    "to": 630,
+    "speed": 50,
+    "target": true
+   }
+  ],
+  "solution": {
+   "charges": [
+    {
+     "x": 400,
+     "y": 450,
+     "kind": "precision"
+    },
+    {
+     "x": 680,
+     "y": 450,
+     "kind": "precision"
+    }
+   ],
+   "fireAt": 0
+  },
+  "hint": "Araç köprüdeyken ayakları kes; köprü şantiyeye düşmeli.",
+  "chargeKinds": [
+   "standard",
+   "precision"
+  ],
+  "footprint": {
+   "from": 360,
+   "to": 720,
+   "ratio": 0.8
+  }
+ },
+ {
+  "id": "w4-07",
+  "name": "Çan Kulesi",
+  "world": 4,
+  "order": 7,
+  "charges": {
+   "max": 2,
+   "par": 2
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 480,
+    "y": 380,
+    "w": 160,
+    "h": 100
+   }
+  ],
+  "blocks": [
+   {
+    "x": 560,
+    "y": 448.0,
+    "w": 44,
+    "h": 64,
+    "material": "concrete"
+   },
+   {
+    "x": 560,
+    "y": 384.0,
+    "w": 44,
+    "h": 64,
+    "material": "concrete"
+   },
+   {
+    "x": 560,
+    "y": 320.0,
+    "w": 44,
+    "h": 64,
+    "material": "concrete"
+   },
+   {
+    "x": 560,
+    "y": 256.0,
+    "w": 44,
+    "h": 64,
+    "material": "concrete"
+   },
+   {
+    "x": 560,
+    "y": 192.0,
+    "w": 44,
+    "h": 64,
+    "material": "concrete"
+   },
+   {
+    "x": 560,
+    "y": 128.0,
+    "w": 44,
+    "h": 64,
+    "material": "concrete"
+   },
+   {
+    "x": 560,
+    "y": 78.0,
+    "w": 36,
+    "h": 36,
+    "material": "wood",
+    "target": true
+   }
+  ],
+  "barrels": [],
+  "cars": [],
+  "solution": {
+   "charges": [
+    {
+     "x": 490,
+     "y": 450
+    },
+    {
+     "x": 630,
+     "y": 450
+    }
+   ],
+   "fireAt": 0
+  },
+  "hint": "Şantiye kulenin solunda. Kuleyi o tarafa yatır.",
+  "chargeKinds": [
+   "standard",
+   "precision"
+  ],
+  "footprint": {
+   "from": 140,
+   "to": 620,
+   "ratio": 0.75
+  }
+ },
+ {
+  "id": "w4-08",
+  "name": "Sütunlu Galeri",
+  "world": 4,
+  "order": 8,
+  "charges": {
+   "max": 3,
+   "par": 2
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 370,
+    "y": 380,
+    "w": 300,
+    "h": 100
+   }
+  ],
+  "blocks": [
+   {
+    "x": 400,
+    "y": 430.0,
+    "w": 24,
+    "h": 100,
+    "material": "wood"
+   },
+   {
+    "x": 480,
+    "y": 430.0,
+    "w": 24,
+    "h": 100,
+    "material": "wood"
+   },
+   {
+    "x": 560,
+    "y": 430.0,
+    "w": 24,
+    "h": 100,
+    "material": "wood"
+   },
+   {
+    "x": 640,
+    "y": 430.0,
+    "w": 24,
+    "h": 100,
+    "material": "wood"
+   },
+   {
+    "x": 520.0,
+    "y": 371.0,
+    "w": 280,
+    "h": 18,
+    "material": "wood"
+   },
+   {
+    "x": 520,
+    "y": 344.0,
+    "w": 36,
+    "h": 36,
+    "material": "wood",
+    "target": true
+   },
+   {
+    "x": 220,
+    "y": 445.0,
+    "w": 60,
+    "h": 70,
+    "material": "concrete",
+    "protected": true
+   },
+   {
+    "x": 820,
+    "y": 445.0,
+    "w": 60,
+    "h": 70,
+    "material": "concrete",
+    "protected": true
+   }
+  ],
+  "barrels": [],
+  "cars": [],
+  "solution": {
+   "charges": [
+    {
+     "x": 560,
+     "y": 450,
+     "kind": "precision"
+    },
+    {
+     "x": 600,
+     "y": 450,
+     "kind": "precision"
+    }
+   ],
+   "fireAt": 0
+  },
+  "hint": "Dört ayaklı uzun yapı; iki yanda tarihi yapılar.",
+  "chargeKinds": [
+   "standard",
+   "precision"
+  ],
+  "footprint": {
+   "from": 340,
+   "to": 700,
+   "ratio": 0.82
+  }
+ },
+ {
+  "id": "w4-09",
+  "name": "Kubbe",
+  "world": 4,
+  "order": 9,
+  "charges": {
+   "max": 3,
+   "par": 2
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 420,
+    "y": 380,
+    "w": 200,
+    "h": 100
+   }
+  ],
+  "blocks": [
+   {
+    "x": 450.0,
+    "y": 430.0,
+    "w": 20,
+    "h": 100,
+    "material": "wood"
+   },
+   {
+    "x": 590.0,
+    "y": 430.0,
+    "w": 20,
+    "h": 100,
+    "material": "wood"
+   },
+   {
+    "x": 520,
+    "y": 370.0,
+    "w": 180,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 520,
+    "y": 347.0,
+    "w": 150,
+    "h": 26,
+    "material": "wood"
+   },
+   {
+    "x": 520,
+    "y": 321.0,
+    "w": 110,
+    "h": 26,
+    "material": "wood"
+   },
+   {
+    "x": 520,
+    "y": 295.0,
+    "w": 70,
+    "h": 26,
+    "material": "wood"
+   },
+   {
+    "x": 520,
+    "y": 265.0,
+    "w": 34,
+    "h": 34,
+    "material": "wood",
+    "target": true
+   },
+   {
+    "x": 300,
+    "y": 440.0,
+    "w": 60,
+    "h": 80,
+    "material": "concrete",
+    "protected": true
+   },
+   {
+    "x": 740,
+    "y": 440.0,
+    "w": 60,
+    "h": 80,
+    "material": "concrete",
+    "protected": true
+   }
+  ],
+  "barrels": [],
+  "cars": [],
+  "solution": {
+   "charges": [
+    {
+     "x": 450,
+     "y": 450,
+     "kind": "precision"
+    },
+    {
+     "x": 550,
+     "y": 450,
+     "kind": "precision"
+    }
+   ],
+   "fireAt": 0
+  },
+  "hint": "Kasnağı kes; kubbe kendi ağırlığıyla iner.",
+  "chargeKinds": [
+   "standard",
+   "precision"
+  ],
+  "footprint": {
+   "from": 400,
+   "to": 640,
+   "ratio": 0.8
+  }
+ },
+ {
+  "id": "w4-10",
+  "name": "Roma Finali",
+  "world": 4,
+  "order": 10,
+  "charges": {
+   "max": 4,
+   "par": 3
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 370,
+    "y": 380,
+    "w": 300,
+    "h": 100
+   }
+  ],
+  "blocks": [
+   {
+    "x": 400,
+    "y": 420.0,
+    "w": 24,
+    "h": 120,
+    "material": "wood"
+   },
+   {
+    "x": 480,
+    "y": 420.0,
+    "w": 24,
+    "h": 120,
+    "material": "wood"
+   },
+   {
+    "x": 440.0,
+    "y": 351.0,
+    "w": 120,
+    "h": 18,
+    "material": "wood"
+   },
+   {
+    "x": 440,
+    "y": 325.0,
+    "w": 34,
+    "h": 34,
+    "material": "wood",
+    "target": true
+   },
+   {
+    "x": 590.0,
+    "y": 430.0,
+    "w": 20,
+    "h": 100,
+    "material": "wood"
+   },
+   {
+    "x": 650.0,
+    "y": 430.0,
+    "w": 20,
+    "h": 100,
+    "material": "wood"
+   },
+   {
+    "x": 620,
+    "y": 370.0,
+    "w": 100,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 595.0,
+    "y": 320.0,
+    "w": 20,
+    "h": 80,
+    "material": "wood"
+   },
+   {
+    "x": 645.0,
+    "y": 320.0,
+    "w": 20,
+    "h": 80,
+    "material": "wood"
+   },
+   {
+    "x": 620,
+    "y": 270.0,
+    "w": 90,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 620,
+    "y": 244.0,
+    "w": 32,
+    "h": 32,
+    "material": "wood",
+    "target": true
+   },
+   {
+    "x": 820,
+    "y": 440.0,
+    "w": 60,
+    "h": 80,
+    "material": "concrete",
+    "protected": true
+   }
+  ],
+  "barrels": [],
+  "cars": [],
+  "solution": {
+   "charges": [
+    {
+     "x": 440,
+     "y": 450,
+     "kind": "precision"
+    },
+    {
+     "x": 600,
+     "y": 450,
+     "kind": "precision"
+    }
+   ],
+   "fireAt": 0
+  },
+  "hint": "İki yapı, dar şantiye, yanında tarihi yapı. Her şarjın tipini ve yerini seç.",
+  "chargeKinds": [
+   "standard",
+   "precision"
+  ],
+  "footprint": {
+   "from": 340,
+   "to": 700,
+   "ratio": 0.84
+  }
+ }
+]

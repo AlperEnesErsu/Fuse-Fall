@@ -40,6 +40,8 @@ Bağımlılıklar içe doğru akar ve ESLint ile zorlanır. `core` Matter.js'i y
 - `src/content/cities.json`: bölümler (başkentler) ve açılma eşikleri. Seviyesi olmayan şehir "Yakında" görünür.
 - `src/content/levels/<şehir>.json`: şehrin seviyeleri. Bloklar (`target`, `protected` ya da `anchored`), variller, arabalar (`cars`: rota `from`/`to`, `speed`, `mode`: `patrol`/`flow`) ve bir `solution` (`charges` + her şarjın `delay` değeri + ateşleme anı `fireAt`).
 - `src/content/tutorials.ts`: yeni fikir getiren görevlerin adım adım eğitimleri.
+- `src/content/text.ts`: görev ve şehir adlarının İngilizce karşılıkları (Türkçe kaynak seviye verisinde). Arayüz metinleri `src/presentation/i18n/`.
+- Görev alanları: `chargeKinds` (`standard`, `precision`) ve `footprint` (`from`, `to`, `ratio`).
 - Yeni şehir: `cities.json`'a ekle, seviye paketini `src/content/levels.ts` içindeki `PACKS` listesine ekle, silüetini `src/presentation/scenery.ts` içinde çiz.
 
 `tests/levels.test.ts` her seviyenin ateşlenmeden ayakta durduğunu, çözümünün gerçek fizikle kazandığını ve araba seviyelerinde zamanlamanın gerçekten önemli olduğunu doğrular.

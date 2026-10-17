@@ -5,6 +5,7 @@ import type { WorldDefinition } from '../core/world';
 import { ICONS } from './icons';
 import { DelayTimeline, type TimelineCharge } from './timeline';
 import { TUNING } from '../core/tuning';
+import type { ChargeKind } from '../core/level';
 import { paintScene, skyAt } from './scenery';
 import { T } from './strings';
 
@@ -116,6 +117,7 @@ export class Ui {
         guarded: HTMLElement;
         fire: HTMLButtonElement;
         timeline: DelayTimeline;
+        kinds: HTMLElement;
       }
     | undefined;
   private toastTimer = 0;
@@ -346,6 +348,8 @@ export class Ui {
     onRetry: () => void,
     onMenu: () => void,
     onDelay: (chargeId: number, seconds: number) => void,
+    kinds: readonly ChargeKind[],
+    onKind: (kind: ChargeKind) => void,
   ): void {
     this.hideScreen();
     const name = h('div', { class: 'hud-name' });
@@ -359,6 +363,14 @@ export class Ui {
       h('span', {}, T.fire),
     ) as HTMLButtonElement;
     const timeline = new DelayTimeline(TUNING.charge.delay.max, onDelay);
+    // Charge type switch, only where the job offers more than one type.
+    const kindSwitch = h(
+      'div',
+      { class: `kind-toggle${kinds.length > 1 ? '' : ' hidden'}`, role: 'radiogroup', 'aria-label': T.chargeKindLabel },
+      ...kinds.map((k) =>
+        h('button', { 'data-kind': k, role: 'radio', click: () => this.tap(() => onKind(k)) }, T.chargeKinds[k]),
+      ),
+    );
     this.hud.replaceChildren(
       h(
         'div',
@@ -372,9 +384,10 @@ export class Ui {
         ),
       ),
       timeline.element,
+      kindSwitch,
       fire,
     );
-    this.hudParts = { name, charges, targets, guarded, fire, timeline };
+    this.hudParts = { name, charges, targets, guarded, fire, timeline, kinds: kindSwitch };
     this.hud.classList.remove('hidden');
   }
 
@@ -398,7 +411,14 @@ export class Ui {
     this.hudParts?.timeline.update(charges, placing);
   }
 
+  setChargeKind(kind: ChargeKind): void {
+    for (const b of this.hudParts?.kinds.querySelectorAll('button') ?? []) {
+      b.setAttribute('aria-checked', String(b.getAttribute('data-kind') === kind));
+    }
+  }
+
   setFireVisible(visible: boolean): void {
+    this.hudParts?.kinds.classList.toggle('gone', !visible);
     this.hudParts?.fire.classList.toggle('hidden', !visible);
   }
 
@@ -447,6 +467,13 @@ export class Ui {
             row(R.charges, `${r.chargesUsed} / ${r.chargesMax}`, R.par(info.par)),
             row(R.collapse, `%${Math.round(r.collapseRatio * 100)}`, `/ %${Math.round(info.bonusCollapse * 100)}`),
             row(R.protectedRow, protectedValue, undefined, r.protectedDamaged > 0 ? 'bad' : ''),
+            r.footprint &&
+              row(
+                R.footprintRow,
+                `%${Math.round(r.footprint.achieved * 100)}`,
+                `/ %${Math.round(r.footprint.required * 100)}`,
+                r.footprint.achieved < r.footprint.required ? 'bad' : '',
+              ),
             row(R.duration, R.seconds(r.duration)),
             h(
               'ul',

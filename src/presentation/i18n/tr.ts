@@ -1,4 +1,5 @@
 import type { AchievementId } from '../../core/achievements';
+import type { ChargeKind } from '../../core/level';
 import type { FailureReason } from '../../core/scoring';
 import type { PlacementError } from '../../core/session';
 
@@ -29,6 +30,9 @@ export const tr = {
   menu: 'Menü',
   charges: 'Şarj',
   delayTitle: 'Ateşleme gecikmesi (ms)',
+  chargeKinds: { standard: 'Standart', precision: 'Hassas' },
+  chargeKindLabel: 'Şarj tipi',
+  footprintHint: 'Enkaz sarı çizgili şantiye alanında kalmalı. Hassas şarj daha az savurur.',
   ms: (seconds: number) => `+${Math.round(seconds * 1000)} ms`,
   targets: 'Hedef',
   protectedLabel: 'Korunan',
@@ -69,6 +73,7 @@ export const tr = {
     reasons: {
       'target-standing': 'Hedef ayakta kaldı.',
       'collateral-damage': 'Korunan yapı hasar gördü. Sözleşme iptal.',
+      'debris-outside': 'Enkaz şantiye alanının dışına taştı.',
     },
     cityComplete: (city: string) => `${city} sahası tamamlandı.`,
     targets: 'Hedefler',
@@ -76,6 +81,7 @@ export const tr = {
     par: (n: number) => `par ${n}`,
     collapse: 'Yıkım oranı',
     protectedRow: 'Korunan yapılar',
+    footprintRow: 'Alan içindeki enkaz',
     intact: 'Hasarsız',
     damaged: (n: number) => `${n} hasarlı`,
     none: '—',
@@ -91,11 +97,13 @@ export const tr = {
     'no-charges-left': 'Şarj kalmadı',
     'not-placing': '',
     'unknown-charge': '',
+    'kind-unavailable': 'Bu görevde bu şarj tipi yok',
   },
 };
 
 /** Every language provides exactly this shape. */
-export type Strings = Omit<typeof tr, 'report' | 'placement' | 'achievements'> & {
+export type Strings = Omit<typeof tr, 'report' | 'placement' | 'achievements' | 'chargeKinds'> & {
+  readonly chargeKinds: Readonly<Record<ChargeKind, string>>;
   readonly achievements: Readonly<Record<AchievementId, { readonly title: string; readonly description: string }>>;
   readonly report: Omit<typeof tr.report, 'reasons' | 'criteria'> & {
     readonly reasons: Readonly<Record<FailureReason, string>>;

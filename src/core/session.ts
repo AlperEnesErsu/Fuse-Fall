@@ -1,5 +1,5 @@
 import type { BlastSource, EventBus, GameEvents } from './events';
-import { WORLD, type CarDef, type LevelDefinition } from './level';
+import { WORLD, type CarDef, type ChargeKind, type LevelDefinition } from './level';
 import { MATERIALS, type MaterialId } from './materials';
 import { createRng, distance, hashString, rectContains, sub, length, scale, vec, type Vec2 } from './math';
 import type { BodyState, PhysicsWorld, Shape } from './ports';
@@ -16,6 +16,7 @@ export interface Charge {
   readonly position: Vec2;
   /** Seconds after Fire that this charge detonates. */
   readonly delay: number;
+  readonly kind: ChargeKind;
 }
 
 /** Snaps a delay to the blasting machine's step and range. */
@@ -58,7 +59,13 @@ interface Driver {
   wrecked: boolean;
 }
 
-export type PlacementError = 'not-placing' | 'no-charges-left' | 'outside-zone' | 'too-close' | 'unknown-charge';
+export type PlacementError =
+  | 'not-placing'
+  | 'no-charges-left'
+  | 'outside-zone'
+  | 'too-close'
+  | 'unknown-charge'
+  | 'kind-unavailable';
 export type FireError = 'not-placing' | 'no-charges';
 
 interface Entity {
@@ -71,6 +78,7 @@ interface Entity {
   readonly structural: boolean;
   readonly guarded: boolean;
   readonly anchored: boolean;
+  readonly fromStructure: boolean;
   compromised: boolean;
   readonly origin: { readonly position: Vec2; readonly angle: number };
   hp: number;
@@ -79,10 +87,13 @@ interface Entity {
   readonly driver: Driver | undefined;
 }
 
+/** What exploded: each charge kind has its own blast; barrels and wrecks have theirs. */
+type BlastKind = ChargeKind | 'barrel' | 'vehicle';
+
 interface Detonation {
   readonly at: number;
   readonly position: Vec2;
-  readonly source: BlastSource;
+  readonly blast: BlastKind;
 }
 
 /** Everything needed to create an entity; roles are explicit, never inferred from each other. */
@@ -98,13 +109,21 @@ interface SpawnSpec {
   readonly anchored?: boolean;
   readonly motion?: { readonly velocity: Vec2; readonly angularVelocity: number };
   readonly driver?: Driver;
+  /** Debris broken off a structure to demolish: still counts as its material for the footprint. */
+  readonly fromStructure?: boolean;
 }
 
-const BLASTS: Readonly<Record<BlastSource, { radius: number; pressure: number; damage: number }>> = {
-  charge: { radius: TUNING.charge.radius, pressure: TUNING.charge.pressure, damage: TUNING.charge.damage },
+const BLASTS: Readonly<Record<BlastKind, { radius: number; pressure: number; damage: number }>> = {
+  standard: { radius: TUNING.charge.radius, pressure: TUNING.charge.pressure, damage: TUNING.charge.damage },
+  precision: { radius: TUNING.precision.radius, pressure: TUNING.precision.pressure, damage: TUNING.precision.damage },
   barrel: { radius: TUNING.barrel.blastRadius, pressure: TUNING.barrel.pressure, damage: TUNING.barrel.damage },
   vehicle: { radius: TUNING.vehicle.blastRadius, pressure: TUNING.vehicle.pressure, damage: TUNING.vehicle.damage },
 };
+
+const sourceOf = (blast: BlastKind): BlastSource => (blast === 'standard' || blast === 'precision' ? 'charge' : blast);
+
+/** Blast radius of a charge kind, for the placement preview. */
+export const chargeRadius = (kind: ChargeKind): number => BLASTS[kind].radius;
 
 const GROUND_ID = 'ground';
 
@@ -138,6 +157,8 @@ export class LevelSession {
   private readonly targetTotal: number;
   private lostStructural = 0;
   private compromisedCount = 0;
+  /** Footprint material area from debris removed by the debris budget while inside the site. */
+  private retiredInside = 0;
   private finishedAt = 0;
 
   constructor(
@@ -199,8 +220,12 @@ export class LevelSession {
   }
 
   /** Charges that were fired but whose fuse is still burning. */
-  get armedCharges(): Vec2[] {
-    return this.pending.filter((d) => d.source === 'charge').map((d) => d.position);
+  get armedCharges(): { readonly position: Vec2; readonly kind: ChargeKind }[] {
+    const armed: { position: Vec2; kind: ChargeKind }[] = [];
+    for (const d of this.pending) {
+      if (d.blast === 'standard' || d.blast === 'precision') armed.push({ position: d.position, kind: d.blast });
+    }
+    return armed;
   }
 
   get result(): LevelResult | undefined {
@@ -249,12 +274,12 @@ export class LevelSession {
   }
 
   /** Protected buildings a charge at `center` would reach — the preview of the contract rule in `explode`. */
-  protectedReachedFrom(center: Vec2): string[] {
+  protectedReachedFrom(center: Vec2, kind: ChargeKind = 'standard'): string[] {
     const reached: string[] = [];
     for (const e of this.entities.values()) {
       if (!e.guarded) continue;
       const s = this.physics.state(e.id);
-      if (s && blastReach(center, e.shape, s.position) < TUNING.charge.radius) reached.push(e.id);
+      if (s && blastReach(center, e.shape, s.position) < chargeRadius(kind)) reached.push(e.id);
     }
     return reached;
   }
@@ -274,8 +299,9 @@ export class LevelSession {
   }
 
   /** Without an explicit delay, a new charge fires one step after the latest one. */
-  placeCharge(position: Vec2, delay?: number): Result<Charge, PlacementError> {
+  placeCharge(position: Vec2, delay?: number, kind: ChargeKind = 'standard'): Result<Charge, PlacementError> {
     if (this.currentPhase === 'placing' && this.chargesLeft <= 0) return err('no-charges-left');
+    if (this.currentPhase === 'placing' && !this.level.chargeKinds.includes(kind)) return err('kind-unavailable');
     const allowed = this.canPlaceAt(position);
     if (!allowed.ok) return allowed;
     const latest = this.chargeList.reduce((m, c) => Math.max(m, c.delay), -TUNING.charge.delay.defaultStep);
@@ -283,6 +309,7 @@ export class LevelSession {
       id: this.nextChargeId++,
       position,
       delay: quantizeDelay(delay ?? latest + TUNING.charge.delay.defaultStep),
+      kind,
     };
     this.chargeList.push(charge);
     this.events.emit('chargePlaced', { position });
@@ -323,7 +350,7 @@ export class LevelSession {
     this.currentPhase = 'running';
     this.firedAt = this.time;
     for (const c of this.chargeList) {
-      this.pending.push({ at: this.time + c.delay, position: c.position, source: 'charge' });
+      this.pending.push({ at: this.time + c.delay, position: c.position, blast: c.kind });
     }
     return ok(undefined);
   }
@@ -357,13 +384,14 @@ export class LevelSession {
       const d = this.pending[i];
       if (d && d.at <= this.time) {
         this.pending.splice(i, 1);
-        this.explode(d.position, d.source);
+        this.explode(d.position, d.blast);
       }
     }
   }
 
-  private explode(center: Vec2, source: BlastSource): void {
-    const spec = BLASTS[source];
+  private explode(center: Vec2, blast: BlastKind): void {
+    const spec = BLASTS[blast];
+    const source = sourceOf(blast);
     const radius = spec.radius;
     this.events.emit('explosion', {
       position: center,
@@ -407,7 +435,7 @@ export class LevelSession {
     if (!state) return;
     if (e.kind === 'barrel') {
       this.removeEntity(e);
-      this.pending.push({ at: this.time + TUNING.barrel.delay, position: state.position, source: 'barrel' });
+      this.pending.push({ at: this.time + TUNING.barrel.delay, position: state.position, blast: 'barrel' });
       return;
     }
     if (e.driver) {
@@ -415,7 +443,7 @@ export class LevelSession {
       e.driver.engine = false;
       e.driver.wrecked = true;
       this.events.emit('carWrecked', { position: state.position });
-      this.pending.push({ at: this.time + TUNING.vehicle.delay, position: state.position, source: 'vehicle' });
+      this.pending.push({ at: this.time + TUNING.vehicle.delay, position: state.position, blast: 'vehicle' });
       if (e.target) this.markDown(e, state.position);
       return;
     }
@@ -442,6 +470,7 @@ export class LevelSession {
         angle: s.angle,
         material: e.material,
         motion: { velocity: s.velocity, angularVelocity: s.angularVelocity },
+        fromStructure: e.structural,
       });
     }
   }
@@ -566,6 +595,9 @@ export class LevelSession {
     for (const e of [...this.entities.values()]) {
       if (debris <= TUNING.debrisBudget) break;
       if (e.kind === 'debris') {
+        // Old debris has settled: remember whether its material ended up inside the site.
+        const s = this.physics.state(e.id);
+        if (e.fromStructure && s && this.insideFootprint(s.position.x)) this.retiredInside += area(e.shape);
         this.removeEntity(e);
         debris--;
       }
@@ -616,10 +648,40 @@ export class LevelSession {
         protectedTotal: this.level.blocks.filter((b) => b.protected).length,
         protectedDamaged: this.compromisedCount,
         duration: this.finishedAt - this.firedAt,
+        footprint: this.level.footprint && {
+          achieved: this.containment(),
+          required: this.level.footprint.ratio,
+        },
       },
       { par: this.level.charges.par, bonusCollapse: this.level.bonusCollapse },
     );
     this.events.emit('levelFinished', { result: this.finalResult });
+  }
+
+  // ---- footprint ---------------------------------------------------------
+
+  private insideFootprint(x: number): boolean {
+    const f = this.level.footprint;
+    return f !== undefined && x >= f.from && x <= f.to;
+  }
+
+  /**
+   * Share of the structure's material (by area) inside the site: standing
+   * blocks, their debris, and debris retired while inside. Anything thrown
+   * out of the world counts as outside.
+   */
+  private containment(): number {
+    const total = this.level.blocks
+      .filter((b) => !b.protected && !b.anchored)
+      .reduce((sum, b) => sum + b.w * b.h, 0);
+    if (total === 0) return 1;
+    let inside = this.retiredInside;
+    for (const e of this.entities.values()) {
+      if (!e.structural && !e.fromStructure) continue;
+      const s = this.physics.state(e.id);
+      if (s && this.insideFootprint(s.position.x)) inside += area(e.shape);
+    }
+    return Math.min(1, inside / total);
   }
 
   // ---- entity bookkeeping ------------------------------------------------
@@ -647,6 +709,7 @@ export class LevelSession {
       structural: spec.structural ?? false,
       guarded: spec.guarded ?? false,
       anchored: spec.anchored ?? false,
+      fromStructure: spec.fromStructure ?? false,
       compromised: false,
       origin: { position: spec.position, angle: spec.angle },
       hp: maxHp,

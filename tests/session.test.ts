@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { EventBus, type GameEvents } from '../src/core/events';
 import { WORLD, type LevelDefinition } from '../src/core/level';
-import { LevelSession } from '../src/core/session';
+import { chargeRadius, LevelSession } from '../src/core/session';
 import { TUNING } from '../src/core/tuning';
 import { FakePhysics } from './fake-physics';
 
@@ -20,7 +20,9 @@ const level = (patch: Partial<LevelDefinition> = {}): LevelDefinition => ({
   ],
   barrels: [],
   cars: [],
-  solution: { charges: [{ x: 100, y: 450, delay: undefined }], fireAt: 0 },
+  chargeKinds: ['standard'],
+  footprint: undefined,
+  solution: { charges: [{ x: 100, y: 450, delay: undefined, kind: 'standard' }], fireAt: 0 },
   ...patch,
 });
 
@@ -292,5 +294,61 @@ describe('anchored infrastructure', () => {
     run(TUNING.settle.hold + 0.2);
     expect(physics.state('block-3')).toBeDefined();
     expect(session.result).toMatchObject({ blocksTotal: 2, protectedTotal: 0 });
+  });
+});
+
+describe('precision charges', () => {
+  const both = { chargeKinds: ['standard', 'precision'] as const, zones: [{ x: 300, y: 250, w: 300, h: 230 }] };
+
+  it('are only available where the level offers them', () => {
+    const { session } = setup({ zones: both.zones });
+    expect(session.placeCharge({ x: 400, y: 300 }, undefined, 'precision')).toEqual({ ok: false, error: 'kind-unavailable' });
+  });
+
+  it('reach less far and push less than a standard charge', () => {
+    // The target block sits at (500, 300); a blast 110 px away.
+    const standard = setup(both);
+    standard.session.placeCharge({ x: 390, y: 300 }, undefined, 'standard');
+    standard.session.fire();
+    standard.run(1 / 60);
+    const precision = setup(both);
+    precision.session.placeCharge({ x: 390, y: 300 }, undefined, 'precision');
+    precision.session.fire();
+    precision.run(1 / 60);
+    expect(standard.physics.kicks.some((k) => k.id === 'block-1')).toBe(true);
+    expect(precision.physics.kicks.some((k) => k.id === 'block-1')).toBe(false);
+    expect(chargeRadius('precision')).toBeLessThan(chargeRadius('standard'));
+  });
+});
+
+describe('debris footprint', () => {
+  const site = { footprint: { from: 450, to: 750, ratio: 0.8 } };
+
+  it('passes when the material stays inside the site', () => {
+    const { session, physics, run } = setup(site);
+    session.placeCharge({ x: 100, y: 450 });
+    session.fire();
+    physics.place('block-1', { position: { x: 520, y: WORLD.groundY - 20 } });
+    run(TUNING.settle.hold + 0.2);
+    expect(session.result).toMatchObject({ success: true, footprint: { achieved: 1, required: 0.8 } });
+  });
+
+  it('fails when material spills outside', () => {
+    const { session, physics, run } = setup(site);
+    session.placeCharge({ x: 100, y: 450 });
+    session.fire();
+    // The 40×40 target lands outside; the 40×50 concrete block stays: 2000 / 3600 inside.
+    physics.place('block-1', { position: { x: 300, y: WORLD.groundY - 20 } });
+    run(TUNING.settle.hold + 0.2);
+    expect(session.result?.failure).toBe('debris-outside');
+    expect(session.result?.footprint?.achieved).toBeCloseTo(2000 / 3600);
+  });
+
+  it('counts debris broken off the structure', () => {
+    const { session, run } = setup({ ...site, zones: [{ x: 400, y: 250, w: 200, h: 230 }] });
+    session.placeCharge({ x: 500, y: 330 }); // shatters the target into debris that stays near x=500
+    session.fire();
+    run(TUNING.settle.timeout + 0.1); // fake debris never slows down, so the level ends on the timeout
+    expect(session.result?.footprint?.achieved).toBeCloseTo(1);
   });
 });

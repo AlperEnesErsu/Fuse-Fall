@@ -12,6 +12,12 @@ export const TUNING = {
     /** Detonation delays, as on a real blasting machine: new charges default to one step after the last. */
     delay: { defaultStep: 0.35, step: 0.05, max: 2 },
   },
+  /** A shaped precision charge: cuts as hard as a standard one, but over a small radius and with little throw. */
+  precision: {
+    radius: 85,
+    pressure: 0.5,
+    damage: 110,
+  },
   barrel: {
     radius: 16,
     blastRadius: 135,

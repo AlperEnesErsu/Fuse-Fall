@@ -98,6 +98,46 @@ const TUTORIALS: Readonly<Record<string, readonly TutorialStep[]>> = {
       until: 'fired',
     },
   ],
+  // Precision charges.
+  'w4-01': [
+    {
+      text: {
+        tr: 'Komşu bina standart şarjın çemberine giriyor. Sağ alttan HASSAS şarja geç.',
+        en: 'The neighbour is inside a standard blast circle. Switch to PRECISION at the bottom right.',
+      },
+      highlight: { selector: '.kind-toggle' },
+      until: 'kind',
+    },
+    {
+      text: {
+        tr: 'Hassas şarjın çemberi küçük, savurması az. Kolonların dibine yerleştir.',
+        en: 'A precision charge has a small circle and little throw. Place it at the foot of the supports.',
+      },
+      highlight: { world: { x: 500, y: 450 }, radius: 30 },
+      until: 'placed',
+    },
+    { text: { tr: 'ATEŞLE.', en: 'FIRE.' }, highlight: { selector: '.fire-btn' }, until: 'fired' },
+  ],
+  // Debris footprint.
+  'w4-02': [
+    {
+      text: {
+        tr: "Yerdeki sarı şerit şantiye alanı. Yapının malzemesinin en az %80'i bu alanın içinde kalmalı. Devam etmek için dokun.",
+        en: 'The striped strip on the ground is the site. At least 80% of the structure must end up inside it. Tap to continue.',
+      },
+      highlight: { world: { x: 520, y: 476 }, radius: 120 },
+      until: 'tap',
+    },
+    {
+      text: {
+        tr: 'Hassas şarjla tek kolonu kes; yapı alanın içine yatsın.',
+        en: 'Cut one support with a precision charge so the structure lies down on site.',
+      },
+      highlight: { selector: '.kind-toggle' },
+      until: 'placed',
+    },
+    { text: { tr: 'ATEŞLE.', en: 'FIRE.' }, highlight: { selector: '.fire-btn' }, until: 'fired' },
+  ],
 };
 
 export const tutorialIds = (): string[] => Object.keys(TUTORIALS);

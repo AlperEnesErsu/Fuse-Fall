@@ -41,6 +41,19 @@ const EN_LEVELS: Readonly<Record<string, { readonly name: string; readonly hint:
   'w3-08': { name: 'Night Convoy', hint: 'Three vehicles in a row. Set the delays to the gaps between them.' },
   'w3-09': { name: 'Glass Tower', hint: 'Glass is brittle; use the charge from a distance.' },
   'w3-10': { name: 'London Finale', hint: 'A convoy and a building. Set three delays for one firing.' },
+  'w4-01': {
+    name: 'Precision Charge',
+    hint: 'The neighbour is too close: a standard blast would reach it. Switch to precision.',
+  },
+  'w4-02': { name: 'Tight Site', hint: 'The debris must stay in the striped site. Precision charges throw less.' },
+  'w4-03': { name: 'Arcade Court', hint: 'Three supports. Cut the right one and it folds into itself.' },
+  'w4-04': { name: 'Marble Columns', hint: 'The historic building on the left is protected, and the site is tight.' },
+  'w4-05': { name: 'Market Square', hint: 'Two structures, one site. Bring both down inside it.' },
+  'w4-06': { name: 'Tiber Bridge', hint: 'Cut the piers while the vehicle is on the bridge; the bridge must land on site.' },
+  'w4-07': { name: 'Bell Tower', hint: 'The site is to the left of the tower. Lay it down that way.' },
+  'w4-08': { name: 'Colonnade', hint: 'A long four-support building; historic buildings on both sides.' },
+  'w4-09': { name: 'Dome', hint: 'Cut the drum; the dome comes down under its own weight.' },
+  'w4-10': { name: 'Rome Finale', hint: 'Two structures, a tight site, a historic neighbour. Choose each charge type and spot.' },
 };
 
 const EN_CITIES: Readonly<Record<string, { readonly city: string; readonly country: string }>> = {

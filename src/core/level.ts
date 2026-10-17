@@ -1,4 +1,8 @@
 import { isMaterialId, type MaterialId } from './materials';
+
+export const CHARGE_KINDS = ['standard', 'precision'] as const;
+export type ChargeKind = (typeof CHARGE_KINDS)[number];
+const isChargeKind = (v: unknown): v is ChargeKind => typeof v === 'string' && (CHARGE_KINDS as readonly string[]).includes(v);
 import type { Rect, Vec2 } from './math';
 import { err, ok, type Result } from './result';
 
@@ -41,6 +45,14 @@ export interface CarDef {
 export interface SolutionCharge extends Vec2 {
   /** Detonation delay in seconds; omitted means the default sequence. */
   readonly delay: number | undefined;
+  readonly kind: ChargeKind;
+}
+
+/** The ground strip the collapse must stay inside, and the share of the material that must end up there. */
+export interface Footprint {
+  readonly from: number;
+  readonly to: number;
+  readonly ratio: number;
 }
 
 export interface LevelSolution {
@@ -63,6 +75,9 @@ export interface LevelDefinition {
   readonly blocks: readonly BlockDef[];
   readonly barrels: readonly Vec2[];
   readonly cars: readonly CarDef[];
+  /** Charge types the player may use here. */
+  readonly chargeKinds: readonly ChargeKind[];
+  readonly footprint: Footprint | undefined;
   /** A known winning placement and timing, used by tests to prove the level is solvable. */
   readonly solution: LevelSolution;
 }
@@ -172,11 +187,23 @@ const solution = (v: unknown, path: string, maxCharges: number): LevelSolution =
   const o = obj(v, path);
   const charges = arr(o.charges, `${path}.charges`).map((s, i): SolutionCharge => {
     const at = `${path}.charges[${i}]`;
-    const delay = obj(s, at).delay;
-    return { ...point(s, at), delay: delay === undefined ? undefined : num(delay, `${at}.delay`, 0, 2) };
+    const o = obj(s, at);
+    const kind = o.kind === undefined ? 'standard' : isChargeKind(o.kind) ? o.kind : fail(`${at}.kind`, 'unknown charge kind');
+    return { ...point(s, at), delay: o.delay === undefined ? undefined : num(o.delay, `${at}.delay`, 0, 2), kind };
   });
   if (charges.length === 0 || charges.length > maxCharges) fail(`${path}.charges`, 'solution must use 1..max charges');
   return { charges, fireAt: o.fireAt === undefined ? 0 : num(o.fireAt, `${path}.fireAt`, 0, 30) };
+};
+
+const footprint = (v: unknown, path: string): Footprint => {
+  const o = obj(v, path);
+  const def = {
+    from: num(o.from, `${path}.from`, 0, WORLD.width),
+    to: num(o.to, `${path}.to`, 0, WORLD.width),
+    ratio: num(o.ratio, `${path}.ratio`, 0, 1),
+  };
+  if (def.from >= def.to) fail(path, 'from must be left of to');
+  return def;
 };
 
 /** Parses untrusted level data at the content boundary. */
@@ -190,6 +217,13 @@ export const parseLevel = (input: unknown): Result<LevelDefinition, LevelError> 
     const par = int(chargesObj.par, `${p}.charges.par`, 1, max);
     const blocks = arr(o.blocks, `${p}.blocks`).map((b, i) => block(b, `${p}.blocks[${i}]`));
     const cars = o.cars === undefined ? [] : arr(o.cars, `${p}.cars`).map((c, i) => car(c, `${p}.cars[${i}]`));
+    const chargeKinds =
+      o.chargeKinds === undefined
+        ? (['standard'] as const)
+        : arr(o.chargeKinds, `${p}.chargeKinds`).map((k, i) =>
+            isChargeKind(k) ? k : fail(`${p}.chargeKinds[${i}]`, 'unknown charge kind'),
+          );
+    if (chargeKinds.length === 0) fail(`${p}.chargeKinds`, 'at least one charge kind');
     if (!blocks.some((b) => b.target) && !cars.some((c) => c.target)) fail(`${p}.blocks`, 'level needs at least one target');
     const zones = arr(o.zones, `${p}.zones`).map((z, i) => rect(z, `${p}.zones[${i}]`));
     if (zones.length === 0) fail(`${p}.zones`, 'level needs at least one placement zone');
@@ -205,6 +239,8 @@ export const parseLevel = (input: unknown): Result<LevelDefinition, LevelError> 
       blocks,
       barrels: o.barrels === undefined ? [] : arr(o.barrels, `${p}.barrels`).map((b, i) => point(b, `${p}.barrels[${i}]`)),
       cars,
+      chargeKinds,
+      footprint: o.footprint === undefined ? undefined : footprint(o.footprint, `${p}.footprint`),
       solution: solution(o.solution, `${p}.solution`, max),
     });
   } catch (e) {

@@ -24,7 +24,7 @@ export const playSolution = (
 ): LevelSession => {
   const session = new LevelSession(level, new MatterPhysicsWorld(), new EventBus<GameEvents>());
   for (const p of charges) {
-    const placed = session.placeCharge(p, 'delay' in p ? p.delay : undefined);
+    const placed = session.placeCharge(p, 'delay' in p ? p.delay : undefined, 'kind' in p ? p.kind : 'standard');
     if (!placed.ok) throw new Error(`${level.id}: solution charge rejected (${placed.error})`);
   }
   for (let t = 0; t + STEP / 2 < fireAt; t += STEP) session.step(STEP);
@@ -35,7 +35,7 @@ export const playSolution = (
 
 describe('campaign content', () => {
   it('ships ten ordered levels for each playable city', () => {
-    for (const world of [1, 2, 3]) {
+    for (const world of [1, 2, 3, 4]) {
       expect(levelsOf(campaign, world).map((l) => l.order)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
     }
   });
@@ -108,10 +108,19 @@ describe('campaign content', () => {
     expect(playSolution(level, level.solution.fireAt, defaults).result?.success).toBe(false);
   });
 
+  // Precision puzzles: the same placement with standard charges must not win.
+  it.each(cases.filter(([, l]) => l.solution.charges.some((c) => c.kind === 'precision')))(
+    '%s needs precision charges',
+    (_id, level) => {
+      const standard = level.solution.charges.map((c) => ({ ...c, kind: 'standard' as const }));
+      expect(playSolution(level, level.solution.fireAt, standard).result?.success).toBe(false);
+    },
+  );
+
   // Protected-building puzzles: the obvious placement on the wrong side must break the contract.
   it.each([
-    ['w1-06', { x: 560, y: 470, delay: undefined }],
-    ['w2-02', { x: 500, y: 470, delay: undefined }],
+    ['w1-06', { x: 560, y: 470, delay: undefined, kind: 'standard' }],
+    ['w2-02', { x: 500, y: 470, delay: undefined, kind: 'standard' }],
   ] as const)('%s breaks the contract from the wrong side', (id, wrong) => {
     const level = levels.find((l) => l.id === id);
     if (!level) throw new Error(`missing ${id}`);

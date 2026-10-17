@@ -1,5 +1,5 @@
 import { EventBus, type GameEvents } from '../core/events';
-import type { LevelDefinition } from '../core/level';
+import type { ChargeKind, LevelDefinition } from '../core/level';
 import type { Vec2 } from '../core/math';
 import { TUNING } from '../core/tuning';
 import type { SaveRepository } from '../core/ports';
@@ -53,7 +53,12 @@ interface Attempt {
   readonly mode: Mode;
   readonly replaying: boolean;
   /** Captured at Fire, so the same physics can be re-simulated for the replay. */
-  plan: { readonly charges: readonly { position: Vec2; delay: number }[]; readonly fireSteps: number } | undefined;
+  plan:
+    | {
+        readonly charges: readonly { position: Vec2; delay: number; kind: ChargeKind }[];
+        readonly fireSteps: number;
+      }
+    | undefined;
   stats: { barrelsBlown: number; carsWrecked: number };
   /** The report shown after the attempt, re-shown when a replay ends. */
   report: (() => void) | undefined;
@@ -84,6 +89,8 @@ export class Game {
   private time = 0;
   /** The city the player last browsed, so "back" returns to it. */
   private currentWorld = 1;
+  /** The charge type the next placement uses. */
+  private chargeKind: ChargeKind = 'standard';
   /** Display text for missions and cities in the current language. */
   private text: ContentText;
 
@@ -267,7 +274,15 @@ export class Game {
           this.refreshHud();
         }
       },
+      level.chargeKinds,
+      (kind) => {
+        this.chargeKind = kind;
+        this.ui.setChargeKind(kind);
+        this.coach.notify('kind');
+      },
     );
+    this.chargeKind = level.chargeKinds[0] ?? 'standard';
+    this.ui.setChargeKind(this.chargeKind);
     this.refreshHud();
     // New ideas are coached step by step until the mission is cleared once; otherwise a one-line hint.
     const cleared = (this.progress.stars[base.id] ?? 0) > 0;
@@ -276,7 +291,9 @@ export class Game {
     if (mode.kind === 'daily') {
       this.ui.toast(T.dailyRule(level.charges.par), 3200);
     } else if (!tutorial && !cleared) {
-      const fallback = level.blocks.some((b) => b.protected)
+      const fallback = level.footprint
+        ? T.footprintHint
+        : level.blocks.some((b) => b.protected)
         ? T.protectedHint
         : level.cars.length > 0
           ? T.carHint
@@ -291,7 +308,7 @@ export class Game {
     if (!a?.plan) return;
     this.juice.reset();
     const session = new LevelSession(a.level, new MatterPhysicsWorld(), this.events);
-    for (const c of a.plan.charges) session.placeCharge(c.position, c.delay);
+    for (const c of a.plan.charges) session.placeCharge(c.position, c.delay, c.kind);
     // Cars cruise while placing, so fast-forward to the exact step the player fired on.
     for (let i = 0; i < a.plan.fireSteps; i++) session.step(FIXED_STEP);
     session.fire();
@@ -313,7 +330,7 @@ export class Game {
     const s = this.session;
     if (s && this.attempt && s.phase === 'placing') {
       this.attempt.plan = {
-        charges: s.charges.map((c) => ({ position: c.position, delay: c.delay })),
+        charges: s.charges.map((c) => ({ position: c.position, delay: c.delay, kind: c.kind })),
         fireSteps: Math.round(s.clock / FIXED_STEP),
       };
     }
@@ -426,6 +443,7 @@ export class Game {
     this.renderer.draw(this.session, this.juice, {
       time: this.time,
       coach: this.coach.worldMarker,
+      kind: this.chargeKind,
       ghost:
         placing && ghostAt && !this.session?.chargeAt(ghostAt) && this.session && this.session.chargesLeft > 0
           ? { position: ghostAt, valid: this.session.canPlaceAt(ghostAt).ok }
@@ -496,7 +514,7 @@ export class Game {
         else if (!s.moveCharge(ptr.chargeId, p).ok) this.sound.denied();
         else this.sound.click();
       } else if (!ptr.moved) {
-        const placed = s.placeCharge(p);
+        const placed = s.placeCharge(p, undefined, this.chargeKind);
         if (!placed.ok) {
           this.sound.denied();
           this.ui.toast(T.placement[placed.error]);

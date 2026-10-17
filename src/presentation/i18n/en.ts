@@ -27,6 +27,9 @@ export const en: Strings = {
   menu: 'Menu',
   charges: 'Charges',
   delayTitle: 'Detonation delay (ms)',
+  chargeKinds: { standard: 'Standard', precision: 'Precision' },
+  chargeKindLabel: 'Charge type',
+  footprintHint: 'Keep the debris inside the striped site. Precision charges throw less.',
   ms: (seconds: number) => `+${Math.round(seconds * 1000)} ms`,
   targets: 'Targets',
   protectedLabel: 'Protected',
@@ -67,6 +70,7 @@ export const en: Strings = {
     reasons: {
       'target-standing': 'A target is still standing.',
       'collateral-damage': 'A protected building was damaged. Contract void.',
+      'debris-outside': 'Debris spilled outside the site.',
     },
     cityComplete: (city: string) => `${city} site complete.`,
     targets: 'Targets',
@@ -74,6 +78,7 @@ export const en: Strings = {
     par: (n: number) => `par ${n}`,
     collapse: 'Collapse',
     protectedRow: 'Protected buildings',
+    footprintRow: 'Debris inside the site',
     intact: 'Intact',
     damaged: (n: number) => `${n} damaged`,
     none: '—',
@@ -89,5 +94,6 @@ export const en: Strings = {
     'no-charges-left': 'No charges left',
     'not-placing': '',
     'unknown-charge': '',
+    'kind-unavailable': 'That charge type is not available here',
   },
 };

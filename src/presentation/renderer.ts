@@ -1,7 +1,7 @@
 import { WORLD } from '../core/level';
 import { hashString, type Vec2 } from '../core/math';
-import type { EntityView, LevelSession } from '../core/session';
-import { TUNING } from '../core/tuning';
+import { chargeRadius, type EntityView, type LevelSession } from '../core/session';
+import type { ChargeKind } from '../core/level';
 import type { JuiceDirector } from './juice';
 import { MATERIAL_COLORS, PALETTE } from './palette';
 import { paintScene, SCENE_MARGIN, skyAt } from './scenery';
@@ -10,6 +10,8 @@ import { flame, puff } from './sprites';
 export interface Overlay {
   /** Placement preview under the pointer. */
   readonly ghost: { readonly position: Vec2; readonly valid: boolean } | undefined;
+  /** The charge type the next placement will use. */
+  readonly kind: ChargeKind;
   /** A charge being dragged: hidden at its old spot, drawn at `position`. */
   readonly drag: { readonly id: number; readonly position: Vec2 } | undefined;
   readonly time: number;
@@ -80,6 +82,7 @@ export class Renderer {
     const m = SCENE_MARGIN;
     c.drawImage(this.paintedBackdrop(), -m, -m, WORLD.width + 2 * m, WORLD.height + 2 * m);
     this.scorches(juice);
+    if (session?.level.footprint) this.footprint(session.level.footprint.from, session.level.footprint.to);
     if (session) {
       if (session.phase === 'placing') {
         this.zones(session, overlay.time);
@@ -118,6 +121,27 @@ export class Renderer {
     c.lineTo(p.x, y);
     c.closePath();
     c.fill();
+    c.restore();
+  }
+
+  /** The site the debris must stay in: hazard tape on the ground and dashed boundary posts. */
+  private footprint(from: number, to: number): void {
+    const c = this.ctx;
+    const g = WORLD.groundY;
+    c.save();
+    for (let x = from; x < to; x += 16) {
+      c.fillStyle = Math.floor((x - from) / 16) % 2 === 0 ? PALETTE.accent : '#16181c';
+      c.fillRect(x, g + 2, Math.min(16, to - x), 6);
+    }
+    c.strokeStyle = 'rgba(242, 177, 52, 0.7)';
+    c.lineWidth = 2;
+    c.setLineDash([6, 6]);
+    c.beginPath();
+    for (const x of [from, to]) {
+      c.moveTo(x, g);
+      c.lineTo(x, g - 140);
+    }
+    c.stroke();
     c.restore();
   }
 
@@ -435,21 +459,22 @@ export class Renderer {
     const c = this.ctx;
     const centres = session.charges
       .filter((ch) => overlay.drag?.id !== ch.id)
-      .map((ch) => ch.position);
-    if (overlay.drag) centres.push(overlay.drag.position);
-    else if (overlay.ghost?.valid) centres.push(overlay.ghost.position);
+      .map((ch) => ({ position: ch.position, kind: ch.kind }));
+    const dragged = session.charges.find((ch) => ch.id === overlay.drag?.id);
+    if (overlay.drag && dragged) centres.push({ position: overlay.drag.position, kind: dragged.kind });
+    else if (overlay.ghost?.valid) centres.push({ position: overlay.ghost.position, kind: overlay.kind });
     const threatened = new Set<string>();
     c.save();
     c.setLineDash([6, 6]);
     c.lineWidth = 1.5;
-    for (const centre of centres) {
-      const hits = session.protectedReachedFrom(centre);
+    for (const { position: centre, kind } of centres) {
+      const hits = session.protectedReachedFrom(centre, kind);
       hits.forEach((id) => threatened.add(id));
       const danger = hits.length > 0;
       c.fillStyle = danger ? 'rgba(229, 72, 77, 0.10)' : 'rgba(242, 177, 52, 0.06)';
       c.strokeStyle = danger ? 'rgba(229, 72, 77, 0.85)' : 'rgba(242, 177, 52, 0.55)';
       c.beginPath();
-      c.arc(centre.x, centre.y, TUNING.charge.radius, 0, Math.PI * 2);
+      c.arc(centre.x, centre.y, chargeRadius(kind), 0, Math.PI * 2);
       c.fill();
       c.stroke();
     }
@@ -462,22 +487,31 @@ export class Renderer {
     if (placing) {
       session.charges.forEach((ch, i) => {
         if (overlay.drag?.id === ch.id) return;
-        this.charge(ch.position, i + 1, false, overlay.time);
+        this.charge(ch.position, i + 1, false, overlay.time, ch.kind);
         this.delayTag(ch.position, ch.delay);
       });
-      if (overlay.drag) this.charge(overlay.drag.position, 0, false, overlay.time, 0.7);
+      const dragged = session.charges.find((ch) => ch.id === overlay.drag?.id);
+      if (overlay.drag && dragged) this.charge(overlay.drag.position, 0, false, overlay.time, dragged.kind, 0.7);
       if (overlay.ghost && !overlay.drag) this.ghost(overlay.ghost.position, overlay.ghost.valid);
     } else {
-      for (const p of session.armedCharges) this.charge(p, 0, true, overlay.time);
+      for (const a of session.armedCharges) this.charge(a.position, 0, true, overlay.time, a.kind);
     }
   }
 
-  /** A plastic explosive brick with a detonator and status LED; the LED blinks fast once armed. */
-  private charge(p: Vec2, index: number, armed: boolean, time: number, alpha = 1): void {
+  /**
+   * A plastic explosive brick with a detonator and status LED; the LED blinks
+   * fast once armed. Precision charges are smaller, with a white band.
+   */
+  private charge(p: Vec2, index: number, armed: boolean, time: number, kind: ChargeKind, alpha = 1): void {
     const c = this.ctx;
     c.save();
     c.globalAlpha = alpha;
     c.translate(p.x, p.y);
+    if (kind === 'precision') {
+      c.scale(0.72, 0.72);
+      c.fillStyle = '#e9e3cf';
+      c.fillRect(-13, -10, 26, 3);
+    }
     c.fillStyle = '#5f6a3e';
     c.fillRect(-13, -8, 26, 16);
     c.fillStyle = '#4d5733';

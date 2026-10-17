@@ -12,6 +12,8 @@ export interface LevelOutcome {
   readonly protectedDamaged: number;
   /** Seconds from Fire until everything settled. */
   readonly duration: number;
+  /** For footprint jobs: the share of the structure's material that ended up inside the site, and the share required. */
+  readonly footprint: { readonly achieved: number; readonly required: number } | undefined;
 }
 
 export interface ScoringRules {
@@ -19,7 +21,7 @@ export interface ScoringRules {
   readonly bonusCollapse: number;
 }
 
-export type FailureReason = 'target-standing' | 'collateral-damage';
+export type FailureReason = 'target-standing' | 'collateral-damage' | 'debris-outside';
 
 export interface LevelResult extends LevelOutcome {
   readonly success: boolean;
@@ -47,8 +49,15 @@ export const SCORE = {
 export const scoreLevel = (outcome: LevelOutcome, rules: ScoringRules): LevelResult => {
   const targetsMet = outcome.targetsTotal > 0 && outcome.targetsDown >= outcome.targetsTotal;
   // Collateral damage is reported first: it voids the contract whatever else happened.
+  const spilled = outcome.footprint !== undefined && outcome.footprint.achieved < outcome.footprint.required;
   const failure: FailureReason | undefined =
-    outcome.protectedDamaged > 0 ? 'collateral-damage' : !targetsMet ? 'target-standing' : undefined;
+    outcome.protectedDamaged > 0
+      ? 'collateral-damage'
+      : !targetsMet
+        ? 'target-standing'
+        : spilled
+          ? 'debris-outside'
+          : undefined;
   const success = failure === undefined;
   const collapseRatio = outcome.blocksTotal === 0 ? 0 : outcome.blocksCollapsed / outcome.blocksTotal;
   const underPar = outcome.chargesUsed <= rules.par;

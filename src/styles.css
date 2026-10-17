@@ -1014,3 +1014,38 @@ h2,
   border-radius: var(--radius);
   padding: 6px 8px;
 }
+
+/* ---- charge type switch, beside the detonator ---- */
+.kind-toggle {
+  pointer-events: auto;
+  position: absolute;
+  right: calc(max(18px, env(safe-area-inset-right)) + 112px);
+  bottom: max(18px, env(safe-area-inset-bottom));
+  display: flex;
+  border: 1px solid var(--edge-strong);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: rgba(15, 17, 20, 0.86);
+}
+.kind-toggle.gone {
+  display: none;
+}
+.kind-toggle button {
+  font: 700 0.75rem var(--font-display);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: none;
+  border: 0;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+.kind-toggle button[aria-checked='true'] {
+  color: var(--accent-ink);
+  background: var(--accent);
+}
+@media (max-height: 420px) {
+  .kind-toggle {
+    right: calc(max(18px, env(safe-area-inset-right)) + 98px);
+  }
+}

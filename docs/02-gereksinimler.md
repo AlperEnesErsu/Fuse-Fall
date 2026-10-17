@@ -161,6 +161,16 @@ Yapıyı incele → Patlayıcı yerleştir → Ateşle → Yıkımı izle → Pu
 
 **Performans notu (NFR-01):** Yazılım GPU'lu emülatörde en ağır Ankara görevinde ortalama 23,9 → 35,3 FPS (efekt sprite önbelleği, dokunmatikte 1,5× çözünürlük). Bu sayılar gerçek cihazı temsil etmez; gerçek telefonda ölçüm henüz yapılmadı.
 
+### Roma: hassas şarj ve şantiye alanı (v0.5)
+
+| ID | Gereksinim | Öncelik |
+|---|---|---|
+| FR-42 | **Hassas şarj:** standart şarjla aynı kesme gücü, küçük çember (85 px) ve az savurma. Görev hangi şarj tiplerinin kullanılabileceğini belirler; HUD'da tip seçici. | M |
+| FR-43 | **Şantiye alanı (enkaz ayak izi):** yerde işaretli bir şerit. Yapı malzemesinin (alan ağırlıklı; ayakta kalan bloklar, kırılan parçaları ve bütçe nedeniyle kaldırılan ama alanın içinde duran enkaz) en az belirtilen oranı alanın içinde kalmalı. Aksi halde görev "enkaz alan dışına taştı" nedeniyle başarısız. | M |
+| FR-44 | Raporda "alan içindeki enkaz" satırı (elde edilen / gereken). | M |
+| FR-45 | Roma (Bölüm 4): 10 görev. Hassas şarj kullanan her görevde, aynı yerleşim standart şarjla kazanılamaz (testle doğrulanır). | M |
+| FR-46 | Uygulama ikonu ve açılış ekranı; Türkçe ve İngilizce dil desteği (cihaz diline göre otomatik). | M |
+
 ## 6. MVP kapsamı (Sürüm 0.1)
 
 - 1 dünya, 10 seviye

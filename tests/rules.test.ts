@@ -85,6 +85,7 @@ describe('scoring', () => {
     protectedTotal: 1,
     protectedDamaged: 0,
     duration: 3,
+    footprint: undefined,
   };
   it('awards one star per rule', () => {
     expect(scoreLevel(base, { par: 1, bonusCollapse: 0.5 }).stars).toBe(3);

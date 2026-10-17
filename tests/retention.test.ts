@@ -74,6 +74,7 @@ describe('achievements', () => {
     protectedTotal: 1,
     protectedDamaged: 0,
     duration: 3,
+    footprint: undefined,
   };
   const result = scoreLevel(outcome, { par: 1, bonusCollapse: 0.5 });
   const stats = { barrelsBlown: 3, carsWrecked: 0 };
