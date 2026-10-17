@@ -309,6 +309,7 @@ export class Game {
     };
     this.ui.showHud({
       kinds: level.chargeKinds,
+      skyInUse: level.dropZones.length > 0,
       onFire: () => this.fire(),
       onDetonate: () => this.detonate(),
       onRetry: () => this.play(level, mode),
@@ -397,7 +398,9 @@ export class Game {
   private detonate(): void {
     const s = this.session;
     if (!s || s.phase !== 'running' || this.attempt?.replaying) return;
-    if (s.detonateBombs() > 0) this.attempt?.plan?.presses.push(Math.round(s.elapsedSinceFire / FIXED_STEP));
+    if (s.detonateBombs() === 0) return;
+    this.attempt?.plan?.presses.push(Math.round(s.elapsedSinceFire / FIXED_STEP));
+    this.coach.notify('detonated');
   }
 
   /** One fixed step; during a replay, the recorded detonator presses happen at the same step. */

@@ -64,6 +64,16 @@ const EN_LEVELS: Readonly<Record<string, { readonly name: string; readonly hint:
   'w5-08': { name: 'Fuel Depot', hint: 'The barrel chain throws upward too. Wait for the train.' },
   'w5-09': { name: 'Crossing Below', hint: 'Two vehicles below, a train above. Set the delays for both.' },
   'w5-10': { name: 'Tokyo Finale', hint: 'A tight site, a protected kiosk and the timetable. Think about all of them at once.' },
+  'w6-01': { name: 'First Bomb', hint: 'Hang the bomb above the tower, FIRE, and DETONATE as it falls.' },
+  'w6-02': { name: 'Airburst', hint: 'The houses below are protected. Detonate while the bomb is level with the mast top, before it lands.' },
+  'w6-03': { name: 'Roof Storey', hint: 'Drop the bomb onto the ridge and detonate at once. Left to its fuse, it slides off the roof.' },
+  'w6-04': { name: 'Two Bombs', hint: 'Two bombs, one DETONATE. Press when both have reached their targets.' },
+  'w6-05': { name: 'Fuse and Bomb', hint: 'The fuse cuts the base; the bomb catches the top storey.' },
+  'w6-06': { name: 'Galata Tower', hint: 'The stone tower is tall and solid. Bring the bomb down on its top; the neighbour is protected.' },
+  'w6-07': { name: 'Bosphorus Bridge', hint: 'A car shuttles across the bridge. Drop the bomb on the road and DETONATE as the car comes by.' },
+  'w6-08': { name: 'Han Courtyard', hint: 'Two wings with a protected fountain between them. Detonate both bombs above the wings.' },
+  'w6-09': { name: 'Ferry Pier', hint: 'Drop the bomb beside the barrels. The chain brings the tower down.' },
+  'w6-10': { name: 'Istanbul Finale', hint: 'The apartment and the chimney come down together. Fuse on the middle column, bomb on top of the chimney.' },
 };
 
 const EN_CITIES: Readonly<Record<string, { readonly city: string; readonly country: string }>> = {
@@ -72,6 +82,7 @@ const EN_CITIES: Readonly<Record<string, { readonly city: string; readonly count
   london: { city: 'London', country: 'United Kingdom' },
   rome: { city: 'Rome', country: 'Italy' },
   tokyo: { city: 'Tokyo', country: 'Japan' },
+  istanbul: { city: 'Istanbul', country: 'Türkiye' },
 };
 
 /** Daily missions have their own id: callers pass the base mission for its text. */

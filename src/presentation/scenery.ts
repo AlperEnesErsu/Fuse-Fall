@@ -297,7 +297,66 @@ const tokyo: Landmarks = (c, color, accent) => {
   c.fillRect(x - 14, G - 200, 28, 8);
 };
 
-const LANDMARKS: Readonly<Record<string, Landmarks>> = { ankara, paris, london, rome, tokyo };
+const istanbul: Landmarks = (c, color, accent) => {
+  c.fillStyle = color;
+  c.strokeStyle = color;
+  // Bosphorus Bridge: two towers, the main cable sagging between them, hangers to the deck.
+  const deckY = G - 70;
+  c.fillRect(40, G - 220, 10, 220);
+  c.fillRect(300, G - 220, 10, 220);
+  c.fillRect(0, deckY, 360, 6);
+  c.lineWidth = 2.5;
+  c.beginPath();
+  c.moveTo(-60, deckY - 10);
+  c.lineTo(45, G - 220);
+  c.quadraticCurveTo(175, deckY + 40, 305, G - 220);
+  c.lineTo(420, deckY - 10);
+  c.stroke();
+  c.lineWidth = 1;
+  c.beginPath();
+  for (let x = 60; x < 300; x += 14) {
+    const t = (x - 45) / 260;
+    const cable = (1 - t) * (1 - t) * (G - 220) + 2 * (1 - t) * t * (deckY + 40) + t * t * (G - 220);
+    c.moveTo(x, cable);
+    c.lineTo(x, deckY);
+  }
+  c.stroke();
+  // A great mosque: central dome on a drum, half domes, four minarets.
+  const mx = 560;
+  c.fillRect(mx - 110, G - 70, 220, 70);
+  c.beginPath();
+  c.arc(mx, G - 110, 62, Math.PI, 0);
+  c.fill();
+  c.fillRect(mx - 62, G - 110, 124, 40);
+  for (const dx of [-80, 80]) {
+    c.beginPath();
+    c.arc(mx + dx, G - 70, 34, Math.PI, 0);
+    c.fill();
+  }
+  c.fillRect(mx - 3, G - 190, 6, 22);
+  for (const dx of [-140, -120, 120, 140]) {
+    c.fillRect(mx + dx - 3, G - 210, 6, 210);
+    c.beginPath();
+    c.moveTo(mx + dx - 4, G - 210);
+    c.lineTo(mx + dx, G - 240);
+    c.lineTo(mx + dx + 4, G - 210);
+    c.fill();
+    c.fillRect(mx + dx - 5, G - 160, 10, 3);
+  }
+  // Galata Tower: stone cylinder, a balcony ring, a tall conical cap.
+  const gx = 840;
+  c.fillRect(gx - 26, G - 200, 52, 200);
+  c.fillRect(gx - 32, G - 206, 64, 8);
+  c.beginPath();
+  c.moveTo(gx - 30, G - 206);
+  c.lineTo(gx, G - 280);
+  c.lineTo(gx + 30, G - 206);
+  c.fill();
+  c.fillStyle = accent;
+  for (const wy of [G - 170, G - 120, G - 70]) c.fillRect(gx - 4, wy, 8, 14);
+};
+
+const LANDMARKS: Readonly<Record<string, Landmarks>> = { ankara, paris, london, rome, tokyo, istanbul };
 
 /** Paints the whole backdrop for a city and time of day, in world coordinates. */
 export const paintScene = (c: Ctx, cityKey: string, sky: SkyState): void => {

@@ -100,6 +100,8 @@ export interface MenuState {
 
 export interface HudActions {
   readonly kinds: readonly ChargeKind[];
+  /** Bombs hang in the sky, so the timeline docks under the buttons instead of covering them. */
+  readonly skyInUse: boolean;
   readonly onFire: () => void;
   readonly onDetonate: () => void;
   readonly onRetry: () => void;
@@ -437,6 +439,7 @@ export class Ui {
       h('span', {}, T.detonate),
     ) as HTMLButtonElement;
     const timeline = new DelayTimeline(TUNING.charge.delay.max, a.onDelay);
+    timeline.element.classList.toggle('docked', a.skyInUse);
     // Charge type switch, only where the job offers more than one type.
     const kindSwitch = h(
       'div',

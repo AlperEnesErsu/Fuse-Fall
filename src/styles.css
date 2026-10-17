@@ -763,7 +763,7 @@ h2,
 /* ---- delay timeline (blasting machine) ---- */
 .timeline {
   pointer-events: auto;
-  /* Top centre, between the info card and the buttons: the sky is the one area missions never use. */
+  /* Top centre, between the info card and the buttons: the sky is free unless bombs hang there. */
   position: absolute;
   top: max(12px, env(safe-area-inset-top));
   left: 50%;
@@ -777,6 +777,13 @@ h2,
   display: flex;
   flex-direction: column;
   gap: 2px;
+}
+.timeline.docked {
+  top: calc(max(12px, env(safe-area-inset-top)) + 58px);
+  left: auto;
+  right: max(12px, env(safe-area-inset-right));
+  transform: none;
+  width: min(260px, 31vw);
 }
 .timeline-head .label {
   color: var(--muted);

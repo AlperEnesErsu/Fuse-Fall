@@ -2,7 +2,7 @@ import type { Vec2 } from '../core/math';
 import { T } from './strings';
 
 /** What moves a tutorial step forward. */
-export type CoachTrigger = 'placed' | 'fired' | 'delay' | 'kind' | 'tap';
+export type CoachTrigger = 'placed' | 'fired' | 'detonated' | 'delay' | 'kind' | 'tap';
 
 export interface CoachStep {
   readonly text: string;

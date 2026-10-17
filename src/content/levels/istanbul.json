@@ -1,0 +1,1273 @@
+[
+ {
+  "id": "w6-01",
+  "name": "İlk Bomba",
+  "world": 6,
+  "order": 1,
+  "charges": {
+   "max": 1,
+   "par": 1
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 0,
+    "y": 0,
+    "w": 1,
+    "h": 1
+   }
+  ],
+  "blocks": [
+   {
+    "x": 465.0,
+    "y": 425.0,
+    "w": 20,
+    "h": 110,
+    "material": "wood"
+   },
+   {
+    "x": 535.0,
+    "y": 425.0,
+    "w": 20,
+    "h": 110,
+    "material": "wood"
+   },
+   {
+    "x": 500,
+    "y": 360.0,
+    "w": 110,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 470.0,
+    "y": 310.0,
+    "w": 20,
+    "h": 80,
+    "material": "wood"
+   },
+   {
+    "x": 530.0,
+    "y": 310.0,
+    "w": 20,
+    "h": 80,
+    "material": "wood"
+   },
+   {
+    "x": 500,
+    "y": 260.0,
+    "w": 100,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 500,
+    "y": 233.0,
+    "w": 34,
+    "h": 34,
+    "material": "wood",
+    "target": true
+   }
+  ],
+  "barrels": [],
+  "cars": [],
+  "solution": {
+   "charges": [
+    {
+     "x": 460,
+     "y": 60,
+     "delay": 0,
+     "kind": "bomb"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": [
+    0.6
+   ]
+  },
+  "hint": "Bombayı kulenin üstüne as, ATEŞLE ve düşerken PATLAT.",
+  "chargeKinds": [
+   "bomb"
+  ],
+  "dropZones": [
+   {
+    "x": 420,
+    "y": 24,
+    "w": 160,
+    "h": 70
+   }
+  ]
+ },
+ {
+  "id": "w6-02",
+  "name": "Havada Patlat",
+  "world": 6,
+  "order": 2,
+  "charges": {
+   "max": 1,
+   "par": 1
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 0,
+    "y": 0,
+    "w": 1,
+    "h": 1
+   }
+  ],
+  "blocks": [
+   {
+    "x": 500,
+    "y": 450.0,
+    "w": 40,
+    "h": 60,
+    "material": "concrete"
+   },
+   {
+    "x": 500,
+    "y": 390.0,
+    "w": 40,
+    "h": 60,
+    "material": "concrete"
+   },
+   {
+    "x": 500,
+    "y": 330.0,
+    "w": 40,
+    "h": 60,
+    "material": "concrete"
+   },
+   {
+    "x": 500,
+    "y": 270.0,
+    "w": 40,
+    "h": 60,
+    "material": "concrete"
+   },
+   {
+    "x": 500,
+    "y": 210.0,
+    "w": 40,
+    "h": 60,
+    "material": "concrete"
+   },
+   {
+    "x": 500,
+    "y": 162.0,
+    "w": 36,
+    "h": 36,
+    "material": "wood",
+    "target": true
+   },
+   {
+    "x": 360,
+    "y": 445.0,
+    "w": 60,
+    "h": 70,
+    "material": "concrete",
+    "protected": true
+   },
+   {
+    "x": 640,
+    "y": 445.0,
+    "w": 60,
+    "h": 70,
+    "material": "concrete",
+    "protected": true
+   }
+  ],
+  "barrels": [],
+  "cars": [],
+  "solution": {
+   "charges": [
+    {
+     "x": 520,
+     "y": 60,
+     "delay": 0,
+     "kind": "bomb"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": [
+    0.7
+   ]
+  },
+  "hint": "Aşağıdaki evler korunuyor. Bombayı direğin tepesindeyken patlat, yere inmeden.",
+  "chargeKinds": [
+   "bomb"
+  ],
+  "dropZones": [
+   {
+    "x": 440,
+    "y": 24,
+    "w": 120,
+    "h": 70
+   }
+  ]
+ },
+ {
+  "id": "w6-03",
+  "name": "Çatı Katı",
+  "world": 6,
+  "order": 3,
+  "charges": {
+   "max": 2,
+   "par": 1
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 420,
+    "y": 380,
+    "w": 160,
+    "h": 100
+   }
+  ],
+  "blocks": [
+   {
+    "x": 500.0,
+    "y": 471.0,
+    "w": 160,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 500.0,
+    "y": 453.0,
+    "w": 160,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 500.0,
+    "y": 435.0,
+    "w": 160,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 500.0,
+    "y": 417.0,
+    "w": 160,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 500,
+    "y": 401.0,
+    "w": 180,
+    "h": 14,
+    "material": "wood"
+   },
+   {
+    "x": 500,
+    "y": 388.0,
+    "w": 100,
+    "h": 12,
+    "material": "wood"
+   },
+   {
+    "x": 500,
+    "y": 376.0,
+    "w": 60,
+    "h": 12,
+    "material": "wood",
+    "target": true
+   },
+   {
+    "x": 690,
+    "y": 450.0,
+    "w": 50,
+    "h": 60,
+    "material": "concrete",
+    "protected": true
+   }
+  ],
+  "barrels": [],
+  "cars": [],
+  "solution": {
+   "charges": [
+    {
+     "x": 500,
+     "y": 60,
+     "delay": 0,
+     "kind": "bomb"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": [
+    1.2
+   ]
+  },
+  "hint": "Bombayı mahyaya indir ve hemen patlat. Fitile kalırsa çatıdan kayar.",
+  "chargeKinds": [
+   "standard",
+   "bomb"
+  ],
+  "dropZones": [
+   {
+    "x": 440,
+    "y": 24,
+    "w": 120,
+    "h": 70
+   }
+  ]
+ },
+ {
+  "id": "w6-04",
+  "name": "İki Bomba",
+  "world": 6,
+  "order": 4,
+  "charges": {
+   "max": 2,
+   "par": 2
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 0,
+    "y": 0,
+    "w": 1,
+    "h": 1
+   }
+  ],
+  "blocks": [
+   {
+    "x": 270.0,
+    "y": 420.0,
+    "w": 20,
+    "h": 120,
+    "material": "wood"
+   },
+   {
+    "x": 330.0,
+    "y": 420.0,
+    "w": 20,
+    "h": 120,
+    "material": "wood"
+   },
+   {
+    "x": 300,
+    "y": 350.0,
+    "w": 100,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 300,
+    "y": 324.0,
+    "w": 32,
+    "h": 32,
+    "material": "wood",
+    "target": true
+   },
+   {
+    "x": 650.0,
+    "y": 420.0,
+    "w": 20,
+    "h": 120,
+    "material": "wood"
+   },
+   {
+    "x": 710.0,
+    "y": 420.0,
+    "w": 20,
+    "h": 120,
+    "material": "wood"
+   },
+   {
+    "x": 680,
+    "y": 350.0,
+    "w": 100,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 680,
+    "y": 324.0,
+    "w": 32,
+    "h": 32,
+    "material": "wood",
+    "target": true
+   }
+  ],
+  "barrels": [],
+  "cars": [],
+  "solution": {
+   "charges": [
+    {
+     "x": 280,
+     "y": 60,
+     "delay": 0,
+     "kind": "bomb"
+    },
+    {
+     "x": 660,
+     "y": 60,
+     "delay": 0.35,
+     "kind": "bomb"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": [
+    1.0
+   ]
+  },
+  "hint": "İki bomba, tek PATLAT. İkisi de hedefine vardığında bas.",
+  "chargeKinds": [
+   "bomb"
+  ],
+  "dropZones": [
+   {
+    "x": 240,
+    "y": 24,
+    "w": 120,
+    "h": 70
+   },
+   {
+    "x": 620,
+    "y": 24,
+    "w": 120,
+    "h": 70
+   }
+  ]
+ },
+ {
+  "id": "w6-05",
+  "name": "Fitil ve Bomba",
+  "world": 6,
+  "order": 5,
+  "charges": {
+   "max": 2,
+   "par": 2
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 450,
+    "y": 380,
+    "w": 140,
+    "h": 100
+   }
+  ],
+  "blocks": [
+   {
+    "x": 485.0,
+    "y": 420.0,
+    "w": 26,
+    "h": 120,
+    "material": "concrete"
+   },
+   {
+    "x": 555.0,
+    "y": 420.0,
+    "w": 26,
+    "h": 120,
+    "material": "concrete"
+   },
+   {
+    "x": 520,
+    "y": 350.0,
+    "w": 116,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 490.0,
+    "y": 295.0,
+    "w": 20,
+    "h": 90,
+    "material": "wood"
+   },
+   {
+    "x": 550.0,
+    "y": 295.0,
+    "w": 20,
+    "h": 90,
+    "material": "wood"
+   },
+   {
+    "x": 520,
+    "y": 240.0,
+    "w": 100,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 520,
+    "y": 214.0,
+    "w": 32,
+    "h": 32,
+    "material": "wood",
+    "target": true
+   }
+  ],
+  "barrels": [],
+  "cars": [],
+  "solution": {
+   "charges": [
+    {
+     "x": 470,
+     "y": 440
+    },
+    {
+     "x": 520,
+     "y": 60,
+     "delay": 0.35,
+     "kind": "bomb"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": [
+    1.0
+   ]
+  },
+  "hint": "Fitil tabanı keser; bomba üst katı yakalar.",
+  "chargeKinds": [
+   "standard",
+   "bomb"
+  ],
+  "dropZones": [
+   {
+    "x": 440,
+    "y": 24,
+    "w": 160,
+    "h": 70
+   }
+  ]
+ },
+ {
+  "id": "w6-06",
+  "name": "Galata Kulesi",
+  "world": 6,
+  "order": 6,
+  "charges": {
+   "max": 2,
+   "par": 1
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 470,
+    "y": 380,
+    "w": 120,
+    "h": 100
+   }
+  ],
+  "blocks": [
+   {
+    "x": 520,
+    "y": 454.0,
+    "w": 56,
+    "h": 52,
+    "material": "concrete"
+   },
+   {
+    "x": 520,
+    "y": 402.0,
+    "w": 56,
+    "h": 52,
+    "material": "brick"
+   },
+   {
+    "x": 520,
+    "y": 350.0,
+    "w": 56,
+    "h": 52,
+    "material": "brick"
+   },
+   {
+    "x": 520,
+    "y": 298.0,
+    "w": 56,
+    "h": 52,
+    "material": "brick"
+   },
+   {
+    "x": 520,
+    "y": 246.0,
+    "w": 56,
+    "h": 52,
+    "material": "brick"
+   },
+   {
+    "x": 520,
+    "y": 194.0,
+    "w": 56,
+    "h": 52,
+    "material": "brick"
+   },
+   {
+    "x": 520,
+    "y": 152.0,
+    "w": 32,
+    "h": 32,
+    "material": "wood",
+    "target": true
+   },
+   {
+    "x": 380,
+    "y": 445.0,
+    "w": 60,
+    "h": 70,
+    "material": "concrete",
+    "protected": true
+   }
+  ],
+  "barrels": [],
+  "cars": [],
+  "solution": {
+   "charges": [
+    {
+     "x": 520,
+     "y": 60,
+     "delay": 0,
+     "kind": "bomb"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": [
+    1.0
+   ]
+  },
+  "hint": "Taş kule uzun ve sağlam. Bombayı tepesine indir; komşu korunuyor.",
+  "chargeKinds": [
+   "standard",
+   "bomb"
+  ],
+  "dropZones": [
+   {
+    "x": 460,
+    "y": 24,
+    "w": 120,
+    "h": 70
+   }
+  ]
+ },
+ {
+  "id": "w6-07",
+  "name": "Boğaz Köprüsü",
+  "world": 6,
+  "order": 7,
+  "charges": {
+   "max": 1,
+   "par": 1
+  },
+  "bonusCollapse": 0.4,
+  "zones": [
+   {
+    "x": 0,
+    "y": 0,
+    "w": 1,
+    "h": 1
+   }
+  ],
+  "blocks": [
+   {
+    "x": 300,
+    "y": 410.0,
+    "w": 30,
+    "h": 140,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 700,
+    "y": 410.0,
+    "w": 30,
+    "h": 140,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 500.0,
+    "y": 330.0,
+    "w": 450,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   }
+  ],
+  "barrels": [],
+  "cars": [
+   {
+    "x": 340,
+    "y": 308.0,
+    "w": 56,
+    "h": 24,
+    "from": 330,
+    "to": 670,
+    "speed": 80,
+    "target": true
+   }
+  ],
+  "solution": {
+   "charges": [
+    {
+     "x": 460,
+     "y": 60,
+     "delay": 0,
+     "kind": "bomb"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": [
+    1.0
+   ]
+  },
+  "hint": "Araç köprüde gidip geliyor. Bombayı yola düşür, araç yanına gelince PATLAT.",
+  "chargeKinds": [
+   "bomb"
+  ],
+  "dropZones": [
+   {
+    "x": 420,
+    "y": 24,
+    "w": 160,
+    "h": 70
+   }
+  ]
+ },
+ {
+  "id": "w6-08",
+  "name": "Han Avlusu",
+  "world": 6,
+  "order": 8,
+  "charges": {
+   "max": 2,
+   "par": 2
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 0,
+    "y": 0,
+    "w": 1,
+    "h": 1
+   }
+  ],
+  "blocks": [
+   {
+    "x": 330.0,
+    "y": 471.0,
+    "w": 140,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 330.0,
+    "y": 453.0,
+    "w": 140,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 330.0,
+    "y": 435.0,
+    "w": 140,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 330.0,
+    "y": 417.0,
+    "w": 140,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 330,
+    "y": 401.0,
+    "w": 160,
+    "h": 14,
+    "material": "wood"
+   },
+   {
+    "x": 330,
+    "y": 388.0,
+    "w": 100,
+    "h": 12,
+    "material": "wood"
+   },
+   {
+    "x": 330,
+    "y": 376.0,
+    "w": 60,
+    "h": 12,
+    "material": "wood",
+    "target": true
+   },
+   {
+    "x": 690.0,
+    "y": 471.0,
+    "w": 140,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 690.0,
+    "y": 453.0,
+    "w": 140,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 690.0,
+    "y": 435.0,
+    "w": 140,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 690.0,
+    "y": 417.0,
+    "w": 140,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 690,
+    "y": 401.0,
+    "w": 160,
+    "h": 14,
+    "material": "wood"
+   },
+   {
+    "x": 690,
+    "y": 388.0,
+    "w": 100,
+    "h": 12,
+    "material": "wood"
+   },
+   {
+    "x": 690,
+    "y": 376.0,
+    "w": 60,
+    "h": 12,
+    "material": "wood",
+    "target": true
+   },
+   {
+    "x": 510,
+    "y": 450.0,
+    "w": 60,
+    "h": 60,
+    "material": "concrete",
+    "protected": true
+   }
+  ],
+  "barrels": [],
+  "cars": [],
+  "solution": {
+   "charges": [
+    {
+     "x": 325,
+     "y": 60,
+     "delay": 0,
+     "kind": "bomb"
+    },
+    {
+     "x": 695,
+     "y": 60,
+     "delay": 0.35,
+     "kind": "bomb"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": [
+    1.5
+   ]
+  },
+  "hint": "İki kanat, ortada korunan çeşme. İki bombayı da kanatların üstünde patlat.",
+  "chargeKinds": [
+   "bomb"
+  ],
+  "dropZones": [
+   {
+    "x": 270,
+    "y": 24,
+    "w": 120,
+    "h": 70
+   },
+   {
+    "x": 630,
+    "y": 24,
+    "w": 120,
+    "h": 70
+   }
+  ]
+ },
+ {
+  "id": "w6-09",
+  "name": "Feribot İskelesi",
+  "world": 6,
+  "order": 9,
+  "charges": {
+   "max": 1,
+   "par": 1
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 0,
+    "y": 0,
+    "w": 1,
+    "h": 1
+   }
+  ],
+  "blocks": [
+   {
+    "x": 725.0,
+    "y": 410.0,
+    "w": 20,
+    "h": 140,
+    "material": "wood"
+   },
+   {
+    "x": 795.0,
+    "y": 410.0,
+    "w": 20,
+    "h": 140,
+    "material": "wood"
+   },
+   {
+    "x": 760,
+    "y": 330.0,
+    "w": 110,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 760,
+    "y": 304.0,
+    "w": 32,
+    "h": 32,
+    "material": "wood",
+    "target": true
+   }
+  ],
+  "barrels": [
+   {
+    "x": 560,
+    "y": 464
+   },
+   {
+    "x": 630,
+    "y": 464
+   },
+   {
+    "x": 690,
+    "y": 464
+   }
+  ],
+  "cars": [],
+  "solution": {
+   "charges": [
+    {
+     "x": 520,
+     "y": 60,
+     "delay": 0,
+     "kind": "bomb"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": [
+    0.9
+   ]
+  },
+  "hint": "Bombayı varillerin yanına indir. Zincir kuleyi yıkar.",
+  "chargeKinds": [
+   "bomb"
+  ],
+  "dropZones": [
+   {
+    "x": 500,
+    "y": 24,
+    "w": 120,
+    "h": 70
+   }
+  ]
+ },
+ {
+  "id": "w6-10",
+  "name": "İstanbul Finali",
+  "world": 6,
+  "order": 10,
+  "charges": {
+   "max": 3,
+   "par": 2
+  },
+  "bonusCollapse": 0.45,
+  "zones": [
+   {
+    "x": 190,
+    "y": 380,
+    "w": 220,
+    "h": 100
+   }
+  ],
+  "blocks": [
+   {
+    "x": 260.0,
+    "y": 471.0,
+    "w": 56,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 260.0,
+    "y": 453.0,
+    "w": 56,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 260.0,
+    "y": 435.0,
+    "w": 56,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 260.0,
+    "y": 417.0,
+    "w": 56,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 340.0,
+    "y": 471.0,
+    "w": 56,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 340.0,
+    "y": 453.0,
+    "w": 56,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 340.0,
+    "y": 435.0,
+    "w": 56,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 340.0,
+    "y": 417.0,
+    "w": 56,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 220,
+    "y": 444.0,
+    "w": 24,
+    "h": 72,
+    "material": "wood"
+   },
+   {
+    "x": 300,
+    "y": 444.0,
+    "w": 24,
+    "h": 72,
+    "material": "wood"
+   },
+   {
+    "x": 380,
+    "y": 444.0,
+    "w": 24,
+    "h": 72,
+    "material": "wood"
+   },
+   {
+    "x": 300.0,
+    "y": 399.0,
+    "w": 200,
+    "h": 18,
+    "material": "wood"
+   },
+   {
+    "x": 260.0,
+    "y": 381.0,
+    "w": 56,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 260.0,
+    "y": 363.0,
+    "w": 56,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 260.0,
+    "y": 345.0,
+    "w": 56,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 260.0,
+    "y": 327.0,
+    "w": 56,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 340.0,
+    "y": 381.0,
+    "w": 56,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 340.0,
+    "y": 363.0,
+    "w": 56,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 340.0,
+    "y": 345.0,
+    "w": 56,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 340.0,
+    "y": 327.0,
+    "w": 56,
+    "h": 18,
+    "material": "brick"
+   },
+   {
+    "x": 220,
+    "y": 354.0,
+    "w": 24,
+    "h": 72,
+    "material": "wood"
+   },
+   {
+    "x": 300,
+    "y": 354.0,
+    "w": 24,
+    "h": 72,
+    "material": "wood"
+   },
+   {
+    "x": 380,
+    "y": 354.0,
+    "w": 24,
+    "h": 72,
+    "material": "wood"
+   },
+   {
+    "x": 300.0,
+    "y": 309.0,
+    "w": 200,
+    "h": 18,
+    "material": "wood"
+   },
+   {
+    "x": 300,
+    "y": 284.0,
+    "w": 32,
+    "h": 32,
+    "material": "wood",
+    "target": true
+   },
+   {
+    "x": 620,
+    "y": 452.0,
+    "w": 40,
+    "h": 56,
+    "material": "concrete"
+   },
+   {
+    "x": 620,
+    "y": 396.0,
+    "w": 40,
+    "h": 56,
+    "material": "concrete"
+   },
+   {
+    "x": 620,
+    "y": 340.0,
+    "w": 40,
+    "h": 56,
+    "material": "concrete"
+   },
+   {
+    "x": 620,
+    "y": 284.0,
+    "w": 40,
+    "h": 56,
+    "material": "concrete"
+   },
+   {
+    "x": 620,
+    "y": 228.0,
+    "w": 40,
+    "h": 56,
+    "material": "concrete"
+   },
+   {
+    "x": 620,
+    "y": 182.0,
+    "w": 36,
+    "h": 36,
+    "material": "wood",
+    "target": true
+   },
+   {
+    "x": 860,
+    "y": 450.0,
+    "w": 50,
+    "h": 60,
+    "material": "concrete",
+    "protected": true
+   }
+  ],
+  "barrels": [],
+  "cars": [],
+  "solution": {
+   "charges": [
+    {
+     "x": 300,
+     "y": 440
+    },
+    {
+     "x": 620,
+     "y": 60,
+     "delay": 0,
+     "kind": "bomb"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": [
+    1.0
+   ]
+  },
+  "hint": "Apartman ve baca birlikte iner. Fitil orta kolona, bomba bacanın tepesine.",
+  "chargeKinds": [
+   "standard",
+   "bomb"
+  ],
+  "dropZones": [
+   {
+    "x": 560,
+    "y": 24,
+    "w": 120,
+    "h": 70
+   }
+  ]
+ }
+]

@@ -157,6 +157,33 @@ const TUTORIALS: Readonly<Record<string, readonly TutorialStep[]>> = {
       until: 'fired',
     },
   ],
+  // The first free-fall bomb and the detonator.
+  'w6-01': [
+    {
+      text: {
+        tr: 'Bombalar gökyüzündeki çizgili alana asılır. Bombayı kulenin tam üstüne yerleştir.',
+        en: 'Bombs hang in the striped area in the sky. Place the bomb right above the tower.',
+      },
+      highlight: { world: { x: 460, y: 60 }, radius: 34 },
+      until: 'placed',
+    },
+    {
+      text: {
+        tr: 'ATEŞLE bombayı bırakır; yer çekimi gerisini yapar.',
+        en: 'FIRE releases the bomb; gravity does the rest.',
+      },
+      highlight: { selector: '.fire-btn' },
+      until: 'fired',
+    },
+    {
+      text: {
+        tr: 'Bomba kulenin tepesine yaklaşınca PATLAT. Basmazsan fitil 4 saniyede ateşler.',
+        en: 'DETONATE as the bomb nears the top of the tower. If you wait, its fuse goes off after 4 seconds.',
+      },
+      highlight: { selector: '.detonate-btn' },
+      until: 'detonated',
+    },
+  ],
 };
 
 export const tutorialIds = (): string[] => Object.keys(TUTORIALS);

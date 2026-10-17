@@ -21,6 +21,7 @@ export const playSolution = (
   level: LevelDefinition,
   fireAt = level.solution.fireAt,
   charges = level.solution.charges,
+  detonateAt = level.solution.detonateAt,
 ): LevelSession => {
   const session = new LevelSession(level, new MatterPhysicsWorld(), new EventBus<GameEvents>());
   for (const p of charges) {
@@ -30,7 +31,7 @@ export const playSolution = (
   for (let t = 0; t + STEP / 2 < fireAt; t += STEP) session.step(STEP);
   expect(session.fire().ok).toBe(true);
   // Press the detonator at the recorded moments (free-fall bombs), on the same fixed steps the game uses.
-  const presses = level.solution.detonateAt.map((t) => Math.round(t / STEP));
+  const presses = detonateAt.map((t) => Math.round(t / STEP));
   for (let k = 1; k <= 20 / STEP && session.phase !== 'finished'; k++) {
     session.step(STEP);
     if (presses.includes(k)) session.detonateBombs();
@@ -121,6 +122,11 @@ describe('campaign content', () => {
       expect(playSolution(level, level.solution.fireAt, standard).result?.success).toBe(false);
     },
   );
+
+  // Detonator puzzles: left to their fuses, the same falling bombs do not win.
+  it.each(cases.filter(([, l]) => ['w6-02', 'w6-03', 'w6-10'].includes(l.id)))('%s needs the detonator', (_id, level) => {
+    expect(playSolution(level, level.solution.fireAt, level.solution.charges, []).result?.success).toBe(false);
+  });
 
   // Train-window puzzles: with the train overhead, the same placement voids the contract.
   it.each(cases.filter(([, l]) => ['w5-01', 'w5-02', 'w5-04', 'w5-07', 'w5-10'].includes(l.id)))(

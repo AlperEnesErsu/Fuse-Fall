@@ -181,6 +181,18 @@ Yapıyı incele → Patlayıcı yerleştir → Ateşle → Yıkımı izle → Pu
 | FR-50 | Araç rotaları ekran kenarlarının dışına uzanabilir; rotasındaki trafik dışarıda silinmez. | M |
 | FR-51 | Tokyo (Bölüm 5): 10 görev. Yüksek kesim görevlerinde tren üstteyken ateşlemek sözleşmeyi bozar (testle doğrulanır). | M |
 
+### Gerçekçi yapılar, serbest düşüşlü bomba ve İstanbul (v0.7)
+
+| ID | Gereksinim | Öncelik |
+|---|---|---|
+| FR-52 | **Harç bağları:** üst üste ve yan yana duran bloklar bağlarla birleşir. Bağ; patlama yakınında, ağır hasarlı (çatlamış) blokta ya da toleransının ötesinde gerildiğinde kopar. Malzemeye göre bağ dayanımı (tuğla zayıf, metal güçlü). | M |
+| FR-53 | Kırılan bloklar düzensiz çokgen parçalara ayrılır; parça sayısı ve tanesi malzemeye bağlıdır. Tuğla malzemesi ve doku kaplamaları. | M |
+| FR-54 | **Serbest düşüşlü bomba:** gökyüzündeki bırakma alanına asılır; ATEŞLE ile (kendi gecikmesiyle) bırakılır ve yer çekimiyle düşer. Çarpmayla patlamaz. | M |
+| FR-55 | **PATLAT düğmesi:** canlı bombaların hepsini o anda patlatır; basılmazsa fitil 4 sn sonra ateşler, başka bir patlama da bombayı tetikler. Basış anları sabit adımla kaydedilir, tekrar izleme aynı sonucu verir. | M |
+| FR-56 | **Serbest Şantiye:** kural ve puan yok; açık şehirlerden biri ve 8 yapı şablonundan biri seçilir, her şarj türü (12 şarj) kullanılabilir. Sonuç kaydedilmez. | M |
+| FR-57 | İstanbul (Bölüm 6): 10 bomba görevi. Havada patlatma gerektiren görevlerde fitile bırakılan bomba kazanamaz (testle doğrulanır). İlk bomba görevinde PATLAT eğitimi. | M |
+| FR-58 | Bomba asılan görevlerde gecikme paneli gökyüzünü kapatmaz; düğmelerin altına yerleşir. | S |
+
 ## 6. MVP kapsamı (Sürüm 0.1)
 
 - 1 dünya, 10 seviye
