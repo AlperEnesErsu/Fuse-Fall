@@ -87,6 +87,8 @@ interface Entity {
   hp: number;
   readonly maxHp: number;
   down: boolean;
+  /** Reached by any blast: a target that falls without this was brought down by something else falling. */
+  blasted: boolean;
   readonly driver: Driver | undefined;
   /** Free-fall bombs: when the fuse sets it off by itself. */
   readonly fuseAt: number | undefined;
@@ -129,6 +131,7 @@ interface SpawnSpec {
 const BLASTS: Readonly<Record<BlastKind, { radius: number; pressure: number; damage: number }>> = {
   standard: { radius: TUNING.charge.radius, pressure: TUNING.charge.pressure, damage: TUNING.charge.damage },
   precision: { radius: TUNING.precision.radius, pressure: TUNING.precision.pressure, damage: TUNING.precision.damage },
+  implosion: { radius: TUNING.implosion.radius, pressure: TUNING.implosion.pressure, damage: TUNING.implosion.damage },
   barrel: { radius: TUNING.barrel.blastRadius, pressure: TUNING.barrel.pressure, damage: TUNING.barrel.damage },
   vehicle: { radius: TUNING.vehicle.blastRadius, pressure: TUNING.vehicle.pressure, damage: TUNING.vehicle.damage },
   bomb: { radius: TUNING.bomb.blastRadius, pressure: TUNING.bomb.pressure, damage: TUNING.bomb.damage },
@@ -136,8 +139,18 @@ const BLASTS: Readonly<Record<BlastKind, { radius: number; pressure: number; dam
 
 const sourceOf = (blast: BlastKind): BlastSource => (blast === 'standard' || blast === 'precision' ? 'charge' : blast);
 
+/** Kinds placed on the structure and fired by the blasting machine (bombs fall instead). */
+const isFixedCharge = (blast: BlastKind): blast is 'standard' | 'precision' | 'implosion' =>
+  blast === 'standard' || blast === 'precision' || blast === 'implosion';
+
 /** Blast radius of a charge kind, for the placement preview. */
 export const chargeRadius = (kind: ChargeKind): number => BLASTS[kind].radius;
+
+/** The part of a blast that voids the contract if it touches protected property. */
+const contractReach = (radius: number): number => radius * TUNING.protection.blastReach;
+
+/** The contract-voiding core of a charge kind's blast, for the placement preview. */
+export const contractRadius = (kind: ChargeKind): number => contractReach(chargeRadius(kind));
 
 export { circleTouches } from './shapes';
 
@@ -171,6 +184,9 @@ export class LevelSession {
   private readonly targetTotal: number;
   private lostStructural = 0;
   private compromisedCount = 0;
+  /** Targets brought down without a blast reaching them, and blasts set off by other blasts. */
+  private dominoes = 0;
+  private chainBlasts = 0;
   /** Footprint material area from debris removed by the debris budget while inside the site. */
   private retiredInside = 0;
   private finishedAt = 0;
@@ -251,7 +267,7 @@ export class LevelSession {
   get armedCharges(): { readonly position: Vec2; readonly kind: ChargeKind }[] {
     const armed: { position: Vec2; kind: ChargeKind }[] = [];
     for (const d of this.pending) {
-      if (d.blast === 'standard' || d.blast === 'precision') armed.push({ position: d.position, kind: d.blast });
+      if (isFixedCharge(d.blast)) armed.push({ position: d.position, kind: d.blast });
     }
     for (const r of this.releases) armed.push({ position: r.position, kind: 'bomb' });
     return armed;
@@ -335,7 +351,7 @@ export class LevelSession {
     for (const e of this.entities.values()) {
       if (!e.guarded) continue;
       const s = this.physics.state(e.id);
-      if (s && circleTouches(center, chargeRadius(kind), e.shape, s.position, s.angle)) reached.push(e.id);
+      if (s && circleTouches(center, contractRadius(kind), e.shape, s.position, s.angle)) reached.push(e.id);
     }
     return reached;
   }
@@ -498,16 +514,27 @@ export class LevelSession {
       if (!state) continue;
       const offset = sub(state.position, center);
       const reach = blastReach(center, e.shape, state.position);
-      // Contract rule, shown to the player as the blast circle: no blast may touch protected property.
-      if (e.guarded && circleTouches(center, radius, e.shape, state.position, state.angle)) this.compromise(e, state.position);
+      // Contract rule, previewed while placing: the blast's core may not touch protected property.
+      if (e.guarded && circleTouches(center, contractReach(radius), e.shape, state.position, state.angle)) this.compromise(e, state.position);
       if (reach >= radius) continue;
+      e.blasted = true;
       const falloff = Math.pow(1 - reach / radius, 1.2);
-      const dir = length(offset) > 0.001 ? scale(offset, 1 / length(offset)) : vec(0, -1);
-      const speed = (spec.pressure * falloff) / MATERIALS[e.material].density;
-      const dv = vec(dir.x * speed, (dir.y - TUNING.charge.lift) * speed);
-      // Bodies spin away from the side the blast struck; lighter materials spin more.
-      const spin = (offset.x >= 0 ? 1 : -1) * falloff * 4 * (0.5 + this.rng());
-      this.physics.kick(e.id, dv, spin * (MATERIALS.wood.density / MATERIALS[e.material].density));
+      const dist = length(offset);
+      const dir = dist > 0.001 ? scale(offset, 1 / dist) : vec(0, -1);
+      const lightness = MATERIALS.wood.density / MATERIALS[e.material].density;
+      if (blast === 'implosion') {
+        // Drawn in towards the centre, in proportion to the distance, so the structure folds in on itself.
+        const weight = Math.min(1, lightness);
+        const speed = TUNING.implosion.pull * dist * falloff * weight;
+        const dv = vec(-dir.x * speed, -dir.y * speed + TUNING.implosion.drop * falloff * weight);
+        this.physics.kick(e.id, dv, (offset.x >= 0 ? -1 : 1) * falloff * lightness);
+      } else {
+        const speed = (spec.pressure * falloff) / MATERIALS[e.material].density;
+        const dv = vec(dir.x * speed, (dir.y - TUNING.charge.lift) * speed);
+        // Bodies spin away from the side the blast struck; lighter materials spin more.
+        const spin = (offset.x >= 0 ? 1 : -1) * falloff * 4 * (0.5 + this.rng());
+        this.physics.kick(e.id, dv, spin * lightness);
+      }
       const amount = spec.damage * falloff;
       if (e.driver && amount > TUNING.vehicle.stallDamage) e.driver.engine = false;
       if (this.damage(e, amount)) broken.push(e);
@@ -528,11 +555,13 @@ export class LevelSession {
     if (e.kind === 'bomb') {
       // Sympathetic detonation: a blast sets off a bomb it reaches.
       this.removeEntity(e);
+      this.chainBlasts++;
       this.pending.push({ at: this.time + 0.05, position: state.position, blast: 'bomb' });
       return;
     }
     if (e.kind === 'barrel') {
       this.removeEntity(e);
+      this.chainBlasts++;
       this.pending.push({ at: this.time + TUNING.barrel.delay, position: state.position, blast: 'barrel' });
       return;
     }
@@ -542,6 +571,7 @@ export class LevelSession {
       e.driver.engine = false;
       e.driver.wrecked = true;
       this.events.emit('carWrecked', { position: state.position });
+      this.chainBlasts++;
       this.pending.push({ at: this.time + TUNING.vehicle.delay, position: state.position, blast: 'vehicle' });
       if (e.target) this.markDown(e, state.position);
       return;
@@ -758,9 +788,11 @@ export class LevelSession {
         protectedTotal: this.protectedTotal,
         protectedDamaged: this.compromisedCount,
         duration: this.finishedAt - this.firedAt,
+        dominoes: this.dominoes,
+        chainBlasts: this.chainBlasts,
         footprint: this.level.footprint && {
           achieved: this.containment(),
-          required: this.level.footprint.ratio,
+          required: this.level.footprint.ratio * TUNING.footprintSlack,
         },
       },
       { par: this.level.charges.par, bonusCollapse: this.level.bonusCollapse },
@@ -843,6 +875,7 @@ export class LevelSession {
   private markDown(e: Entity, position: Vec2): void {
     if (!e.target || e.down) return;
     e.down = true;
+    if (!e.blasted) this.dominoes++;
     this.events.emit('targetDown', { position, remaining: this.targetsRemaining });
   }
 
@@ -871,6 +904,7 @@ export class LevelSession {
       hp: maxHp,
       maxHp,
       down: false,
+      blasted: false,
       driver: spec.driver,
       fuseAt: spec.fuseAt,
     });

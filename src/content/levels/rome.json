@@ -158,7 +158,8 @@
   "hint": "Enkaz şeritli alanda kalmalı. Hassas şarj daha az savurur.",
   "chargeKinds": [
    "standard",
-   "precision"
+   "precision",
+   "implosion"
   ],
   "footprint": {
    "from": 400,
@@ -237,7 +238,8 @@
   "hint": "Üç ayaklı yapı. Doğru ayağı kesersen kendi içine çöker.",
   "chargeKinds": [
    "standard",
-   "precision"
+   "precision",
+   "implosion"
   ],
   "footprint": {
    "from": 380,
@@ -316,7 +318,8 @@
   "hint": "Soldaki tarihi yapı korunuyor ve şantiye dar.",
   "chargeKinds": [
    "standard",
-   "precision"
+   "precision",
+   "implosion"
   ],
   "footprint": {
    "from": 440,
@@ -422,7 +425,8 @@
   "hint": "İki yapı aynı şantiyede. İkisini de alanın içine indir.",
   "chargeKinds": [
    "standard",
-   "precision"
+   "precision",
+   "implosion"
   ],
   "footprint": {
    "from": 370,
@@ -496,7 +500,8 @@
   "hint": "Araç köprüdeyken ayakları kes; köprü şantiyeye düşmeli.",
   "chargeKinds": [
    "standard",
-   "precision"
+   "precision",
+   "implosion"
   ],
   "footprint": {
    "from": 360,
@@ -588,7 +593,8 @@
   "hint": "Şantiye kulenin solunda. Kuleyi o tarafa yatır.",
   "chargeKinds": [
    "standard",
-   "precision"
+   "precision",
+   "implosion"
   ],
   "footprint": {
    "from": 140,
@@ -695,7 +701,8 @@
   "hint": "Dört ayaklı uzun yapı; iki yanda tarihi yapılar.",
   "chargeKinds": [
    "standard",
-   "precision"
+   "precision",
+   "implosion"
   ],
   "footprint": {
    "from": 340,
@@ -809,7 +816,8 @@
   "hint": "Kasnağı kes; kubbe kendi ağırlığıyla iner.",
   "chargeKinds": [
    "standard",
-   "precision"
+   "precision",
+   "implosion"
   ],
   "footprint": {
    "from": 400,
@@ -944,7 +952,8 @@
   "hint": "İki yapı, dar şantiye, yanında tarihi yapı. Her şarjın tipini ve yerini seç.",
   "chargeKinds": [
    "standard",
-   "precision"
+   "precision",
+   "implosion"
   ],
   "footprint": {
    "from": 340,

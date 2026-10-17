@@ -12,6 +12,8 @@ export interface Shockwave {
   radius: number;
   age: number;
   life: number;
+  /** Implosions: the ring closes in on the centre instead of spreading out. */
+  inward?: boolean;
 }
 
 /** One rolling ball of flame inside a fireball; many overlap to make a ragged shape. */
@@ -50,7 +52,7 @@ export const HEAVY_LANDING = 0.25;
 
 /** Feel parameters. Tweak here; nothing else needs to change. */
 const FEEL = {
-  hitStop: { charge: 0.06, barrel: 0.04, vehicle: 0.045, bomb: 0.07 },
+  hitStop: { charge: 0.06, implosion: 0.05, barrel: 0.04, vehicle: 0.045, bomb: 0.07 },
   trauma: { explosion: 0.55, shatter: 0.06, hit: 0.05, decay: 1.5 },
   shakeMaxOffset: 16,
   shakeMaxAngle: 0.02,
@@ -206,6 +208,10 @@ export class JuiceDirector {
   private onExplosion(p: Vec2, radius: number, power: number, source: BlastSource): void {
     const r = Math.random;
     this.hitStop = Math.max(this.hitStop, FEEL.hitStop[source]);
+    if (source === 'implosion') {
+      this.onImplosion(p, radius, power);
+      return;
+    }
     this.addTrauma(FEEL.trauma.explosion * power);
     this.flash = Math.max(this.flash, FEEL.flash.explosion * power);
     this.punch = Math.max(this.punch, FEEL.zoomPunch.explosion * power);
@@ -275,6 +281,43 @@ export class JuiceDirector {
       this.scorch(p.x, WORLD.groundY, radius * 0.9, 10);
     } else {
       this.scorch(p.x, p.y, radius * 0.45, radius * 0.3);
+    }
+  }
+
+  /**
+   * An implosion: a short, dull flash, then rings and a wall of dust drawn in
+   * towards the centre, where the material piles up and smokes.
+   */
+  private onImplosion(p: Vec2, radius: number, power: number): void {
+    const r = Math.random;
+    this.addTrauma(FEEL.trauma.explosion * power * 0.8);
+    this.flash = Math.max(this.flash, FEEL.flash.explosion * power * 0.5);
+    this.punch = Math.max(this.punch, FEEL.zoomPunch.explosion * power);
+    this.lights.push({ x: p.x, y: p.y, radius: radius * 1.4, age: 0, life: 0.22 });
+    this.shockwaves.push({ x: p.x, y: p.y, radius: radius * 1.1, age: 0, life: 0.35, inward: true });
+    this.shockwaves.push({ x: p.x, y: p.y, radius: radius * 0.75, age: 0, life: 0.28, inward: true });
+    for (let i = 0; i < 8; i++) {
+      const a = r() * Math.PI * 2;
+      this.flames.push({ x: p.x, y: p.y, vx: Math.cos(a) * 40, vy: Math.sin(a) * 30 - 20, radius: radius * 0.1 * (0.6 + r() * 0.6), age: 0, life: 0.18 + r() * 0.15 });
+    }
+    // Dust sucked in from a ring around the charge.
+    for (let i = 0; i < 26; i++) {
+      const a = r() * Math.PI * 2;
+      const d = radius * (0.6 + r() * 0.4);
+      const x = p.x + Math.cos(a) * d;
+      const y = Math.min(WORLD.groundY - 4, p.y + Math.sin(a) * d * 0.7);
+      const speed = (d / 0.45) * (0.8 + r() * 0.3);
+      this.particles.spawn({
+        x, y, vx: ((p.x - x) / d) * speed, vy: ((p.y - y) / d) * speed,
+        life: 0.9 + r() * 0.8, size: 8 + r() * 10, color: '#a39a8c', style: 'dust', gravity: 0, drag: 2.4,
+      });
+    }
+    // The material that piles up at the centre smokes for a while.
+    for (let i = 0; i < 10; i++) {
+      this.particles.spawn({
+        x: p.x + (r() - 0.5) * 30, y: p.y, vx: (r() - 0.5) * 40, vy: -20 - r() * 40,
+        life: 2 + r() * 1.6, size: 14 + r() * 12, color: '#3b3836', style: 'plume', gravity: -14, drag: 0.9,
+      });
     }
   }
 

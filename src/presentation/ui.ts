@@ -506,7 +506,7 @@ export class Ui {
     this.hudParts?.fire.classList.toggle('hidden', !visible);
   }
 
-  /** The demolition report: verdict, measured results, score and the three criteria. */
+  /** The demolition report: verdict, measured results, score and the play styles behind the stars. */
   report(r: LevelResult, info: ReportInfo, actions: ResultActions): void {
     const R = T.report;
     const row = (label: string, value: string, note?: string, tone = '') =>
@@ -516,7 +516,9 @@ export class Ui {
         h('span', {}, label),
         h('strong', {}, value, note ? h('small', {}, ` ${note}`) : undefined),
       );
-    const criteria = [r.success, r.success && r.underPar, r.success && r.bonusMet];
+    const styleKeys = ['surgical', 'demolition', 'domino'] as const;
+    const criterion = (met: boolean, ...label: (string | HTMLElement)[]) =>
+      h('li', { class: met ? 'met' : '' }, met ? ICONS.check(14) : ICONS.cross(14), h('span', {}, ...label));
     const protectedValue =
       r.protectedTotal === 0 ? R.none : r.protectedDamaged === 0 ? R.intact : R.damaged(r.protectedDamaged);
     const reason = r.failure ? R.reasons[r.failure] : info.cityComplete ? R.cityComplete(info.city) : '';
@@ -562,10 +564,12 @@ export class Ui {
             h(
               'ul',
               { class: 'criteria' },
-              ...R.criteria.map((c, i) =>
-                h('li', { class: criteria[i] ? 'met' : '' }, criteria[i] ? ICONS.check(14) : ICONS.cross(14), c),
+              criterion(r.success, R.goal),
+              ...styleKeys.map((k) =>
+                criterion(r.success && r.styles[k], h('strong', {}, R.styles[k].name), ` · ${R.styles[k].how}`),
               ),
             ),
+            h('p', { class: 'styles-note' }, R.stylesNote),
           ),
         ),
         h(

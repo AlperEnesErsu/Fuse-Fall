@@ -1,6 +1,6 @@
 import { isMaterialId, type MaterialId } from './materials';
 
-export const CHARGE_KINDS = ['standard', 'precision', 'bomb'] as const;
+export const CHARGE_KINDS = ['standard', 'precision', 'implosion', 'bomb'] as const;
 export type ChargeKind = (typeof CHARGE_KINDS)[number];
 const isChargeKind = (v: unknown): v is ChargeKind => typeof v === 'string' && (CHARGE_KINDS as readonly string[]).includes(v);
 import type { Rect, Vec2 } from './math';

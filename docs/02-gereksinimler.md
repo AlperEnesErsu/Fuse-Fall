@@ -193,6 +193,14 @@ Yapıyı incele → Patlayıcı yerleştir → Ateşle → Yıkımı izle → Pu
 | FR-57 | İstanbul (Bölüm 6): 10 bomba görevi. Havada patlatma gerektiren görevlerde fitile bırakılan bomba kazanamaz (testle doğrulanır). İlk bomba görevinde PATLAT eğitimi. | M |
 | FR-58 | Bomba asılan görevlerde gecikme paneli gökyüzünü kapatmaz; düğmelerin altına yerleşir. | S |
 
+### Esnek bulmaca ve oyun tarzları (v0.8)
+
+| ID | Gereksinim | Öncelik |
+|---|---|---|
+| FR-59 | **Gevşetilmiş toleranslar (~%15):** sözleşmeyi bozan, patlamanın çekirdeğidir (yarıçapın %85'i); dış saçak affedilir. Önizleme çekirdeği dolgu, tam patlamayı kesikli çizgi olarak gösterir. Koruma eşikleri (kayma 14 px, eğilme 0,17 rad, dayanım %58), enkaz alanı oranı (×0,85) ve hedefin "yıkıldı" sayılması da gevşetildi. | M |
+| FR-60 | **Oyun tarzı yıldızları:** başarı 1 yıldız; her tarz +1, en fazla 3. Tarzlar: *Cerrahi* (par içinde şarj), *Tam yıkım* (çöküş bonusu), *Domino* (patlamanın değmediği bir hedefi düşen yapı devirdi ya da en az 2 zincirleme patlama). Herhangi iki tarz üç yıldız verir. Rapor ekranı hangi tarzların tuttuğunu gösterir. | M |
+| FR-61 | **İçe çöken (implozyon) şarj:** harcı kesip yapıyı merkeze ve aşağı çeker; yapı kendi alanına katlanır. Enkaz alanı olan görevlerde ve Serbest Şantiye'de kullanılabilir. Kendi görünümü, içe kapanan halka efekti ve sesi vardır. | M |
+
 ## 6. MVP kapsamı (Sürüm 0.1)
 
 - 1 dünya, 10 seviye

@@ -26,7 +26,9 @@ export class SoundDirector {
     events: EventBus<GameEvents>,
     private readonly settings: () => Settings,
   ) {
-    events.on('explosion', (e) => this.synth?.explosion(e.power, panOf(e.position)));
+    events.on('explosion', (e) =>
+      e.source === 'implosion' ? this.synth?.implosion(panOf(e.position)) : this.synth?.explosion(e.power, panOf(e.position)),
+    );
     events.on('blockShattered', (e) => this.synth?.shatter(e.material, e.size / 60, panOf(e.position)));
     events.on('blockHit', (e) => this.hit(e));
     events.on('jointBroken', (e) => this.jointBroken(e.position));

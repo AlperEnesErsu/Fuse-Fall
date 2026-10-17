@@ -2,7 +2,7 @@ import type { MaterialId } from './materials';
 import type { Vec2 } from './math';
 import type { LevelResult } from './scoring';
 
-export type BlastSource = 'charge' | 'barrel' | 'vehicle' | 'bomb';
+export type BlastSource = 'charge' | 'implosion' | 'barrel' | 'vehicle' | 'bomb';
 
 /** Everything the presentation layer may react to. Game rules never call effects directly. */
 export interface GameEvents {

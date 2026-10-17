@@ -79,6 +79,18 @@ export class SoundSynth {
     }
   }
 
+  /** An implosion: a sharp crack, air rushing inward (rising), then a muffled cave-in. */
+  implosion(pan = 0): void {
+    const at = this.ctx.currentTime;
+    const out = this.voice(pan, 0.5);
+    this.noise(out, at, { color: 'white', filter: 'highpass', from: 1500, to: 1100, attack: 0.001, decay: 0.025, gain: 0.5 });
+    // Inrush: band-passed noise climbing in pitch and swelling, cut off at the cave-in.
+    this.noise(out, at, { color: 'white', filter: 'bandpass', from: 180, to: 2400, sweep: 0.26, attack: 0.22, decay: 0.06, gain: 0.35, q: 1.4 });
+    const cave = at + 0.24;
+    this.tone(out, cave, { type: 'sine', from: 66, to: 26, sweep: 0.45, attack: 0.004, decay: 0.6, gain: 0.9 });
+    this.noise(out, cave, { color: 'brown', filter: 'lowpass', from: 600, to: 90, sweep: 0.7, attack: 0.005, decay: 1.4, gain: 0.8 });
+  }
+
   /** A bomb's fall: a long whistle sliding down in pitch. */
   whistle(pan = 0): void {
     const at = this.ctx.currentTime;

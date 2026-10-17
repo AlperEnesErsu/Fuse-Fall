@@ -169,6 +169,25 @@ describe('outcome', () => {
     expect(session.result).toMatchObject({ success: true, chargesUsed: 1, blocksCollapsed: 1, stars: 3 });
   });
 
+  it('counts a target that falls without any blast reaching it as a domino', () => {
+    const { session, physics, run } = setup();
+    session.placeCharge({ x: 100, y: 450 }); // far from the target at x=500
+    session.fire();
+    physics.place('block-1', { position: { x: 520, y: WORLD.groundY - 20 } });
+    run(TUNING.settle.hold + 0.2);
+    expect(session.result).toMatchObject({ dominoes: 1, styles: { domino: true } });
+  });
+
+  it('does not count a target the blast reached as a domino', () => {
+    const { session, physics, run } = setup({ zones: [{ x: 400, y: 300, w: 200, h: 180 }] });
+    session.placeCharge({ x: 500, y: 420 });
+    session.fire();
+    run(0.1);
+    physics.place('block-1', { position: { x: 520, y: WORLD.groundY - 20 } });
+    run(TUNING.settle.hold + 0.2);
+    expect(session.result).toMatchObject({ dominoes: 0, chainBlasts: 0, styles: { domino: false } });
+  });
+
   it('fails when the target is still standing', () => {
     const { session, run } = setup();
     session.placeCharge({ x: 100, y: 450 });
@@ -311,6 +330,27 @@ describe('anchored infrastructure', () => {
   });
 });
 
+describe('implosion charges', () => {
+  const site = { chargeKinds: ['standard', 'implosion'] as const, zones: [{ x: 500, y: 380, w: 200, h: 100 }] };
+  const blastOn = (kind: 'standard' | 'implosion') => {
+    const { session, physics, run } = setup(site);
+    expect(session.placeCharge({ x: 600, y: 400 }, undefined, kind).ok).toBe(true);
+    session.fire();
+    run(0.05);
+    const dx = (id: string) => physics.kicks.find((k) => k.id === id)?.dv.x ?? 0;
+    return { left: dx('block-1'), right: dx('block-2') };
+  };
+
+  it('pull the structure in towards the charge instead of throwing it out', () => {
+    const standard = blastOn('standard');
+    expect(standard.left).toBeLessThan(0);
+    expect(standard.right).toBeGreaterThan(0);
+    const implosion = blastOn('implosion');
+    expect(implosion.left).toBeGreaterThan(0);
+    expect(implosion.right).toBeLessThan(0);
+  });
+});
+
 describe('precision charges', () => {
   const both = { chargeKinds: ['standard', 'precision'] as const, zones: [{ x: 300, y: 250, w: 300, h: 230 }] };
 
@@ -344,7 +384,7 @@ describe('debris footprint', () => {
     session.fire();
     physics.place('block-1', { position: { x: 520, y: WORLD.groundY - 20 } });
     run(TUNING.settle.hold + 0.2);
-    expect(session.result).toMatchObject({ success: true, footprint: { achieved: 1, required: 0.8 } });
+    expect(session.result).toMatchObject({ success: true, footprint: { achieved: 1, required: 0.8 * TUNING.footprintSlack } });
   });
 
   it('fails when material spills outside', () => {

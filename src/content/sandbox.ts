@@ -159,7 +159,7 @@ export const sandboxLevel = (template: SandboxTemplate, world: number): LevelDef
     blocks: b.blocks,
     barrels: b.barrels.map((x) => ({ x, y: G - 16 })),
     cars: b.cars,
-    chargeKinds: ['standard', 'precision', 'bomb'],
+    chargeKinds: ['standard', 'precision', 'implosion', 'bomb'],
     footprint: undefined,
     solution: { charges: [], fireAt: 0, detonateAt: [] },
   };

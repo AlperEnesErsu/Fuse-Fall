@@ -429,6 +429,14 @@ h2,
 .criteria li.met svg {
   color: var(--ok);
 }
+.criteria li strong {
+  font-weight: 600;
+}
+.styles-note {
+  margin: 4px 0 0;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
 .report .actions {
   padding: 0 18px 16px;
   justify-content: flex-end;
@@ -736,8 +744,17 @@ h2,
     font-size: 1.6rem;
   }
   .facts .row {
-    padding: 3px 0;
-    font-size: 0.82rem;
+    padding: 2px 0;
+    font-size: 0.8rem;
+  }
+  .criteria {
+    margin-top: 4px;
+    gap: 1px;
+    font-size: 0.78rem;
+  }
+  /* The rule is in the stars themselves; short screens keep the buttons in view instead. */
+  .styles-note {
+    display: none;
   }
   .fire-btn {
     width: 86px;

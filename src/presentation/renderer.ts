@@ -1,6 +1,6 @@
 import { WORLD } from '../core/level';
 import { hashString, type Vec2 } from '../core/math';
-import { chargeRadius, type EntityView, type LevelSession } from '../core/session';
+import { chargeRadius, contractRadius, type EntityView, type LevelSession } from '../core/session';
 import { TUNING } from '../core/tuning';
 import type { ChargeKind } from '../core/level';
 import type { JuiceDirector } from './juice';
@@ -604,9 +604,12 @@ export class Renderer {
       const danger = hits.length > 0;
       c.fillStyle = danger ? 'rgba(229, 72, 77, 0.10)' : 'rgba(242, 177, 52, 0.06)';
       c.strokeStyle = danger ? 'rgba(229, 72, 77, 0.85)' : 'rgba(242, 177, 52, 0.55)';
+      // Filled core: what must stay clear of protected property. Dashed rim: the full blast.
+      c.beginPath();
+      c.arc(centre.x, centre.y, contractRadius(kind), 0, Math.PI * 2);
+      c.fill();
       c.beginPath();
       c.arc(centre.x, centre.y, chargeRadius(kind), 0, Math.PI * 2);
-      c.fill();
       c.stroke();
     }
     c.restore();
@@ -647,10 +650,20 @@ export class Renderer {
       c.fillStyle = '#e9e3cf';
       c.fillRect(-13, -10, 26, 3);
     }
-    c.fillStyle = '#5f6a3e';
+    // Implosion charges: a steel-blue casing with a cyan band and inward chevrons.
+    const implosion = kind === 'implosion';
+    c.fillStyle = implosion ? '#3d4b5c' : '#5f6a3e';
     c.fillRect(-13, -8, 26, 16);
-    c.fillStyle = '#4d5733';
+    c.fillStyle = implosion ? '#5fc8d6' : '#4d5733';
     c.fillRect(-13, -2, 26, 4);
+    if (implosion) {
+      c.strokeStyle = '#5fc8d6';
+      c.lineWidth = 1.4;
+      c.beginPath();
+      c.moveTo(-11, -6); c.lineTo(-7, -3); c.lineTo(-11, 0);
+      c.moveTo(11, -6); c.lineTo(7, -3); c.lineTo(11, 0);
+      c.stroke();
+    }
     c.strokeStyle = '#1c1f14';
     c.lineWidth = 1.5;
     c.strokeRect(-13, -8, 26, 16);
@@ -811,7 +824,7 @@ export class Renderer {
       c.strokeStyle = `rgba(255, 245, 230, ${0.28 * (1 - t)})`;
       c.lineWidth = 2 + 4 * (1 - t);
       c.beginPath();
-      c.arc(s.x, s.y, s.radius * eased, 0, Math.PI * 2);
+      c.arc(s.x, s.y, s.radius * (s.inward ? 1 - eased : eased), 0, Math.PI * 2);
       c.stroke();
     }
   }

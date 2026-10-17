@@ -511,7 +511,8 @@
   "hint": "Saçak enkazı peron alanında kalmalı; tren geçerken ateşleme.",
   "chargeKinds": [
    "standard",
-   "precision"
+   "precision",
+   "implosion"
   ],
   "footprint": {
    "from": 100,
@@ -1313,7 +1314,8 @@
   "hint": "Dar şantiye, korunan büfe ve sefer saati. Hepsini birlikte düşün.",
   "chargeKinds": [
    "standard",
-   "precision"
+   "precision",
+   "implosion"
   ],
   "footprint": {
    "from": 560,

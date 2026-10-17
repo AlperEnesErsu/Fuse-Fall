@@ -41,7 +41,7 @@ Bağımlılıklar içe doğru akar ve ESLint ile zorlanır. `core` Matter.js'i y
 - `src/content/levels/<şehir>.json`: şehrin seviyeleri. Bloklar (`target`, `protected` ya da `anchored`), variller, arabalar (`cars`: rota `from`/`to`, `speed`, `mode`: `patrol`/`flow`) ve bir `solution` (`charges` + her şarjın `delay` değeri + ateşleme anı `fireAt`).
 - `src/content/tutorials.ts`: yeni fikir getiren görevlerin adım adım eğitimleri.
 - `src/content/text.ts`: görev ve şehir adlarının İngilizce karşılıkları (Türkçe kaynak seviye verisinde). Arayüz metinleri `src/presentation/i18n/`.
-- Görev alanları: `chargeKinds` (`standard`, `precision`, `bomb`), `footprint` (`from`, `to`, `ratio`) ve `dropZones` (bombaların asıldığı gökyüzü alanları). Bombalı çözümler `solution.detonateAt` ile PATLAT anlarını (ATEŞLE'den sonra saniye) verir.
+- Görev alanları: `chargeKinds` (`standard`, `precision`, `implosion`, `bomb`; enkaz alanı olan görevlere üretici `implosion` ekler), `footprint` (`from`, `to`, `ratio`) ve `dropZones` (bombaların asıldığı gökyüzü alanları). Bombalı çözümler `solution.detonateAt` ile PATLAT anlarını (ATEŞLE'den sonra saniye) verir.
 - `src/content/sandbox.ts`: Serbest Şantiye yapı şablonları.
 - Araçlar: `protected` (korunan üçüncü taraf trafik) ve `style` (`car`, `train`). Trenler raylarda gider; rotalar ekran kenarlarını aşabilir.
 - Yeni şehir: `cities.json`'a ekle, seviye paketini `src/content/levels.ts` içindeki `PACKS` listesine ekle, silüetini `src/presentation/scenery.ts` içinde çiz.

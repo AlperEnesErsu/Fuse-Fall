@@ -12,6 +12,10 @@ export interface LevelOutcome {
   readonly protectedDamaged: number;
   /** Seconds from Fire until everything settled. */
   readonly duration: number;
+  /** Targets brought down without any blast reaching them (toppled or struck by falling structure). */
+  readonly dominoes: number;
+  /** Barrels, wrecks and bombs set off by another blast. */
+  readonly chainBlasts: number;
   /** For footprint jobs: the share of the structure's material that ended up inside the site, and the share required. */
   readonly footprint: { readonly achieved: number; readonly required: number } | undefined;
 }
@@ -20,6 +24,22 @@ export interface ScoringRules {
   readonly par: number;
   readonly bonusCollapse: number;
 }
+
+/**
+ * Three ways to play a job well. Each one met earns a star on top of success,
+ * so any two of them give the full three stars.
+ */
+export interface PlayStyles {
+  /** Within par: the fewest charges. */
+  readonly surgical: boolean;
+  /** The collapse bonus: bring the whole structure down. */
+  readonly demolition: boolean;
+  /** Let the structure do the work: a target toppled by falling structure, or a chain of blasts. */
+  readonly domino: boolean;
+}
+
+/** Blasts setting off blasts: this many make a chain reaction. */
+export const CHAIN_FOR_DOMINO = 2;
 
 export type FailureReason = 'target-standing' | 'collateral-damage' | 'debris-outside';
 
@@ -31,6 +51,7 @@ export interface LevelResult extends LevelOutcome {
   readonly collapseRatio: number;
   readonly underPar: boolean;
   readonly bonusMet: boolean;
+  readonly styles: PlayStyles;
 }
 
 export const SCORE = {
@@ -43,7 +64,7 @@ export const SCORE = {
  * A job succeeds when every target is down and no protected building is
  * damaged; harming a neighbour breaks the contract, whatever else happened.
  *
- * Stars: 1 for success, +1 for staying within par, +1 for the collapse bonus.
+ * Stars: 1 for success, +1 for each play style met (surgical, demolition, domino), at most 3.
  * Score: base + a bonus for each unused charge + the collapse ratio.
  */
 export const scoreLevel = (outcome: LevelOutcome, rules: ScoringRules): LevelResult => {
@@ -62,11 +83,17 @@ export const scoreLevel = (outcome: LevelOutcome, rules: ScoringRules): LevelRes
   const collapseRatio = outcome.blocksTotal === 0 ? 0 : outcome.blocksCollapsed / outcome.blocksTotal;
   const underPar = outcome.chargesUsed <= rules.par;
   const bonusMet = collapseRatio >= rules.bonusCollapse;
-  const stars = (success ? 1 + Number(underPar) + Number(bonusMet) : 0) as Stars;
+  const styles: PlayStyles = {
+    surgical: underPar,
+    demolition: bonusMet,
+    domino: outcome.dominoes > 0 || outcome.chainBlasts >= CHAIN_FOR_DOMINO,
+  };
+  const met = Number(styles.surgical) + Number(styles.demolition) + Number(styles.domino);
+  const stars = (success ? 1 + Math.min(2, met) : 0) as Stars;
   const score = success
     ? SCORE.base +
       SCORE.perSpareCharge * Math.max(0, outcome.chargesMax - outcome.chargesUsed) +
       Math.round(SCORE.collapse * collapseRatio)
     : 0;
-  return { ...outcome, success, failure, stars, score, collapseRatio, underPar, bonusMet };
+  return { ...outcome, success, failure, stars, score, collapseRatio, underPar, bonusMet, styles };
 };

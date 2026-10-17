@@ -18,6 +18,19 @@ export const TUNING = {
     pressure: 0.5,
     damage: 110,
   },
+  /**
+   * An implosion charge pulls instead of pushing: it cracks the mortar around it
+   * and draws the structure in on itself, so it folds onto its own footprint.
+   * `pull` is the inward speed per px of distance (per second), so bodies converge instead of overshooting.
+   */
+  implosion: {
+    radius: 130,
+    pressure: 0.8,
+    pull: 2.2,
+    /** Downward speed at the centre (px/s): the core drops first and the walls follow it in. */
+    drop: 220,
+    damage: 110,
+  },
   /** A free-fall bomb: released on Fire, falls under gravity, set off by the detonator or its fuse. */
   bomb: {
     radius: 11,
@@ -79,16 +92,22 @@ export const TUNING = {
     /** A block cracked past this share of its strength comes loose from its neighbours. */
     crackDamage: 0.6,
   },
-  /** A protected building counts as damaged when it moves or tilts this much, or loses this share of its strength. */
+  /**
+   * A protected building counts as damaged when it moves or tilts this much, or loses this share of its strength.
+   * `blastReach` is the share of a blast's radius that must not touch it: the faint outer fringe is forgiven.
+   */
   protection: {
-    displacement: 12,
-    rotation: 0.15,
-    strengthLoss: 0.5,
+    displacement: 14,
+    rotation: 0.17,
+    strengthLoss: 0.58,
+    blastReach: 0.85,
   },
+  /** Footprint jobs accept this share of the stated containment ratio: a little spill is forgiven. */
+  footprintSlack: 0.85,
   /** A target is down when its clearance above the ground is at most this many px... */
-  downTolerance: 6,
+  downTolerance: 7,
   /** ...or at most this fraction of the clearance it started with. */
-  downFraction: 0.4,
+  downFraction: 0.46,
   debrisBudget: 170,
   outOfBoundsMargin: 160,
 } as const;

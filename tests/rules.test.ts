@@ -14,7 +14,7 @@ import {
   worldStatus,
 } from '../src/core/progress';
 import { parseWorlds } from '../src/core/world';
-import { scoreLevel } from '../src/core/scoring';
+import { CHAIN_FOR_DOMINO, scoreLevel } from '../src/core/scoring';
 import { shatter } from '../src/core/shatter';
 import { circleTouches, polygonArea, polygonCentroid, rectVertices, splitConvex } from '../src/core/shapes';
 import { MATERIALS } from '../src/core/materials';
@@ -89,11 +89,26 @@ describe('scoring', () => {
     protectedDamaged: 0,
     duration: 3,
     footprint: undefined,
+    dominoes: 0,
+    chainBlasts: 0,
   };
-  it('awards one star per rule', () => {
-    expect(scoreLevel(base, { par: 1, bonusCollapse: 0.5 }).stars).toBe(3);
-    expect(scoreLevel({ ...base, chargesUsed: 2 }, { par: 1, bonusCollapse: 0.5 }).stars).toBe(2);
-    expect(scoreLevel({ ...base, blocksCollapsed: 1 }, { par: 1, bonusCollapse: 0.5 }).stars).toBe(2);
+  const rules = { par: 1, bonusCollapse: 0.5 };
+  it('awards a star per play style on top of success', () => {
+    expect(scoreLevel(base, rules).stars).toBe(3);
+    expect(scoreLevel({ ...base, chargesUsed: 2 }, rules).stars).toBe(2);
+    expect(scoreLevel({ ...base, blocksCollapsed: 1 }, rules).stars).toBe(2);
+    expect(scoreLevel({ ...base, chargesUsed: 2, blocksCollapsed: 1 }, rules).stars).toBe(1);
+  });
+
+  it('lets a domino finish stand in for either other style', () => {
+    const brute = { ...base, chargesUsed: 2 };
+    expect(scoreLevel({ ...brute, dominoes: 1 }, rules)).toMatchObject({ stars: 3, styles: { surgical: false, demolition: true, domino: true } });
+    expect(scoreLevel({ ...brute, blocksCollapsed: 1, chainBlasts: CHAIN_FOR_DOMINO }, rules).stars).toBe(2);
+    expect(scoreLevel({ ...brute, blocksCollapsed: 1, chainBlasts: CHAIN_FOR_DOMINO - 1 }, rules).stars).toBe(1);
+  });
+
+  it('never gives more than three stars', () => {
+    expect(scoreLevel({ ...base, dominoes: 2 }, rules).stars).toBe(3);
   });
 
   it('gives no bonus stars when the level is lost', () => {

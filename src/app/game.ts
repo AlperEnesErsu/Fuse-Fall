@@ -324,6 +324,7 @@ export class Game {
         this.chargeKind = kind;
         this.ui.setChargeKind(kind);
         this.coach.notify('kind');
+        if (kind === 'implosion') this.ui.toast(T.implosionHint, 3200);
       },
     });
     this.chargeKind = level.chargeKinds[0] ?? 'standard';

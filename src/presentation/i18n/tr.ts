@@ -1,6 +1,6 @@
 import type { AchievementId } from '../../core/achievements';
 import type { ChargeKind } from '../../core/level';
-import type { FailureReason } from '../../core/scoring';
+import type { FailureReason, PlayStyles } from '../../core/scoring';
 import type { PlacementError } from '../../core/session';
 
 /** Turkish: the source language. Tone: a professional demolition crew; short, factual, a little dry. */
@@ -38,8 +38,9 @@ export const tr = {
   menu: 'Menü',
   charges: 'Şarj',
   delayTitle: 'Ateşleme gecikmesi (ms)',
-  chargeKinds: { standard: 'Standart', precision: 'Hassas', bomb: 'Bomba' },
+  chargeKinds: { standard: 'Standart', precision: 'Hassas', implosion: 'İçe Çöken', bomb: 'Bomba' },
   detonate: 'PATLAT',
+  implosionHint: 'İçe çöken şarj yapıyı kendine çeker: orta yüksekliğe koy, bina kendi alanına çöksün.',
   bombHint: 'Bombayı gökyüzündeki alana as. ATEŞLE ile serbest kalır; düşerken PATLAT ile istediğin anda patlat.',
   chargeKindLabel: 'Şarj tipi',
   trainHint: 'Tren korunuyor. Çemberler kırmızıyken ateşleme.',
@@ -100,7 +101,13 @@ export const tr = {
     seconds: (s: number) => `${s.toFixed(1).replace('.', ',')} sn`,
     score: 'PUAN',
     newBest: 'YENİ REKOR',
-    criteria: ['Hedefler indirildi', 'Par içinde kalındı', 'Yıkım bonusu'] as const,
+    goal: 'Hedefler indirildi',
+    styles: {
+      surgical: { name: 'Cerrahi', how: 'par içinde şarj' },
+      demolition: { name: 'Tam yıkım', how: 'çöküş bonusu' },
+      domino: { name: 'Domino', how: 'yapı yapıyı devirdi ya da zincirleme patlama' },
+    },
+    stylesNote: 'Her tarz bir yıldız. Herhangi ikisi üç yıldız.',
   },
   placement: {
     'outside-zone': 'Sadece işaretli alana',
@@ -116,9 +123,9 @@ export const tr = {
 export type Strings = Omit<typeof tr, 'report' | 'placement' | 'achievements' | 'chargeKinds'> & {
   readonly chargeKinds: Readonly<Record<ChargeKind, string>>;
   readonly achievements: Readonly<Record<AchievementId, { readonly title: string; readonly description: string }>>;
-  readonly report: Omit<typeof tr.report, 'reasons' | 'criteria'> & {
+  readonly report: Omit<typeof tr.report, 'reasons' | 'styles'> & {
     readonly reasons: Readonly<Record<FailureReason, string>>;
-    readonly criteria: readonly [string, string, string];
+    readonly styles: Readonly<Record<keyof PlayStyles, { readonly name: string; readonly how: string }>>;
   };
   readonly placement: Readonly<Record<PlacementError, string>>;
 };
