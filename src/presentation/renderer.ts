@@ -33,6 +33,8 @@ export class Renderer {
     const ctx = canvas.getContext('2d', { alpha: false });
     if (!ctx) throw new Error('Canvas 2D is not available');
     this.ctx = ctx;
+    // The canvas owns its size: follow it through window resizes, rotation, and hidden-then-shown panes.
+    new ResizeObserver(() => this.resize()).observe(canvas);
   }
 
   resize(): void {
@@ -66,6 +68,8 @@ export class Renderer {
   }
 
   draw(session: LevelSession | undefined, juice: JuiceDirector, overlay: Overlay): void {
+    // A hidden or minimised window has no size; there is nothing to draw until it comes back.
+    if (this.canvas.width === 0 || this.canvas.height === 0) return;
     const c = this.ctx;
     c.setTransform(1, 0, 0, 1, 0, 0);
     c.fillStyle = '#0d1020';

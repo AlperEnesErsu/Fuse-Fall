@@ -25,6 +25,8 @@ export class FixedStepLoop {
   start(): void {
     this.last = performance.now();
     const tick = (now: number) => {
+      // Schedule the next frame first: an error in one frame must never stop the game for good.
+      this.handle = requestAnimationFrame(tick);
       const realDt = Math.min(MAX_FRAME, (now - this.last) / 1000);
       this.last = now;
       const simDt = this.hooks.timeScale(realDt);
@@ -37,7 +39,6 @@ export class FixedStepLoop {
       }
       if (steps === MAX_STEPS_PER_FRAME) this.accumulator = 0;
       this.hooks.frame(realDt, simDt);
-      this.handle = requestAnimationFrame(tick);
     };
     this.handle = requestAnimationFrame(tick);
   }

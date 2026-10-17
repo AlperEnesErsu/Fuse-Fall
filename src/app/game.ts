@@ -136,8 +136,6 @@ export class Game {
   }
 
   start(): void {
-    this.renderer.resize();
-    window.addEventListener('resize', () => this.renderer.resize());
     this.loop.start();
     this.showMenu();
   }
