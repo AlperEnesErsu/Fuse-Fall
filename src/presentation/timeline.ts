@@ -43,7 +43,10 @@ export class DelayTimeline {
   }
 
   update(charges: readonly TimelineCharge[], visible: boolean): void {
-    this.element.classList.toggle('hidden', !visible || charges.length === 0);
+    const hidden = !visible || charges.length === 0;
+    // While a job runs the timeline stays hidden; there is nothing to lay out every frame.
+    if (hidden && this.element.classList.contains('hidden')) return;
+    this.element.classList.toggle('hidden', hidden);
     const keep = new Set(charges.map((c) => c.id));
     for (const [id, parts] of this.markers) {
       if (!keep.has(id)) {

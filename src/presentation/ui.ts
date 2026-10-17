@@ -149,6 +149,8 @@ export interface ResultActions {
 
 /** DOM overlay for menus, HUD and the demolition report. It renders what it is given and reports taps. */
 export class Ui {
+  /** The HUD state last drawn, so unchanged frames skip the DOM. */
+  private lastHud: HudState | undefined;
   private readonly hud: HTMLElement;
   private readonly screen: HTMLElement;
   private readonly toastEl: HTMLElement;
@@ -558,6 +560,7 @@ export class Ui {
   }
 
   showHud(a: HudActions): void {
+    this.lastHud = undefined;
     this.hideScreen();
     const name = h('div', { class: 'hud-name' });
     const charges = h('div', { class: 'stat' });
@@ -608,8 +611,12 @@ export class Ui {
     this.hud.classList.remove('hidden');
   }
 
+  /** Called every frame while a job runs: the DOM is touched only when something shown has changed. */
   updateHud(s: HudState): void {
     if (!this.hudParts) return;
+    const last = this.lastHud;
+    if (last && (Object.keys(s) as (keyof HudState)[]).every((k) => s[k] === last[k])) return;
+    this.lastHud = s;
     this.hudParts.name.textContent = `${T.mission(s.levelOrder)} · ${s.levelName}`;
     this.hudParts.charges.replaceChildren(
       h('span', { class: 'label' }, T.charges),

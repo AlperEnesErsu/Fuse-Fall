@@ -55,6 +55,8 @@ const TOUCH_PICK_CSS_PX = 30;
 const RESULT_DELAY_MS = 450;
 /** Replays run at this fraction of real time. */
 const REPLAY_SPEED = 0.45;
+/** Shared clips are kept short for Shorts and Reels: closer to real time than the slow-motion replay. */
+const CLIP_REPLAY_SPEED = 0.8;
 /**
  * Test switch: VITE_UNLOCK_ALL=1 (in the git-ignored .env.local) opens every city
  * and mission without touching the save. Remove the line to play the real progression.
@@ -137,7 +139,8 @@ export class Game {
     this.ui = new Ui(uiRoot, () => this.sound.unlock());
     this.coach = new Coach(uiRoot);
     this.loop = new FixedStepLoop({
-      timeScale: (dt) => this.juice.simDelta(dt) * (this.attempt?.replaying ? REPLAY_SPEED : 1),
+      timeScale: (dt) =>
+        this.juice.simDelta(dt) * (this.attempt?.replaying ? (this.clip ? CLIP_REPLAY_SPEED : REPLAY_SPEED) : 1),
       step: (dt) => this.stepSession(dt),
       frame: (realDt, simDt) => this.frame(realDt, simDt),
     });
