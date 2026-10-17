@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ADS, PAYOUT, RANK_THRESHOLDS, adsToday, payout, rankOf, salvageOf } from '../src/core/economy';
-import { addBoughtScrap, buyItem, earnScrap, emptyProgress, parseProgress, recordOneShot, rewardAd } from '../src/core/progress';
+import { addBoughtScrap, buyItem, earnScrap, emptyProgress, parseProgress, recordCareer, recordOneShot, rewardAd } from '../src/core/progress';
 import { scoreLevel } from '../src/core/scoring';
 import { loadCampaign } from '../src/content/levels';
 import { WORKSHOP, activeLook, isOwned, structureItemId, workshopItem } from '../src/content/workshop';
@@ -139,5 +139,17 @@ describe('scrap offers', () => {
     expect(parsed.ok && parsed.value.ads).toEqual({ day: '2026-10-17', count: 1 });
     const bad = parseProgress({ ...p, ads: { day: 'yesterday', count: -2 } });
     expect(bad.ok && bad.value.ads).toEqual({ day: '', count: 0 });
+  });
+});
+
+describe('career statistics', () => {
+  it('adds up finished jobs and survives a save', () => {
+    let p = recordCareer(emptyProgress(), { cleared: true, blasts: 3, area: 12_000.4, barrels: 1, cars: 0 });
+    p = recordCareer(p, { cleared: false, blasts: 1, area: 500, barrels: 0, cars: 2 });
+    expect(p.career).toEqual({ jobs: 2, cleared: 1, blasts: 4, area: 12_500, barrels: 1, cars: 2 });
+    const parsed = parseProgress(JSON.parse(JSON.stringify(p)));
+    expect(parsed.ok && parsed.value.career).toEqual(p.career);
+    const legacy = parseProgress({ version: 1, stars: {}, best: {}, settings: {} });
+    expect(legacy.ok && legacy.value.career).toEqual({ jobs: 0, cleared: 0, blasts: 0, area: 0, barrels: 0, cars: 0 });
   });
 });

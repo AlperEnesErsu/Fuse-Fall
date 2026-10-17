@@ -1470,3 +1470,56 @@ h2,
 .difficulty.expert {
   color: var(--danger);
 }
+
+/* ---- Accessibility ---- */
+/* Left-handed: the detonator moves under the left thumb, charge types to the right. */
+.left-handed .fire-btn {
+  left: max(18px, env(safe-area-inset-left));
+  right: auto;
+}
+.left-handed .kind-toggle {
+  left: auto;
+  right: max(18px, env(safe-area-inset-right));
+}
+.left-handed .coach.low {
+  bottom: calc(max(18px, env(safe-area-inset-bottom)) + 112px);
+}
+/* Large text: everything in rem scales with the root. */
+.large-text {
+  font-size: 118%;
+}
+/* Reduced motion: no celebratory or decorative movement. */
+.reduced-motion *,
+.reduced-motion *::before,
+.reduced-motion *::after {
+  animation-duration: 1ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 1ms !important;
+}
+.reduced-motion .confetti {
+  display: none;
+}
+
+/* Career statistics above the achievements. */
+.career-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  width: 100%;
+}
+.career-stat {
+  display: flex;
+  flex-direction: column;
+  padding: 6px 10px;
+  border: 1px solid var(--edge);
+  border-radius: var(--radius);
+  background: var(--panel-2);
+}
+.career-stat strong {
+  font: 700 1.1rem var(--font-display);
+  color: var(--accent);
+}
+.career-stat span {
+  color: var(--muted);
+  font-size: 0.72rem;
+}

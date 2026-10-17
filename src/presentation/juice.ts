@@ -141,6 +141,12 @@ export class JuiceDirector {
       this.hitStop -= realDt;
       return 0;
     }
+    if (this.settings().reducedMotion) {
+      // Reduced motion: time runs evenly, no dramatic slow-downs.
+      this.criticalSlowLeft = 0;
+      this.slowMoLeft = 0;
+      return realDt;
+    }
     if (this.criticalSlowLeft > 0) {
       this.criticalSlowLeft -= realDt;
       return realDt * FEEL.critical.slowScale;
@@ -192,12 +198,15 @@ export class JuiceDirector {
 
   /** Extra camera zoom: the blast punch, or the push-in on a critical break. */
   get zoom(): number {
-    return Math.max(this.punch, this.settings().screenShake ? this.focusZoom : 0);
+    const s = this.settings();
+    if (s.reducedMotion) return 0;
+    return Math.max(this.punch, s.screenShake ? this.focusZoom : 0);
   }
 
   /** Camera offset from trauma². Smooth pseudo-noise instead of jitter feels heavier. */
   shake(): { x: number; y: number; angle: number } {
-    if (!this.settings().screenShake || this.trauma <= 0) return { x: 0, y: 0, angle: 0 };
+    const s0 = this.settings();
+    if (!s0.screenShake || s0.reducedMotion || this.trauma <= 0) return { x: 0, y: 0, angle: 0 };
     const s = this.trauma * this.trauma;
     const t = this.shakeTime * 38;
     return {

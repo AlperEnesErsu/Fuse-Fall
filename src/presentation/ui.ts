@@ -3,7 +3,7 @@ import { difficultyOf } from '../core/difficulty';
 import type { Payout, Rank } from '../core/economy';
 import type { ScrapPack } from '../core/ports';
 import { SANDBOX_VARIANTS, type SandboxVariant } from '../content/sandbox';
-import type { Settings, WorldStatus } from '../core/progress';
+import type { CareerStats, Settings, WorldStatus } from '../core/progress';
 import type { LevelResult, Stars } from '../core/scoring';
 import type { WorldDefinition } from '../core/world';
 import { ICONS } from './icons';
@@ -357,12 +357,31 @@ export class Ui {
     return this.screen.querySelector(`.panel.${screen}`) !== null;
   }
 
-  achievements(list: readonly { title: string; description: string; unlocked: boolean }[], onBack: () => void): void {
+  achievements(
+    list: readonly { title: string; description: string; unlocked: boolean }[],
+    onBack: () => void,
+    career?: CareerStats & { readonly scrap: number },
+  ): void {
     this.hideHud();
+    const C = T.careerStats;
+    const stat = (label: string, value: string) => h('div', { class: 'career-stat' }, h('strong', {}, value), h('span', {}, label));
     this.show(
       h(
         'div',
         { class: 'panel achievements' },
+        career
+          ? h(
+              'div',
+              { class: 'career-stats' },
+              stat(C.jobs, `${career.cleared} / ${career.jobs}`),
+              stat(C.blasts, String(career.blasts)),
+              // 30 world px make a metre: a column of 110 px is about a storey.
+              stat(C.area, C.squareMetres(Math.round(career.area / 900))),
+              stat(C.barrels, String(career.barrels)),
+              stat(C.cars, String(career.cars)),
+              stat(C.scrap, String(career.scrap)),
+            )
+          : undefined,
         h('h2', {}, T.achievementsTitle),
         h(
           'ul',
@@ -578,7 +597,7 @@ export class Ui {
   }
 
   settings(s: Settings, onChange: (patch: Partial<Settings>) => void, onTestSound: () => void, onBack: () => void): void {
-    const toggle = (label: string, value: boolean, key: 'screenShake' | 'flashes' | 'haptics') => {
+    const toggle = (label: string, value: boolean, key: 'screenShake' | 'flashes' | 'haptics' | 'leftHanded' | 'reducedMotion' | 'largeText') => {
       const input = h('input', {
         type: 'checkbox',
         change: (e) => onChange({ [key]: (e.target as HTMLInputElement).checked }),
@@ -623,6 +642,10 @@ export class Ui {
         toggle(T.shake, s.screenShake, 'screenShake'),
         toggle(T.flashes, s.flashes, 'flashes'),
         toggle(T.haptics, s.haptics, 'haptics'),
+        h('span', { class: 'label section' }, T.access.title),
+        toggle(T.access.leftHanded, s.leftHanded, 'leftHanded'),
+        toggle(T.access.reducedMotion, s.reducedMotion, 'reducedMotion'),
+        toggle(T.access.largeText, s.largeText, 'largeText'),
         this.button(T.back, onBack),
       ),
     );

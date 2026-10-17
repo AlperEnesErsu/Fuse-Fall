@@ -62,6 +62,8 @@ describe('daily streak', () => {
     const legacy = parseProgress({ version: 1, stars: {}, best: {}, settings: {} });
     expect(legacy.ok && legacy.value.daily).toEqual({ lastWon: undefined, streak: 0 });
     expect(legacy.ok && legacy.value.achievements).toEqual([]);
+    // Accessibility options arrived later too: off unless chosen.
+    expect(legacy.ok && legacy.value.settings).toMatchObject({ leftHanded: false, reducedMotion: false, largeText: false });
   });
 });
 

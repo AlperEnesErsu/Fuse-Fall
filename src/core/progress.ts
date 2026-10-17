@@ -15,6 +15,11 @@ export interface Settings {
   readonly screenShake: boolean;
   readonly flashes: boolean;
   readonly haptics: boolean;
+  /** Fire and detonator on the left, charge types on the right. */
+  readonly leftHanded: boolean;
+  /** No slow motion, camera push-ins, shake or confetti. */
+  readonly reducedMotion: boolean;
+  readonly largeText: boolean;
 }
 
 export interface Progress {
@@ -30,12 +35,28 @@ export interface Progress {
   readonly wallet: Wallet;
   /** Workshop items bought, and the blast style in use. */
   readonly workshop: { readonly owned: readonly string[]; readonly blastStyle: string; readonly blockTheme: string };
+  /** Lifetime totals for the career statistics. */
+  readonly career: CareerStats;
   /** Rewarded ads watched, by day, for the daily cap. */
   readonly ads: { readonly day: string; readonly count: number };
   /** One Shot: the best collapse (whole percent) per Free Site structure. */
   readonly oneShot: Readonly<Record<string, number>>;
   readonly settings: Settings;
 }
+
+export interface CareerStats {
+  /** Jobs finished (campaign and daily), and how many of them were cleared. */
+  readonly jobs: number;
+  readonly cleared: number;
+  /** Every blast set off, chain reactions included. */
+  readonly blasts: number;
+  /** Structure brought down, in px² of the 960×540 world. */
+  readonly area: number;
+  readonly barrels: number;
+  readonly cars: number;
+}
+
+const NO_CAREER: CareerStats = { jobs: 0, cleared: 0, blasts: 0, area: 0, barrels: 0, cars: 0 };
 
 /** The blast style and block theme everyone starts with. */
 export const DEFAULT_BLAST_STYLE = 'classic';
@@ -47,6 +68,9 @@ export const DEFAULT_SETTINGS: Settings = {
   screenShake: true,
   flashes: true,
   haptics: true,
+  leftHanded: false,
+  reducedMotion: false,
+  largeText: false,
 };
 
 export const emptyProgress = (): Progress => ({
@@ -58,6 +82,7 @@ export const emptyProgress = (): Progress => ({
   wallet: { balance: 0, earned: 0 },
   workshop: { owned: [], blastStyle: DEFAULT_BLAST_STYLE, blockTheme: DEFAULT_BLOCK_THEME },
   oneShot: {},
+  career: NO_CAREER,
   ads: { day: '', count: 0 },
   settings: DEFAULT_SETTINGS,
 });
@@ -125,6 +150,15 @@ export const parseProgress = (input: unknown): Result<Progress, ProgressError> =
       if (typeof value === 'number' && Number.isInteger(value) && value >= 0 && value <= 100) oneShot[id] = value;
     }
   }
+  const c = isRecord(input.career) ? input.career : {};
+  const career: CareerStats = {
+    jobs: count(c.jobs),
+    cleared: count(c.cleared),
+    blasts: count(c.blasts),
+    area: count(c.area),
+    barrels: count(c.barrels),
+    cars: count(c.cars),
+  };
   const a = isRecord(input.ads) ? input.ads : {};
   const ads = { day: typeof a.day === 'string' && DAY.test(a.day) ? a.day : '', count: count(a.count) };
   const s = isRecord(input.settings) ? input.settings : {};
@@ -137,6 +171,7 @@ export const parseProgress = (input: unknown): Result<Progress, ProgressError> =
     wallet,
     workshop,
     oneShot,
+    career,
     ads,
     settings: {
       language: s.language === 'tr' || s.language === 'en' || s.language === 'auto' ? s.language : DEFAULT_SETTINGS.language,
@@ -144,6 +179,9 @@ export const parseProgress = (input: unknown): Result<Progress, ProgressError> =
       screenShake: flag(s.screenShake, DEFAULT_SETTINGS.screenShake),
       flashes: flag(s.flashes, DEFAULT_SETTINGS.flashes),
       haptics: flag(s.haptics, DEFAULT_SETTINGS.haptics),
+      leftHanded: flag(s.leftHanded, DEFAULT_SETTINGS.leftHanded),
+      reducedMotion: flag(s.reducedMotion, DEFAULT_SETTINGS.reducedMotion),
+      largeText: flag(s.largeText, DEFAULT_SETTINGS.largeText),
     },
   });
 };
@@ -191,6 +229,25 @@ export const currentStreak = (progress: Progress, today: string): number => {
 export const earnScrap = (progress: Progress, amount: number): Progress => {
   const wallet = credit(progress.wallet, amount);
   return wallet === progress.wallet ? progress : { ...progress, wallet };
+};
+
+/** Adds one finished job to the lifetime totals. */
+export const recordCareer = (
+  progress: Progress,
+  job: { readonly cleared: boolean; readonly blasts: number; readonly area: number; readonly barrels: number; readonly cars: number },
+): Progress => {
+  const c = progress.career;
+  return {
+    ...progress,
+    career: {
+      jobs: c.jobs + 1,
+      cleared: c.cleared + Number(job.cleared),
+      blasts: c.blasts + job.blasts,
+      area: c.area + Math.round(job.area),
+      barrels: c.barrels + job.barrels,
+      cars: c.cars + job.cars,
+    },
+  };
 };
 
 /** A rewarded ad watched today: its scrap, counted against the daily cap. */

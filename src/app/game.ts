@@ -14,6 +14,7 @@ import {
   levelsOf,
   currentStreak,
   recordDailyWin,
+  recordCareer,
   recordOneShot,
   recordScore,
   recordStars,
@@ -88,7 +89,7 @@ interface Attempt {
         readonly presses: number[];
       }
     | undefined;
-  stats: { barrelsBlown: number; carsWrecked: number };
+  stats: { barrelsBlown: number; carsWrecked: number; blasts: number };
   /** The attempt's result, once it has settled. */
   result: LevelResult | undefined;
   /** The report shown after the attempt, re-shown when a replay ends. */
@@ -159,8 +160,10 @@ export class Game {
     });
     this.events.on('explosion', (e) => {
       this.buzz(e.source === 'charge' ? 45 : 30);
-      if (e.source === 'barrel' && this.attempt && !this.attempt.replaying)
-        this.attempt.stats.barrelsBlown++;
+      if (this.attempt && !this.attempt.replaying) {
+        this.attempt.stats.blasts++;
+        if (e.source === 'barrel') this.attempt.stats.barrelsBlown++;
+      }
     });
     this.events.on('carWrecked', () => {
       this.buzz(60);
@@ -179,6 +182,7 @@ export class Game {
   }
 
   start(): void {
+    this.applyDisplaySettings();
     this.loop.start();
     this.showMenu();
   }
@@ -220,6 +224,7 @@ export class Game {
         unlocked: this.progress.achievements.includes(a.id),
       })),
       () => this.showMenu(),
+      { ...this.progress.career, scrap: this.progress.wallet.earned },
     );
   }
 
@@ -428,6 +433,7 @@ export class Game {
         this.progress = updateSettings(this.progress, patch);
         this.saves.save(this.progress);
         this.sound.applyVolumes();
+        this.applyDisplaySettings();
         if (patch.language !== undefined) {
           this.text = this.applyLanguage();
           this.showSettings();
@@ -436,6 +442,15 @@ export class Game {
       () => this.sound.test(),
       () => this.showMenu(),
     );
+  }
+
+  /** Layout and motion preferences live on the document root, where the styles read them. */
+  private applyDisplaySettings(): void {
+    const { leftHanded, reducedMotion, largeText } = this.progress.settings;
+    const root = document.documentElement.classList;
+    root.toggle('left-handed', leftHanded);
+    root.toggle('reduced-motion', reducedMotion);
+    root.toggle('large-text', largeText);
   }
 
   /** The first open mission not yet won, in campaign order. */
@@ -523,7 +538,7 @@ export class Game {
       mode,
       replaying: false,
       plan: undefined,
-      stats: { barrelsBlown: 0, carsWrecked: 0 },
+      stats: { barrelsBlown: 0, carsWrecked: 0, blasts: 0 },
       result: undefined,
       report: undefined,
     };
@@ -738,6 +753,13 @@ export class Game {
         : (this.progress.stars[level.id] ?? 0) === 0;
     const pay = payout(result, { firstClear, daily: attempt.mode.kind === 'daily' });
     const rankBefore = rankOf(this.progress.wallet.earned).index;
+    this.progress = recordCareer(this.progress, {
+      cleared: result.cleared,
+      blasts: attempt.stats.blasts,
+      area: Object.values(result.demolished).reduce((sum, a) => sum + a, 0),
+      barrels: attempt.stats.barrelsBlown,
+      cars: attempt.stats.carsWrecked,
+    });
     this.progress = earnScrap(this.progress, pay.total);
     const rankAfter = rankOf(this.progress.wallet.earned).index;
     if (attempt.mode.kind === 'daily') {

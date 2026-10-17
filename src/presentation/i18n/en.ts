@@ -83,6 +83,21 @@ export const en: Strings = {
     double: 'Double scrap (ad)',
     demo: 'Demo mode: no real ads or payments.',
   },
+  access: {
+    title: 'Accessibility',
+    leftHanded: 'Left-handed (FIRE on the left)',
+    reducedMotion: 'Reduced motion',
+    largeText: 'Large text',
+  },
+  careerStats: {
+    jobs: 'cleared / jobs',
+    blasts: 'blasts',
+    area: 'brought down',
+    squareMetres: (n: number) => `${n} m²`,
+    barrels: 'barrels blown',
+    cars: 'vehicles wrecked',
+    scrap: 'scrap earned',
+  },
   continue: 'CONTINUE',
   clip: {
     share: 'Share the demolition',

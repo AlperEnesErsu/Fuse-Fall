@@ -86,6 +86,21 @@ export const tr = {
     double: 'Hurdayı ×2 (reklam)',
     demo: 'Deneme modu: gerçek reklam ve ödeme yok.',
   },
+  access: {
+    title: 'Erişilebilirlik',
+    leftHanded: 'Solak düzeni (ATEŞLE solda)',
+    reducedMotion: 'Azaltılmış hareket',
+    largeText: 'Büyük yazı',
+  },
+  careerStats: {
+    jobs: 'temiz iş / toplam',
+    blasts: 'patlama',
+    area: 'yıkılan alan',
+    squareMetres: (n: number) => `${n} m²`,
+    barrels: 'patlayan varil',
+    cars: 'hurdaya dönen araç',
+    scrap: 'kazanılan hurda',
+  },
   continue: 'DEVAM ET',
   clip: {
     share: 'Yıkımı paylaş',
