@@ -1,3 +1,4 @@
+import { credit, purchase, type PurchaseError, type ShopItem, type Wallet } from './economy';
 import type { LevelDefinition } from './level';
 import { err, ok, type Result } from './result';
 import type { Stars } from './scoring';
@@ -25,8 +26,15 @@ export interface Progress {
   readonly achievements: readonly string[];
   /** Daily mission streak: the last day (YYYY-MM-DD) a daily was won, and how many days in a row. */
   readonly daily: { readonly lastWon: string | undefined; readonly streak: number };
+  /** Scrap: spendable balance and lifetime earnings (the career rank). */
+  readonly wallet: Wallet;
+  /** Workshop items bought, and the blast style in use. */
+  readonly workshop: { readonly owned: readonly string[]; readonly blastStyle: string };
   readonly settings: Settings;
 }
+
+/** The blast style everyone starts with. */
+export const DEFAULT_BLAST_STYLE = 'classic';
 
 export const DEFAULT_SETTINGS: Settings = {
   language: 'auto',
@@ -42,6 +50,8 @@ export const emptyProgress = (): Progress => ({
   best: {},
   achievements: [],
   daily: { lastWon: undefined, streak: 0 },
+  wallet: { balance: 0, earned: 0 },
+  workshop: { owned: [], blastStyle: DEFAULT_BLAST_STYLE },
   settings: DEFAULT_SETTINGS,
 });
 
@@ -57,6 +67,8 @@ const volume = (v: unknown, fallback: number): number =>
   typeof v === 'number' && v >= 0 && v <= 1 ? v : fallback;
 
 const flag = (v: unknown, fallback: boolean): boolean => (typeof v === 'boolean' ? v : fallback);
+
+const count = (v: unknown): number => (typeof v === 'number' && Number.isInteger(v) && v >= 0 ? v : 0);
 
 /**
  * Parses saved progress. A wrong version or broken shape is an error so the
@@ -90,6 +102,12 @@ export const parseProgress = (input: unknown): Result<Progress, ProgressError> =
     lastWon: typeof d.lastWon === 'string' && DAY.test(d.lastWon) ? d.lastWon : undefined,
     streak: typeof d.streak === 'number' && Number.isInteger(d.streak) && d.streak >= 0 ? d.streak : 0,
   };
+  const w = isRecord(input.wallet) ? input.wallet : {};
+  const wallet = { balance: count(w.balance), earned: count(w.earned) };
+  const ws = isRecord(input.workshop) ? input.workshop : {};
+  const owned = Array.isArray(ws.owned) ? ws.owned.filter((id): id is string => typeof id === 'string') : [];
+  // Whether a saved style id still exists is the catalogue's call, made where it is applied.
+  const workshop = { owned, blastStyle: typeof ws.blastStyle === 'string' ? ws.blastStyle : DEFAULT_BLAST_STYLE };
   const s = isRecord(input.settings) ? input.settings : {};
   return ok({
     version: PROGRESS_VERSION,
@@ -97,6 +115,8 @@ export const parseProgress = (input: unknown): Result<Progress, ProgressError> =
     best,
     achievements,
     daily,
+    wallet,
+    workshop,
     settings: {
       language: s.language === 'tr' || s.language === 'en' || s.language === 'auto' ? s.language : DEFAULT_SETTINGS.language,
       sfxVolume: volume(s.sfxVolume, DEFAULT_SETTINGS.sfxVolume),
@@ -146,6 +166,20 @@ export const currentStreak = (progress: Progress, today: string): number => {
   const { lastWon, streak } = progress.daily;
   return lastWon === today || lastWon === previousDay(today) ? streak : 0;
 };
+
+export const earnScrap = (progress: Progress, amount: number): Progress => {
+  const wallet = credit(progress.wallet, amount);
+  return wallet === progress.wallet ? progress : { ...progress, wallet };
+};
+
+export const buyItem = (progress: Progress, item: ShopItem): Result<Progress, PurchaseError> => {
+  const bought = purchase(progress.wallet, progress.workshop.owned, item);
+  if (!bought.ok) return bought;
+  return ok({ ...progress, wallet: bought.value.wallet, workshop: { ...progress.workshop, owned: bought.value.owned } });
+};
+
+export const chooseBlastStyle = (progress: Progress, style: string): Progress =>
+  ({ ...progress, workshop: { ...progress.workshop, blastStyle: style } });
 
 export const updateSettings = (progress: Progress, patch: Partial<Settings>): Progress => ({
   ...progress,

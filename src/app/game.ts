@@ -3,7 +3,11 @@ import type { ChargeKind, LevelDefinition } from '../core/level';
 import type { Vec2 } from '../core/math';
 import { TUNING } from '../core/tuning';
 import type { SaveRepository } from '../core/ports';
+import { payout, rankOf } from '../core/economy';
 import {
+  buyItem,
+  chooseBlastStyle,
+  earnScrap,
   isLevelUnlocked,
   levelsOf,
   currentStreak,
@@ -29,6 +33,7 @@ import { Ui } from '../presentation/ui';
 import { Coach } from '../presentation/coach';
 import { tutorialFor } from '../content/tutorials';
 import { SANDBOX_TEMPLATES, sandboxLevel } from '../content/sandbox';
+import { WORKSHOP, activeBlastStyle, isOwned, structureItemId, workshopItem } from '../content/workshop';
 import { contentText, type ContentText } from '../content/text';
 import { ACHIEVEMENTS } from '../core/achievements';
 import { FIXED_STEP, FixedStepLoop } from './loop';
@@ -111,7 +116,9 @@ export class Game {
     this.text = this.applyLanguage();
     const settings = (): Settings => this.progress.settings;
     this.renderer = new Renderer(canvas);
-    this.juice = new JuiceDirector(this.events, settings);
+    this.juice = new JuiceDirector(this.events, settings, () =>
+      activeBlastStyle(this.progress.workshop.owned, this.progress.workshop.blastStyle),
+    );
     this.sound = new SoundDirector(this.events, settings);
     this.ui = new Ui(uiRoot, () => this.sound.unlock());
     this.coach = new Coach(uiRoot);
@@ -161,6 +168,9 @@ export class Game {
       onPlay: () => this.showCities(),
       onDaily: () => this.startDaily(),
       onFreeSite: () => this.showFreeSite(),
+      onWorkshop: () => this.showWorkshop(),
+      scrap: this.progress.wallet.balance,
+      rank: rankOf(this.progress.wallet.earned),
       onAchievements: () => this.showAchievements(),
       onSettings: () => this.showSettings(),
     });
@@ -177,6 +187,49 @@ export class Game {
     );
   }
 
+  /** The workshop: spend scrap on blast styles and Free Site structures, and pick the blast style. */
+  private showWorkshop(): void {
+    this.leaveLevel();
+    const { owned } = this.progress.workshop;
+    const active = activeBlastStyle(owned, this.progress.workshop.blastStyle);
+    this.ui.workshop(
+      {
+        scrap: this.progress.wallet.balance,
+        rank: rankOf(this.progress.wallet.earned),
+        items: WORKSHOP.map((item) => ({
+          id: item.id,
+          kind: item.kind,
+          name: item.name[language],
+          description: item.description[language],
+          cost: item.cost,
+          owned: isOwned(owned, item),
+          active: item.id === active,
+        })),
+      },
+      {
+        onBuy: (id) => {
+          const item = workshopItem(id);
+          if (!item) return;
+          const bought = buyItem(this.progress, item);
+          if (!bought.ok) {
+            this.sound.denied();
+            this.ui.toast(T.workshop.errors[bought.error]);
+            return;
+          }
+          this.progress = item.kind === 'blast-style' ? chooseBlastStyle(bought.value, item.id) : bought.value;
+          this.saves.save(this.progress);
+          this.showWorkshop();
+        },
+        onEquip: (id) => {
+          this.progress = chooseBlastStyle(this.progress, id);
+          this.saves.save(this.progress);
+          this.showWorkshop();
+        },
+        onBack: () => this.showMenu(),
+      },
+    );
+  }
+
   /** Free Site setup: pick an opened city and a structure. */
   private showFreeSite(world = this.currentWorld, template = SANDBOX_TEMPLATES[0]?.id ?? ''): void {
     this.leaveLevel();
@@ -184,9 +237,14 @@ export class Game {
       .filter((w) => worldStatus(this.progress, this.campaign, w.world).kind === 'open')
       .map((w) => ({ world: w.world, name: this.text.city(w) }));
     const chosen = cities.some((c) => c.world === world) ? world : (cities[0]?.world ?? 1);
+    const templates = SANDBOX_TEMPLATES.filter((t) => {
+      const item = workshopItem(structureItemId(t.id));
+      return item === undefined || isOwned(this.progress.workshop.owned, item);
+    });
     this.ui.freeSite(
       cities,
-      SANDBOX_TEMPLATES.map((t) => ({ id: t.id, name: t.name[language] })),
+      templates.map((t) => ({ id: t.id, name: t.name[language] })),
+      templates.length < SANDBOX_TEMPLATES.length,
       { world: chosen, template },
       (pick) => this.showFreeSite(pick.world, pick.template),
       () => {
@@ -440,6 +498,15 @@ export class Game {
     const level = attempt.level;
     const today = dayOf(new Date());
     const previousBest = this.progress.best[level.id] ?? 0;
+    // The company is paid for what came down; the first win of a job (or of the day's daily) pays in full.
+    const firstClear =
+      attempt.mode.kind === 'daily'
+        ? this.progress.daily.lastWon !== attempt.mode.day
+        : (this.progress.stars[level.id] ?? 0) === 0;
+    const pay = payout(result, { firstClear, daily: attempt.mode.kind === 'daily' });
+    const rankBefore = rankOf(this.progress.wallet.earned).index;
+    this.progress = earnScrap(this.progress, pay.total);
+    const rankAfter = rankOf(this.progress.wallet.earned).index;
     if (attempt.mode.kind === 'daily') {
       this.progress = recordScore(this.progress, level.id, result.score);
       if (result.success) this.progress = recordDailyWin(this.progress, attempt.mode.day);
@@ -483,6 +550,8 @@ export class Game {
           best: Math.max(previousBest, result.score),
           newBest: result.score > previousBest,
           cityComplete: lastInCity && cityDone,
+          payout: pay,
+          promotedTo: rankAfter > rankBefore ? rankAfter : undefined,
         },
         {
           onRetry: () => this.play(level, attempt.mode),

@@ -1,4 +1,5 @@
 import { WORLD, type LevelDefinition } from '../core/level';
+import type { Payout, Rank } from '../core/economy';
 import type { Settings, WorldStatus } from '../core/progress';
 import type { LevelResult, Stars } from '../core/scoring';
 import type { WorldDefinition } from '../core/world';
@@ -85,6 +86,23 @@ export interface ReportInfo {
   readonly best: number;
   readonly newBest: boolean;
   readonly cityComplete: boolean;
+  readonly payout: Payout;
+  /** Career rank index reached with this job, if it was a promotion. */
+  readonly promotedTo: number | undefined;
+}
+
+export interface WorkshopView {
+  readonly scrap: number;
+  readonly rank: Rank;
+  readonly items: readonly {
+    readonly id: string;
+    readonly kind: 'blast-style' | 'structure';
+    readonly name: string;
+    readonly description: string;
+    readonly cost: number;
+    readonly owned: boolean;
+    readonly active: boolean;
+  }[];
 }
 
 export interface MenuState {
@@ -94,6 +112,9 @@ export interface MenuState {
   readonly onPlay: () => void;
   readonly onDaily: () => void;
   readonly onFreeSite: () => void;
+  readonly onWorkshop: () => void;
+  readonly scrap: number;
+  readonly rank: Rank;
   readonly onAchievements: () => void;
   readonly onSettings: () => void;
 }
@@ -161,26 +182,90 @@ export class Ui {
         h('p', { class: 'subtitle' }, T.subtitle),
         h('p', { class: 'tagline' }, T.tagline),
         this.button(T.play, m.onPlay, 'primary big'),
-        m.daily &&
+        h(
+          'div',
+          { class: 'menu-modes' },
+          m.daily &&
+            h(
+              'button',
+              { class: `btn daily${m.daily.wonToday ? ' done' : ''}`, click: () => this.tap(m.onDaily) },
+              h('span', {}, T.daily),
+              h('small', {}, T.dailyInfo(m.daily.name, m.daily.streak, m.daily.wonToday)),
+            ),
           h(
             'button',
-            { class: `btn daily${m.daily.wonToday ? ' done' : ''}`, click: () => this.tap(m.onDaily) },
-            h('span', {}, T.daily),
-            h('small', {}, T.dailyInfo(m.daily.name, m.daily.streak, m.daily.wonToday)),
+            { class: 'btn freesite', click: () => this.tap(m.onFreeSite) },
+            h('span', {}, T.freeSite),
+            h('small', {}, T.freeSiteTagline),
           ),
-        h(
-          'button',
-          { class: 'btn freesite', click: () => this.tap(m.onFreeSite) },
-          h('span', {}, T.freeSite),
-          h('small', {}, T.freeSiteTagline),
         ),
         h(
           'div',
           { class: 'menu-row' },
+          this.button(T.workshop.title, m.onWorkshop),
           this.button(`${T.achievementsTitle} ${T.achievementsCount(m.achievements.unlocked, m.achievements.total)}`, m.onAchievements),
           this.button(T.settings, m.onSettings),
         ),
-        h('p', { class: 'meta' }, `${T.totalStars(m.totalStars)} · ${T.offline}`),
+        h(
+          'p',
+          { class: 'meta' },
+          h('strong', { class: 'rank-inline' }, T.ranks[m.rank.index] ?? ''),
+          ` · ${T.scrap(m.scrap)} · ${T.totalStars(m.totalStars)} · ${T.offline}`,
+        ),
+      ),
+    );
+  }
+
+  /** Rank title and scrap balance, as a strip. */
+  private career(rank: Rank, scrap: number): HTMLElement {
+    return h(
+      'div',
+      { class: 'career' },
+      h('span', { class: 'rank' }, T.ranks[rank.index] ?? ''),
+      h('span', { class: 'scrap' }, h('span', { class: 'label' }, T.scrapLabel), String(scrap)),
+    );
+  }
+
+  /** The workshop: blast styles and Free Site structures, bought with scrap. */
+  workshop(v: WorkshopView, a: { onBuy: (id: string) => void; onEquip: (id: string) => void; onBack: () => void }): void {
+    this.hideHud();
+    const W = T.workshop;
+    const card = (item: WorkshopView['items'][number]) => {
+      const action = !item.owned
+        ? h(
+            'button',
+            { class: `btn small${v.scrap >= item.cost ? ' primary' : ' short'}`, click: () => this.tap(() => a.onBuy(item.id)) },
+            W.buy(item.cost),
+          )
+        : item.kind === 'blast-style'
+          ? item.active
+            ? h('span', { class: 'tag active' }, W.inUse)
+            : h('button', { class: 'btn small', click: () => this.tap(() => a.onEquip(item.id)) }, W.use)
+          : h('span', { class: 'tag' }, W.owned);
+      return h(
+        'li',
+        { class: `shop-item${item.owned ? ' owned' : ''}${item.active ? ' active' : ''}` },
+        item.kind === 'blast-style' ? h('span', { class: `swatch style-${item.id}` }) : undefined,
+        h('div', { class: 'shop-text' }, h('strong', {}, item.name), h('small', {}, item.description)),
+        action,
+      );
+    };
+    const section = (title: string, kind: 'blast-style' | 'structure') =>
+      h(
+        'section',
+        {},
+        h('span', { class: 'label section' }, title),
+        h('ul', { class: 'shop-list' }, ...v.items.filter((i) => i.kind === kind).map(card)),
+      );
+    this.show(
+      h(
+        'div',
+        { class: 'panel workshop' },
+        h('div', { class: 'levels-head' }, this.iconButton(ICONS.back(), a.onBack, T.back), h('h2', {}, W.title)),
+        this.career(v.rank, v.scrap),
+        h('p', { class: 'meta' }, `${T.career(v.rank.next)} · ${W.tagline}`),
+        section(W.styles, 'blast-style'),
+        section(W.structures, 'structure'),
       ),
     );
   }
@@ -213,6 +298,7 @@ export class Ui {
   freeSite(
     cities: readonly { world: number; name: string }[],
     templates: readonly { id: string; name: string }[],
+    moreInWorkshop: boolean,
     chosen: { world: number; template: string },
     onPick: (pick: { world: number; template: string }) => void,
     onStart: () => void,
@@ -235,6 +321,7 @@ export class Ui {
           { class: 'chips' },
           ...templates.map((t) => chip(t.name, t.id === chosen.template, () => onPick({ ...chosen, template: t.id }))),
         ),
+        moreInWorkshop ? h('p', { class: 'meta' }, T.freeSiteMore) : undefined,
         this.button(T.start, onStart, 'primary big'),
       ),
     );
@@ -536,6 +623,14 @@ export class Ui {
             h('div', { class: 'stamp' }, r.success ? R.success : R.failure),
             reason ? h('p', { class: 'reason' }, reason) : undefined,
             starRow(r.stars, 'lg'),
+            h(
+              'div',
+              { class: 'payout' },
+              h('span', { class: 'label' }, T.scrapLabel),
+              h('span', { class: 'value' }, `+${info.payout.total}`),
+              h('small', {}, R.scrapParts(info.payout.salvage, info.payout.styles, info.payout.firstClear)),
+            ),
+            info.promotedTo !== undefined ? h('span', { class: 'badge promoted' }, R.promoted(T.ranks[info.promotedTo] ?? '')) : undefined,
             h(
               'div',
               { class: 'score' },

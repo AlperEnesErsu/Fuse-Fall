@@ -3,6 +3,7 @@ import { WORLD } from '../core/level';
 import type { MaterialId } from '../core/materials';
 import type { Vec2 } from '../core/math';
 import type { Settings } from '../core/progress';
+import { blastPalette, type Rgb } from './blast-styles';
 import { DEBRIS_COLORS, PALETTE } from './palette';
 import { ParticlePool } from './particles';
 
@@ -25,6 +26,8 @@ export interface Flame {
   radius: number;
   age: number;
   life: number;
+  /** Blast style the flame is drawn in. */
+  style: string;
 }
 
 /** A short-lived light that brightens everything around a blast. */
@@ -34,6 +37,7 @@ export interface BlastLight {
   radius: number;
   age: number;
   life: number;
+  color: Rgb;
 }
 
 /** A burn mark left behind on the ground or a wall. */
@@ -93,6 +97,8 @@ export class JuiceDirector {
   constructor(
     events: EventBus<GameEvents>,
     private readonly settings: () => Settings,
+    /** The workshop blast style in use; only the look changes, never the physics. */
+    private readonly style: () => string = () => 'classic',
   ) {
     events.on('explosion', (e) => this.onExplosion(e.position, e.radius, e.power, e.source));
     events.on('blockShattered', (e) => this.onShatter(e.position, e.material, e.size));
@@ -215,7 +221,9 @@ export class JuiceDirector {
     this.addTrauma(FEEL.trauma.explosion * power);
     this.flash = Math.max(this.flash, FEEL.flash.explosion * power);
     this.punch = Math.max(this.punch, FEEL.zoomPunch.explosion * power);
-    this.lights.push({ x: p.x, y: p.y, radius: radius * 2.4, age: 0, life: 0.35 });
+    const style = this.style();
+    const palette = blastPalette(style);
+    this.lights.push({ x: p.x, y: p.y, radius: radius * 2.4, age: 0, life: 0.35, color: palette.light });
     this.shockwaves.push({ x: p.x, y: p.y, radius: radius * 1.25, age: 0, life: 0.3 });
 
     // Fireball: overlapping puffs thrown outwards, then rising and cooling.
@@ -231,6 +239,7 @@ export class JuiceDirector {
         radius: size * (0.6 + r() * 0.7),
         age: 0,
         life: 0.35 + r() * 0.35,
+        style,
       });
     }
 
@@ -241,7 +250,7 @@ export class JuiceDirector {
       this.particles.spawn({
         x: p.x + (r() - 0.5) * size, y: p.y + (r() - 0.5) * size * 0.6,
         vx: Math.cos(a) * speed, vy: Math.sin(a) * speed * 0.4 - 50 - r() * 50,
-        life: 2.2 + r() * 2.2, size: size * (0.7 + r() * 0.8), color: '#2a2827',
+        life: 2.2 + r() * 2.2, size: size * (0.7 + r() * 0.8), color: palette.smoke,
         style: 'plume', gravity: -18, drag: 0.9,
       });
     }
@@ -252,9 +261,22 @@ export class JuiceDirector {
       const speed = 250 + r() * 650 * power;
       this.particles.spawn({
         x: p.x, y: p.y, vx: Math.cos(a) * speed, vy: Math.sin(a) * speed - 150,
-        life: 0.4 + r() * 0.9, size: 1 + r() * 1.6, color: r() < 0.6 ? '#ffb347' : '#fff1c4',
+        life: 0.4 + r() * 0.9, size: 1 + r() * 1.6, color: r() < 0.6 ? palette.embers[0] : palette.embers[1],
         style: 'spark', gravity: 950, drag: 1.6, ground: true,
       });
+    }
+
+    // Confetti style: a shower of coloured paper that flutters down slowly.
+    if (palette.confetti) {
+      for (let i = 0; i < 40; i++) {
+        const a = -Math.PI * (0.15 + r() * 0.7);
+        const speed = 180 + r() * 380 * power;
+        this.particles.spawn({
+          x: p.x, y: p.y, vx: Math.cos(a) * speed, vy: Math.sin(a) * speed,
+          life: 2.2 + r() * 1.6, size: 2.5 + r() * 2.5, color: palette.confetti[i % palette.confetti.length] ?? '#ffffff',
+          style: 'chip', gravity: 260, drag: 2.2, spin: (r() - 0.5) * 24, ground: true,
+        });
+      }
     }
 
     // Rubble chunks thrown out of the crater.
@@ -293,12 +315,14 @@ export class JuiceDirector {
     this.addTrauma(FEEL.trauma.explosion * power * 0.8);
     this.flash = Math.max(this.flash, FEEL.flash.explosion * power * 0.5);
     this.punch = Math.max(this.punch, FEEL.zoomPunch.explosion * power);
-    this.lights.push({ x: p.x, y: p.y, radius: radius * 1.4, age: 0, life: 0.22 });
+    const style = this.style();
+    const palette = blastPalette(style);
+    this.lights.push({ x: p.x, y: p.y, radius: radius * 1.4, age: 0, life: 0.22, color: palette.light });
     this.shockwaves.push({ x: p.x, y: p.y, radius: radius * 1.1, age: 0, life: 0.35, inward: true });
     this.shockwaves.push({ x: p.x, y: p.y, radius: radius * 0.75, age: 0, life: 0.28, inward: true });
     for (let i = 0; i < 8; i++) {
       const a = r() * Math.PI * 2;
-      this.flames.push({ x: p.x, y: p.y, vx: Math.cos(a) * 40, vy: Math.sin(a) * 30 - 20, radius: radius * 0.1 * (0.6 + r() * 0.6), age: 0, life: 0.18 + r() * 0.15 });
+      this.flames.push({ x: p.x, y: p.y, vx: Math.cos(a) * 40, vy: Math.sin(a) * 30 - 20, radius: radius * 0.1 * (0.6 + r() * 0.6), age: 0, life: 0.18 + r() * 0.15, style });
     }
     // Dust sucked in from a ring around the charge.
     for (let i = 0; i < 26; i++) {
@@ -393,7 +417,7 @@ export class JuiceDirector {
     for (let i = 0; i < 8; i++) {
       this.flames.push({
         x: p.x + (r() - 0.5) * 30, y: p.y - 6, vx: (r() - 0.5) * 30, vy: -30 - r() * 40,
-        radius: 8 + r() * 8, age: 0, life: 0.6 + r() * 0.5,
+        radius: 8 + r() * 8, age: 0, life: 0.6 + r() * 0.5, style: 'classic',
       });
     }
     for (let i = 0; i < 18; i++) {

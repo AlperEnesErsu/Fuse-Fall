@@ -183,6 +183,8 @@ export class LevelSession {
   private readonly structuralTotal: number;
   private readonly targetTotal: number;
   private lostStructural = 0;
+  /** Area of structure brought down, by material: what the demolition yields. */
+  private readonly demolished: Partial<Record<MaterialId, number>> = {};
   private compromisedCount = 0;
   /** Targets brought down without a blast reaching them, and blasts set off by other blasts. */
   private dominoes = 0;
@@ -584,7 +586,7 @@ export class LevelSession {
     );
     this.compromise(e, state.position);
     this.removeEntity(e);
-    if (e.structural) this.lostStructural++;
+    if (e.structural) this.loseStructure(e);
     this.events.emit('blockShattered', {
       position: state.position,
       material: e.material,
@@ -682,7 +684,7 @@ export class LevelSession {
       if (p.y > WORLD.height + m || (!onRoute && (p.x < -m || p.x > WORLD.width + m))) {
         if (e.target) this.markDown(e, p);
         this.compromise(e, p);
-        if (e.structural) this.lostStructural++;
+        if (e.structural) this.loseStructure(e);
         this.removeEntity(e);
       }
     }
@@ -773,6 +775,7 @@ export class LevelSession {
         Math.abs(s.angle - e.origin.angle) >= TUNING.collapse.rotation
       ) {
         collapsed++;
+        this.addDemolished(e);
       }
     }
     this.currentPhase = 'finished';
@@ -789,6 +792,7 @@ export class LevelSession {
         protectedDamaged: this.compromisedCount,
         duration: this.finishedAt - this.firedAt,
         dominoes: this.dominoes,
+        demolished: { ...this.demolished },
         chainBlasts: this.chainBlasts,
         footprint: this.level.footprint && {
           achieved: this.containment(),
@@ -871,6 +875,16 @@ export class LevelSession {
   }
 
   // ---- entity bookkeeping ------------------------------------------------
+
+  /** A structural block shattered or left the world: it counts as collapsed. */
+  private loseStructure(e: Entity): void {
+    this.lostStructural++;
+    this.addDemolished(e);
+  }
+
+  private addDemolished(e: Entity): void {
+    this.demolished[e.material] = (this.demolished[e.material] ?? 0) + area(e.shape);
+  }
 
   private markDown(e: Entity, position: Vec2): void {
     if (!e.target || e.down) return;

@@ -1141,3 +1141,175 @@ h2,
   color: var(--muted);
   font-size: 0.9rem;
 }
+
+/* ---- Career and workshop ---- */
+.rank-inline {
+  color: var(--accent);
+  font-family: var(--font-display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.career {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-width: min(320px, 70vw);
+  padding: 6px 12px;
+  border: 1px solid var(--edge);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--panel-2);
+}
+.career .rank {
+  font: 700 0.85rem var(--font-display);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.career .scrap {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font: 700 1.05rem var(--font-display);
+  color: var(--accent);
+}
+.career .scrap .label {
+  color: var(--muted);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+}
+.panel.workshop {
+  align-items: stretch;
+  width: min(640px, calc(100vw - 32px));
+}
+.panel.workshop section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.shop-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 6px;
+}
+.shop-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--edge);
+  border-radius: var(--radius);
+  background: var(--panel-2);
+}
+.shop-item.active {
+  border-color: var(--accent);
+}
+.shop-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+.shop-text strong {
+  font-size: 0.88rem;
+}
+.shop-text small {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+.btn.small {
+  padding: 6px 10px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+.btn.short {
+  opacity: 0.55;
+}
+.tag {
+  font: 600 0.72rem var(--font-display);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.tag.active {
+  color: var(--accent);
+}
+/* Blast style swatches: fire over smoke, matching the effect palettes. */
+.swatch {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--edge-strong);
+}
+.swatch.style-classic {
+  background: radial-gradient(circle at 40% 40%, #fff1c4 0 18%, #ff9a2e 34%, #2a2827 70%);
+}
+.swatch.style-thermite {
+  background: radial-gradient(circle at 40% 40%, #ffffff 0 22%, #d8ffe0 36%, #3c4a3f 70%);
+}
+.swatch.style-rose {
+  background: radial-gradient(circle at 40% 40%, #fff0f6 0 18%, #ff7aa8 36%, #b4507a 70%);
+}
+.swatch.style-neon {
+  background: radial-gradient(circle at 40% 40%, #e8ffff 0 18%, #36e3f0 36%, #4a2a6e 70%);
+}
+.swatch.style-confetti {
+  background: conic-gradient(#f2b134 0 20%, #e5484d 0 40%, #3fb6a8 0 60%, #7c6cf0 0 80%, #4cb36a 0);
+}
+.payout {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.payout .label {
+  color: var(--muted);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+}
+.payout .value {
+  font: 700 1.2rem var(--font-display);
+  color: var(--accent);
+}
+.payout small {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+.badge.promoted {
+  align-self: flex-start;
+}
+
+/* Daily job and Free Site: stacked on tall screens, side by side on short landscape phones. */
+.menu-modes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+@media (max-height: 420px) {
+  .panel.menu {
+    gap: 6px;
+  }
+  .panel.menu .logo {
+    font-size: 2.1rem;
+  }
+  .panel.menu .tagline {
+    display: none;
+  }
+  .menu-modes {
+    flex-direction: row;
+  }
+  .menu-modes .btn {
+    min-width: 0;
+    flex: 1;
+    padding: 6px 12px;
+  }
+  .panel.menu .btn.big {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+}

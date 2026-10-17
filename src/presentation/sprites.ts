@@ -3,6 +3,8 @@
  * cheaper than building a radial gradient per particle per frame, which
  * matters on phone GPUs during big explosions (NFR-01).
  */
+import { blastPalette, type Rgb } from './blast-styles';
+
 const SIZE = 64;
 const cache = new Map<string, HTMLCanvasElement>();
 
@@ -36,14 +38,16 @@ export const puff = (hex: string): HTMLCanvasElement =>
     g.addColorStop(1, `rgba(${r},${gr},${b},0)`);
   });
 
-/** Flame sprites in a few heat steps, from white-hot to dull red. */
+/** Flame sprites per blast style in a few heat steps: hot ones glow at the core, cool ones show the rim colour. */
 const FLAME_STEPS = 6;
-export const flame = (heat: number): HTMLCanvasElement => {
+export const flame = (heat: number, style: string): HTMLCanvasElement => {
   const step = Math.max(0, Math.min(FLAME_STEPS - 1, Math.round(heat * (FLAME_STEPS - 1))));
   const h = step / (FLAME_STEPS - 1);
-  return make(`flame${step}`, (g) => {
-    g.addColorStop(0, `rgba(255, ${Math.round(200 + 50 * h)}, ${Math.round(120 * h * h)}, 0.9)`);
-    g.addColorStop(0.45, `rgba(255, ${Math.round(110 + 60 * h)}, 30, 0.6)`);
-    g.addColorStop(1, 'rgba(160, 40, 10, 0)');
+  const { core, mid, rim } = blastPalette(style).flame;
+  const mix = (a: Rgb, b: Rgb, t: number) => a.map((v, i) => Math.round(v + ((b[i] ?? v) - v) * t)).join(', ');
+  return make(`flame-${style}-${step}`, (g) => {
+    g.addColorStop(0, `rgba(${mix(mid, core, h)}, 0.9)`);
+    g.addColorStop(0.45, `rgba(${mix(rim, mid, 0.4 + 0.6 * h)}, 0.6)`);
+    g.addColorStop(1, `rgba(${rim.join(', ')}, 0)`);
   });
 };

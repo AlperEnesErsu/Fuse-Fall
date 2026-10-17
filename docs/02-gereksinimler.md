@@ -201,6 +201,15 @@ Yapıyı incele → Patlayıcı yerleştir → Ateşle → Yıkımı izle → Pu
 | FR-60 | **Oyun tarzı yıldızları:** başarı 1 yıldız; her tarz +1, en fazla 3. Tarzlar: *Cerrahi* (par içinde şarj), *Tam yıkım* (çöküş bonusu), *Domino* (patlamanın değmediği bir hedefi düşen yapı devirdi ya da en az 2 zincirleme patlama). Herhangi iki tarz üç yıldız verir. Rapor ekranı hangi tarzların tuttuğunu gösterir. | M |
 | FR-61 | **İçe çöken (implozyon) şarj:** harcı kesip yapıyı merkeze ve aşağı çeker; yapı kendi alanına katlanır. Enkaz alanı olan görevlerde ve Serbest Şantiye'de kullanılabilir. Kendi görünümü, içe kapanan halka efekti ve sesi vardır. | M |
 
+### Kariyer ve atölye (v0.9)
+
+| ID | Gereksinim | Öncelik |
+|---|---|---|
+| FR-62 | **Hurda:** her görev, yıkılan malzemenin alanına ve türüne göre hurda öder (metal > beton > tuğla/cam > ahşap; araçlar ödenmez), tutan her oyun tarzı için ek ve ilk galibiyette bonus. Tekrar oynanan görev %50, başarısız görev %25, günlük görev 2 kat öder. Serbest Şantiye ödemez. | M |
+| FR-63 | **Kariyer rütbesi:** toplam kazanılan hurdaya göre altı rütbe (Stajyer → Baş Mühendis); harcamak rütbeyi düşürmez. Terfi raporda gösterilir. | M |
+| FR-64 | **Atölye:** hurda ile kozmetik patlama stilleri (Termit, Pembe Duman, Neon, Konfeti) ve ek Serbest Şantiye yapıları alınır. Hiçbiri görev fiziğini ya da zorluğunu değiştirmez; her görev yeni oyuncuyla da çözülebilir kalır. | M |
+| FR-65 | Hurda, rütbe ve atölye kaydı eski kayıtlarla uyumludur: alanlar yoksa boş başlar, bozuk değerler sıfırlanır. | M |
+
 ## 6. MVP kapsamı (Sürüm 0.1)
 
 - 1 dünya, 10 seviye

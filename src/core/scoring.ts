@@ -1,3 +1,5 @@
+import type { MaterialId } from './materials';
+
 export type Stars = 0 | 1 | 2 | 3;
 
 export interface LevelOutcome {
@@ -16,6 +18,8 @@ export interface LevelOutcome {
   readonly dominoes: number;
   /** Barrels, wrecks and bombs set off by another blast. */
   readonly chainBlasts: number;
+  /** Area (px²) of structure brought down, by material. */
+  readonly demolished: Readonly<Partial<Record<MaterialId, number>>>;
   /** For footprint jobs: the share of the structure's material that ended up inside the site, and the share required. */
   readonly footprint: { readonly achieved: number; readonly required: number } | undefined;
 }

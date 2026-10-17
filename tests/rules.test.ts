@@ -91,6 +91,7 @@ describe('scoring', () => {
     footprint: undefined,
     dominoes: 0,
     chainBlasts: 0,
+    demolished: {},
   };
   const rules = { par: 1, bonusCollapse: 0.5 };
   it('awards a star per play style on top of success', () => {

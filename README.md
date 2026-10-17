@@ -43,6 +43,7 @@ Bağımlılıklar içe doğru akar ve ESLint ile zorlanır. `core` Matter.js'i y
 - `src/content/text.ts`: görev ve şehir adlarının İngilizce karşılıkları (Türkçe kaynak seviye verisinde). Arayüz metinleri `src/presentation/i18n/`.
 - Görev alanları: `chargeKinds` (`standard`, `precision`, `implosion`, `bomb`; enkaz alanı olan görevlere üretici `implosion` ekler), `footprint` (`from`, `to`, `ratio`) ve `dropZones` (bombaların asıldığı gökyüzü alanları). Bombalı çözümler `solution.detonateAt` ile PATLAT anlarını (ATEŞLE'den sonra saniye) verir.
 - `src/content/sandbox.ts`: Serbest Şantiye yapı şablonları.
+- `src/content/workshop.ts`: atölye kataloğu (fiyatlar). Hurda ve rütbe kuralları `src/core/economy.ts`, patlama stillerinin renkleri `src/presentation/blast-styles.ts`.
 - Araçlar: `protected` (korunan üçüncü taraf trafik) ve `style` (`car`, `train`). Trenler raylarda gider; rotalar ekran kenarlarını aşabilir.
 - Yeni şehir: `cities.json`'a ekle, seviye paketini `src/content/levels.ts` içindeki `PACKS` listesine ekle, silüetini `src/presentation/scenery.ts` içinde çiz.
 

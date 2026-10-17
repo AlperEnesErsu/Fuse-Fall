@@ -790,9 +790,10 @@ export class Renderer {
       const t = l.age / l.life;
       const a = (1 - t) * (1 - t) * 0.55 * lightScale;
       const g = c.createRadialGradient(l.x, l.y, 0, l.x, l.y, l.radius);
-      g.addColorStop(0, `rgba(255, 190, 110, ${a})`);
-      g.addColorStop(0.4, `rgba(255, 120, 50, ${a * 0.35})`);
-      g.addColorStop(1, 'rgba(255, 100, 40, 0)');
+      const [lr, lg, lb] = l.color;
+      g.addColorStop(0, `rgba(${lr}, ${lg}, ${lb}, ${a})`);
+      g.addColorStop(0.4, `rgba(${lr}, ${Math.round(lg * 0.7)}, ${Math.round(lb * 0.6)}, ${a * 0.35})`);
+      g.addColorStop(1, `rgba(${lr}, ${Math.round(lg * 0.6)}, ${Math.round(lb * 0.5)}, 0)`);
       c.fillStyle = g;
       c.fillRect(l.x - l.radius, l.y - l.radius, l.radius * 2, l.radius * 2);
     }
@@ -801,7 +802,7 @@ export class Renderer {
       const r = f.radius * (0.7 + t * 0.9);
       const heat = 1 - t;
       c.globalAlpha = heat;
-      c.drawImage(flame(heat), f.x - r, f.y - r, r * 2, r * 2);
+      c.drawImage(flame(heat, f.style), f.x - r, f.y - r, r * 2, r * 2);
     }
     c.globalAlpha = 1;
     for (const p of juice.particles.alive()) {
