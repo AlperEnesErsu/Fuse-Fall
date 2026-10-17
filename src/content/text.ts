@@ -54,6 +54,16 @@ const EN_LEVELS: Readonly<Record<string, { readonly name: string; readonly hint:
   'w4-08': { name: 'Colonnade', hint: 'A long four-support building; historic buildings on both sides.' },
   'w4-09': { name: 'Dome', hint: 'Cut the drum; the dome comes down under its own weight.' },
   'w4-10': { name: 'Rome Finale', hint: 'Two structures, a tight site, a historic neighbour. Choose each charge type and spot.' },
+  'w5-01': { name: 'Between Trains', hint: 'A protected train passes every few seconds. Do not fire while a circle is red.' },
+  'w5-02': { name: 'Two Stops', hint: 'Two structures, one window. Both charges must go off while the train is away.' },
+  'w5-03': { name: 'Under the Deck', hint: 'The cut is right under the deck. A precision circle does not reach the train.' },
+  'w5-04': { name: 'Platform Canopy', hint: 'Keep the canopy debris on the platform site; do not fire while the train passes.' },
+  'w5-05': { name: 'Signal Mast', hint: 'The kiosk on the left is protected. Lay the mast down to the right; mind the train.' },
+  'w5-06': { name: 'Road Below', hint: 'Catch the vehicle on the lower road; the train above is protected.' },
+  'w5-07': { name: 'Night Service', hint: 'The night train is faster. The window is narrower.' },
+  'w5-08': { name: 'Fuel Depot', hint: 'The barrel chain throws upward too. Wait for the train.' },
+  'w5-09': { name: 'Crossing Below', hint: 'Two vehicles below, a train above. Set the delays for both.' },
+  'w5-10': { name: 'Tokyo Finale', hint: 'A tight site, a protected kiosk and the timetable. Think about all of them at once.' },
 };
 
 const EN_CITIES: Readonly<Record<string, { readonly city: string; readonly country: string }>> = {

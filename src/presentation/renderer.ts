@@ -83,6 +83,7 @@ export class Renderer {
     c.drawImage(this.paintedBackdrop(), -m, -m, WORLD.width + 2 * m, WORLD.height + 2 * m);
     this.scorches(juice);
     if (session?.level.footprint) this.footprint(session.level.footprint.from, session.level.footprint.to);
+    if (session) this.tracks(session);
     if (session) {
       if (session.phase === 'placing') {
         this.zones(session, overlay.time);
@@ -170,7 +171,7 @@ export class Renderer {
     c.strokeStyle = 'rgba(255, 255, 255, 0.45)';
     c.lineWidth = 2;
     for (const e of session.view()) {
-      if (!e.car || !e.car.driving || e.shape.kind !== 'rect') continue;
+      if (!e.car || !e.car.driving || e.car.style === 'train' || e.shape.kind !== 'rect') continue;
       const y = e.car.route.y - e.shape.h / 2 - 10;
       const from = e.car.route.from - e.shape.w / 2;
       const to = e.car.route.to + e.shape.w / 2;
@@ -220,11 +221,75 @@ export class Renderer {
     if (e.shape.kind === 'circle') {
       this.barrel(e.shape.r, time);
     } else if (e.car) {
-      this.car(e, e.shape.w, e.shape.h);
+      if (e.car.style === 'train') this.train(e, e.shape.w, e.shape.h, threatened);
+      else this.car(e, e.shape.w, e.shape.h);
     } else {
       this.block(e, e.shape.w, e.shape.h, threatened);
     }
     c.restore();
+  }
+
+  /** Rails under every train route, across the whole view. */
+  private tracks(session: LevelSession): void {
+    const c = this.ctx;
+    for (const car of session.level.cars) {
+      if (car.style !== 'train') continue;
+      const y = car.y + car.h / 2;
+      c.fillStyle = '#3a3330';
+      for (let x = -SCENE_MARGIN; x < WORLD.width + SCENE_MARGIN; x += 18) c.fillRect(x, y + 1, 10, 4);
+      c.fillStyle = '#9aa1aa';
+      c.fillRect(-SCENE_MARGIN, y - 1, WORLD.width + 2 * SCENE_MARGIN, 2);
+    }
+  }
+
+  /** A Shinkansen-style train: white body, blue stripe, window row, long nose. Protected: teal corners, red when hit. */
+  private train(e: EntityView, w: number, h: number, threatened: boolean): void {
+    const c = this.ctx;
+    const dir = e.car?.direction ?? 1;
+    c.save();
+    c.scale(dir, 1);
+    c.fillStyle = '#eef1f4';
+    c.beginPath();
+    c.moveTo(-w / 2, -h / 2 + 4);
+    c.lineTo(w / 2 - 46, -h / 2);
+    c.quadraticCurveTo(w / 2 - 4, -h / 2 + 2, w / 2, h / 2 - 4);
+    c.lineTo(w / 2, h / 2);
+    c.lineTo(-w / 2, h / 2);
+    c.closePath();
+    c.fill();
+    c.fillStyle = '#1f5fae';
+    c.fillRect(-w / 2, h / 2 - 11, w - 6, 4);
+    c.fillStyle = '#2b3542';
+    for (let x = -w / 2 + 10; x < w / 2 - 60; x += 16) c.fillRect(x, -h / 2 + 8, 10, 7);
+    c.beginPath();
+    c.moveTo(w / 2 - 50, -h / 2 + 7);
+    c.lineTo(w / 2 - 26, -h / 2 + 8);
+    c.lineTo(w / 2 - 34, -h / 2 + 15);
+    c.lineTo(w / 2 - 50, -h / 2 + 15);
+    c.closePath();
+    c.fill();
+    c.strokeStyle = 'rgba(0,0,0,0.3)';
+    c.lineWidth = 1;
+    for (let x = -w / 2 + 70; x < w / 2 - 40; x += 70) {
+      c.beginPath();
+      c.moveTo(x, -h / 2 + 3);
+      c.lineTo(x, h / 2);
+      c.stroke();
+    }
+    c.restore();
+    // Protected marking, not mirrored.
+    const mark = e.compromised || threatened ? PALETTE.invalid : PALETTE.protect;
+    c.strokeStyle = mark;
+    c.lineWidth = 2.5;
+    c.beginPath();
+    for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]] as const) {
+      const x = (sx * w) / 2 + sx * 3;
+      const y = (sy * h) / 2 + sy * 3;
+      c.moveTo(x - sx * 10, y);
+      c.lineTo(x, y);
+      c.lineTo(x, y - sy * 8);
+    }
+    c.stroke();
   }
 
   /** Flat side-view car: body, cabin, windows, wheels and a headlight in the driving direction. */

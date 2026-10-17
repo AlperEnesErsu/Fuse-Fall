@@ -13,6 +13,8 @@ export interface BodySpec {
   readonly angle: number;
   readonly material: MaterialId;
   readonly isStatic: boolean;
+  /** Moved only by setPose (on rails): immune to gravity and pushes, but still collides. */
+  readonly kinematic?: boolean;
   readonly velocity?: Vec2;
   readonly angularVelocity?: number;
 }

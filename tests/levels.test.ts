@@ -35,7 +35,7 @@ export const playSolution = (
 
 describe('campaign content', () => {
   it('ships ten ordered levels for each playable city', () => {
-    for (const world of [1, 2, 3, 4]) {
+    for (const world of [1, 2, 3, 4, 5]) {
       expect(levelsOf(campaign, world).map((l) => l.order)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
     }
   });
@@ -57,7 +57,7 @@ describe('campaign content', () => {
         position: { x: b.x, y: b.y },
         angle: b.angle,
         material: b.material,
-        isStatic: false,
+        isStatic: b.anchored,
       }),
     );
     for (let t = 0; t < 4; t += STEP) physics.step(STEP);
@@ -114,6 +114,15 @@ describe('campaign content', () => {
     (_id, level) => {
       const standard = level.solution.charges.map((c) => ({ ...c, kind: 'standard' as const }));
       expect(playSolution(level, level.solution.fireAt, standard).result?.success).toBe(false);
+    },
+  );
+
+  // Train-window puzzles: with the train overhead, the same placement voids the contract.
+  it.each(cases.filter(([, l]) => ['w5-01', 'w5-02', 'w5-04', 'w5-07', 'w5-10'].includes(l.id)))(
+    '%s needs the train window',
+    (_id, level) => {
+      const outcomes = Array.from({ length: 24 }, (_, i) => playSolution(level, i * 0.25).result?.failure);
+      expect(outcomes).toContain('collateral-damage');
     },
   );
 

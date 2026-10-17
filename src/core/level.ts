@@ -40,7 +40,13 @@ export interface CarDef {
   readonly target: boolean;
   /** `patrol` drives back and forth; `flow` is one-way traffic that re-enters at `from` after reaching `to`. */
   readonly mode: 'patrol' | 'flow';
+  /** Third-party traffic (a scheduled train): must come through the job untouched. */
+  readonly protected: boolean;
+  readonly style: 'car' | 'train';
 }
+
+/** Vehicles may run on past the screen edges, so traffic enters and leaves naturally. */
+export const ROUTE_OVERRUN = 400;
 
 export interface SolutionCharge extends Vec2 {
   /** Detonation delay in seconds; omitted means the default sequence. */
@@ -167,16 +173,19 @@ const startsClear = (y: number, w: number, h: number): boolean =>
 const car = (v: unknown, path: string): CarDef => {
   const o = obj(v, path);
   const def: CarDef = {
-    x: num(o.x, `${path}.x`, 0, WORLD.width),
+    x: num(o.x, `${path}.x`, -ROUTE_OVERRUN, WORLD.width + ROUTE_OVERRUN),
     y: num(o.y, `${path}.y`, 0, WORLD.groundY),
-    w: num(o.w, `${path}.w`, 20, 200),
+    w: num(o.w, `${path}.w`, 20, 320),
     h: num(o.h, `${path}.h`, 10, 100),
-    from: num(o.from, `${path}.from`, 0, WORLD.width),
-    to: num(o.to, `${path}.to`, 0, WORLD.width),
+    from: num(o.from, `${path}.from`, -ROUTE_OVERRUN, WORLD.width + ROUTE_OVERRUN),
+    to: num(o.to, `${path}.to`, -ROUTE_OVERRUN, WORLD.width + ROUTE_OVERRUN),
     speed: num(o.speed, `${path}.speed`, 0, 400),
     target: o.target === undefined ? false : o.target === true || fail(`${path}.target`, 'expected boolean'),
     mode: o.mode === undefined || o.mode === 'patrol' ? 'patrol' : o.mode === 'flow' ? 'flow' : fail(`${path}.mode`, 'expected patrol or flow'),
+    protected: o.protected === undefined ? false : o.protected === true || fail(`${path}.protected`, 'expected boolean'),
+    style: o.style === undefined || o.style === 'car' ? 'car' : o.style === 'train' ? 'train' : fail(`${path}.style`, 'expected car or train'),
   };
+  if (def.target && def.protected) fail(path, 'a vehicle cannot be both a target and protected');
   if (def.from > def.to) fail(path, 'from must not exceed to');
   if (def.x < def.from || def.x > def.to) fail(`${path}.x`, 'car must start on its route');
   if (def.target && !startsClear(def.y, def.w, def.h)) fail(path, 'target must start clear of the ground');

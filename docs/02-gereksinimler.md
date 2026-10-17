@@ -171,6 +171,16 @@ Yapıyı incele → Patlayıcı yerleştir → Ateşle → Yıkımı izle → Pu
 | FR-45 | Roma (Bölüm 4): 10 görev. Hassas şarj kullanan her görevde, aynı yerleşim standart şarjla kazanılamaz (testle doğrulanır). | M |
 | FR-46 | Uygulama ikonu ve açılış ekranı; Türkçe ve İngilizce dil desteği (cihaz diline göre otomatik). | M |
 
+### Tokyo: sefer penceresi (v0.6)
+
+| ID | Gereksinim | Öncelik |
+|---|---|---|
+| FR-47 | **Korunan tren:** viyadük üzerinde düzenli aralıklarla geçen, korunan bir tren. Raylarda gider (kinematik): yerçekimi ya da enkaz onu itemez, ama çarpışma hasarı sayılır. | M |
+| FR-48 | Korunan araçlar için koruma kuralı: hiçbir patlama çemberi aracın gerçek dış hatlarına değmez; raydan çıkma, eğilme, durma ya da yarı dayanım kaybı sözleşmeyi bozar. Normal ilerlemesi bozulma sayılmaz. | M |
+| FR-49 | Koruma kuralı (yapı ve araç) çember ile döndürülmüş dikdörtgenin gerçek temasıyla ölçülür; yerleştirme önizlemesi aynı fonksiyonu kullanır. | M |
+| FR-50 | Araç rotaları ekran kenarlarının dışına uzanabilir; rotasındaki trafik dışarıda silinmez. | M |
+| FR-51 | Tokyo (Bölüm 5): 10 görev. Yüksek kesim görevlerinde tren üstteyken ateşlemek sözleşmeyi bozar (testle doğrulanır). | M |
+
 ## 6. MVP kapsamı (Sürüm 0.1)
 
 - 1 dünya, 10 seviye

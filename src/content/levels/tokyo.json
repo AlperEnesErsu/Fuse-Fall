@@ -1,0 +1,1324 @@
+[
+ {
+  "id": "w5-01",
+  "name": "Sefer Arası",
+  "world": 5,
+  "order": 1,
+  "charges": {
+   "max": 1,
+   "par": 1
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 250,
+    "y": 300,
+    "w": 100,
+    "h": 60
+   }
+  ],
+  "blocks": [
+   {
+    "x": 40,
+    "y": 365.0,
+    "w": 30,
+    "h": 230,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 520,
+    "y": 365.0,
+    "w": 30,
+    "h": 230,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 920,
+    "y": 365.0,
+    "w": 30,
+    "h": 230,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 160,
+    "y": 230.0,
+    "w": 600,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 800,
+    "y": 230.0,
+    "w": 600,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 265.0,
+    "y": 405.0,
+    "w": 20,
+    "h": 150,
+    "material": "wood"
+   },
+   {
+    "x": 335.0,
+    "y": 405.0,
+    "w": 20,
+    "h": 150,
+    "material": "wood"
+   },
+   {
+    "x": 300,
+    "y": 320.0,
+    "w": 110,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 300,
+    "y": 293.0,
+    "w": 34,
+    "h": 34,
+    "material": "wood",
+    "target": true
+   }
+  ],
+  "barrels": [],
+  "cars": [
+   {
+    "x": 700,
+    "y": 213.0,
+    "w": 220,
+    "h": 34,
+    "from": -300,
+    "to": 1260,
+    "speed": 260,
+    "mode": "flow",
+    "style": "train",
+    "protected": true
+   }
+  ],
+  "solution": {
+   "charges": [
+    {
+     "x": 280,
+     "y": 330
+    }
+   ],
+   "fireAt": 0.0
+  },
+  "hint": "Tren her birkaç saniyede bir geçer ve korunuyor. Çember kırmızıyken ateşleme."
+ },
+ {
+  "id": "w5-02",
+  "name": "İki Durak",
+  "world": 5,
+  "order": 2,
+  "charges": {
+   "max": 2,
+   "par": 2
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 190,
+    "y": 300,
+    "w": 100,
+    "h": 60
+   },
+   {
+    "x": 670,
+    "y": 300,
+    "w": 100,
+    "h": 60
+   }
+  ],
+  "blocks": [
+   {
+    "x": 40,
+    "y": 365.0,
+    "w": 30,
+    "h": 230,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 520,
+    "y": 365.0,
+    "w": 30,
+    "h": 230,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 920,
+    "y": 365.0,
+    "w": 30,
+    "h": 230,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 160,
+    "y": 230.0,
+    "w": 600,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 800,
+    "y": 230.0,
+    "w": 600,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 210.0,
+    "y": 405.0,
+    "w": 20,
+    "h": 150,
+    "material": "wood"
+   },
+   {
+    "x": 270.0,
+    "y": 405.0,
+    "w": 20,
+    "h": 150,
+    "material": "wood"
+   },
+   {
+    "x": 240,
+    "y": 320.0,
+    "w": 100,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 240,
+    "y": 294.0,
+    "w": 32,
+    "h": 32,
+    "material": "wood",
+    "target": true
+   },
+   {
+    "x": 690.0,
+    "y": 405.0,
+    "w": 20,
+    "h": 150,
+    "material": "wood"
+   },
+   {
+    "x": 750.0,
+    "y": 405.0,
+    "w": 20,
+    "h": 150,
+    "material": "wood"
+   },
+   {
+    "x": 720,
+    "y": 320.0,
+    "w": 100,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 720,
+    "y": 294.0,
+    "w": 32,
+    "h": 32,
+    "material": "wood",
+    "target": true
+   }
+  ],
+  "barrels": [],
+  "cars": [
+   {
+    "x": 200,
+    "y": 213.0,
+    "w": 220,
+    "h": 34,
+    "from": -300,
+    "to": 1260,
+    "speed": 260,
+    "mode": "flow",
+    "style": "train",
+    "protected": true
+   }
+  ],
+  "solution": {
+   "charges": [
+    {
+     "x": 220,
+     "y": 330
+    },
+    {
+     "x": 700,
+     "y": 330
+    }
+   ],
+   "fireAt": 2.466666666666667
+  },
+  "hint": "İki yapı, tek pencere. İki şarj da tren uzaktayken patlamalı."
+ },
+ {
+  "id": "w5-03",
+  "name": "Tavan Altı",
+  "world": 5,
+  "order": 3,
+  "charges": {
+   "max": 2,
+   "par": 1
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 330,
+    "y": 280,
+    "w": 100,
+    "h": 60
+   }
+  ],
+  "blocks": [
+   {
+    "x": 40,
+    "y": 365.0,
+    "w": 30,
+    "h": 230,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 520,
+    "y": 365.0,
+    "w": 30,
+    "h": 230,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 920,
+    "y": 365.0,
+    "w": 30,
+    "h": 230,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 160,
+    "y": 230.0,
+    "w": 600,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 800,
+    "y": 230.0,
+    "w": 600,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 340.0,
+    "y": 395.0,
+    "w": 20,
+    "h": 170,
+    "material": "wood"
+   },
+   {
+    "x": 420.0,
+    "y": 395.0,
+    "w": 20,
+    "h": 170,
+    "material": "wood"
+   },
+   {
+    "x": 380,
+    "y": 300.0,
+    "w": 120,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 380,
+    "y": 275.0,
+    "w": 30,
+    "h": 30,
+    "material": "wood",
+    "target": true
+   }
+  ],
+  "barrels": [],
+  "cars": [
+   {
+    "x": 380,
+    "y": 213.0,
+    "w": 220,
+    "h": 34,
+    "from": -300,
+    "to": 1260,
+    "speed": 260,
+    "mode": "flow",
+    "style": "train",
+    "protected": true
+   }
+  ],
+  "solution": {
+   "charges": [
+    {
+     "x": 360,
+     "y": 310,
+     "kind": "precision"
+    }
+   ],
+   "fireAt": 0.5
+  },
+  "hint": "Kesim tabliyenin hemen altında. Hassas şarjın çemberi trene ulaşmaz.",
+  "chargeKinds": [
+   "standard",
+   "precision"
+  ]
+ },
+ {
+  "id": "w5-04",
+  "name": "Peron Saçağı",
+  "world": 5,
+  "order": 4,
+  "charges": {
+   "max": 3,
+   "par": 2
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 130,
+    "y": 300,
+    "w": 260,
+    "h": 60
+   }
+  ],
+  "blocks": [
+   {
+    "x": 40,
+    "y": 365.0,
+    "w": 30,
+    "h": 230,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 520,
+    "y": 365.0,
+    "w": 30,
+    "h": 230,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 920,
+    "y": 365.0,
+    "w": 30,
+    "h": 230,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 160,
+    "y": 230.0,
+    "w": 600,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 800,
+    "y": 230.0,
+    "w": 600,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 160,
+    "y": 405.0,
+    "w": 24,
+    "h": 150,
+    "material": "wood"
+   },
+   {
+    "x": 260,
+    "y": 405.0,
+    "w": 24,
+    "h": 150,
+    "material": "wood"
+   },
+   {
+    "x": 360,
+    "y": 405.0,
+    "w": 24,
+    "h": 150,
+    "material": "wood"
+   },
+   {
+    "x": 260.0,
+    "y": 321.0,
+    "w": 240,
+    "h": 18,
+    "material": "wood"
+   },
+   {
+    "x": 260,
+    "y": 296.0,
+    "w": 32,
+    "h": 32,
+    "material": "wood",
+    "target": true
+   }
+  ],
+  "barrels": [],
+  "cars": [
+   {
+    "x": 900,
+    "y": 213.0,
+    "w": 220,
+    "h": 34,
+    "from": -300,
+    "to": 1260,
+    "speed": 260,
+    "mode": "flow",
+    "style": "train",
+    "protected": true
+   }
+  ],
+  "solution": {
+   "charges": [
+    {
+     "x": 260,
+     "y": 330
+    }
+   ],
+   "fireAt": 0.0
+  },
+  "hint": "Saçak enkazı peron alanında kalmalı; tren geçerken ateşleme.",
+  "chargeKinds": [
+   "standard",
+   "precision"
+  ],
+  "footprint": {
+   "from": 100,
+   "to": 440,
+   "ratio": 0.75
+  }
+ },
+ {
+  "id": "w5-05",
+  "name": "Sinyal Direği",
+  "world": 5,
+  "order": 5,
+  "charges": {
+   "max": 2,
+   "par": 1
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 690,
+    "y": 380,
+    "w": 80,
+    "h": 100
+   }
+  ],
+  "blocks": [
+   {
+    "x": 40,
+    "y": 365.0,
+    "w": 30,
+    "h": 230,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 520,
+    "y": 365.0,
+    "w": 30,
+    "h": 230,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 920,
+    "y": 365.0,
+    "w": 30,
+    "h": 230,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 160,
+    "y": 230.0,
+    "w": 600,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 800,
+    "y": 230.0,
+    "w": 600,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 700,
+    "y": 450.0,
+    "w": 36,
+    "h": 60,
+    "material": "concrete"
+   },
+   {
+    "x": 700,
+    "y": 390.0,
+    "w": 36,
+    "h": 60,
+    "material": "concrete"
+   },
+   {
+    "x": 700,
+    "y": 330.0,
+    "w": 36,
+    "h": 60,
+    "material": "concrete"
+   },
+   {
+    "x": 700,
+    "y": 282.0,
+    "w": 36,
+    "h": 36,
+    "material": "wood",
+    "target": true
+   },
+   {
+    "x": 460,
+    "y": 450.0,
+    "w": 50,
+    "h": 60,
+    "material": "concrete",
+    "protected": true
+   }
+  ],
+  "barrels": [],
+  "cars": [
+   {
+    "x": 200,
+    "y": 213.0,
+    "w": 220,
+    "h": 34,
+    "from": -300,
+    "to": 1260,
+    "speed": 260,
+    "mode": "flow",
+    "style": "train",
+    "protected": true
+   }
+  ],
+  "solution": {
+   "charges": [
+    {
+     "x": 720,
+     "y": 450
+    }
+   ],
+   "fireAt": 0.0
+  },
+  "hint": "Soldaki büfe korunuyor. Direği sağa yatır; trene dikkat.",
+  "chargeKinds": [
+   "standard",
+   "precision"
+  ]
+ },
+ {
+  "id": "w5-06",
+  "name": "Yol Altı",
+  "world": 5,
+  "order": 6,
+  "charges": {
+   "max": 1,
+   "par": 1
+  },
+  "bonusCollapse": 0.4,
+  "zones": [
+   {
+    "x": 270,
+    "y": 330.0,
+    "w": 80,
+    "h": 38
+   }
+  ],
+  "blocks": [
+   {
+    "x": 40,
+    "y": 365.0,
+    "w": 30,
+    "h": 230,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 520,
+    "y": 365.0,
+    "w": 30,
+    "h": 230,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 920,
+    "y": 365.0,
+    "w": 30,
+    "h": 230,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 160,
+    "y": 230.0,
+    "w": 600,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 800,
+    "y": 230.0,
+    "w": 600,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 120,
+    "y": 435.0,
+    "w": 30,
+    "h": 90,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 480,
+    "y": 435.0,
+    "w": 30,
+    "h": 90,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 300.0,
+    "y": 380.0,
+    "w": 410,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   }
+  ],
+  "barrels": [],
+  "cars": [
+   {
+    "x": 140,
+    "y": 358.0,
+    "w": 56,
+    "h": 24,
+    "from": 130,
+    "to": 470,
+    "speed": 90,
+    "target": true
+   },
+   {
+    "x": 1000,
+    "y": 213.0,
+    "w": 220,
+    "h": 34,
+    "from": -300,
+    "to": 1260,
+    "speed": 260,
+    "mode": "flow",
+    "style": "train",
+    "protected": true
+   }
+  ],
+  "solution": {
+   "charges": [
+    {
+     "x": 310,
+     "y": 358.0
+    }
+   ],
+   "fireAt": 2.0833333333333335
+  },
+  "hint": "Alt yoldaki aracı yakala; üstteki tren korunuyor."
+ },
+ {
+  "id": "w5-07",
+  "name": "Gece Seferi",
+  "world": 5,
+  "order": 7,
+  "charges": {
+   "max": 2,
+   "par": 2
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 250,
+    "y": 300,
+    "w": 100,
+    "h": 70
+   },
+   {
+    "x": 590,
+    "y": 300,
+    "w": 100,
+    "h": 70
+   }
+  ],
+  "blocks": [
+   {
+    "x": 40,
+    "y": 365.0,
+    "w": 30,
+    "h": 230,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 520,
+    "y": 365.0,
+    "w": 30,
+    "h": 230,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 920,
+    "y": 365.0,
+    "w": 30,
+    "h": 230,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 160,
+    "y": 230.0,
+    "w": 600,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 800,
+    "y": 230.0,
+    "w": 600,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 270.0,
+    "y": 410.0,
+    "w": 20,
+    "h": 140,
+    "material": "wood"
+   },
+   {
+    "x": 330.0,
+    "y": 410.0,
+    "w": 20,
+    "h": 140,
+    "material": "wood"
+   },
+   {
+    "x": 300,
+    "y": 330.0,
+    "w": 100,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 300,
+    "y": 305.0,
+    "w": 30,
+    "h": 30,
+    "material": "wood",
+    "target": true
+   },
+   {
+    "x": 610.0,
+    "y": 410.0,
+    "w": 20,
+    "h": 140,
+    "material": "wood"
+   },
+   {
+    "x": 670.0,
+    "y": 410.0,
+    "w": 20,
+    "h": 140,
+    "material": "wood"
+   },
+   {
+    "x": 640,
+    "y": 330.0,
+    "w": 100,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 640,
+    "y": 305.0,
+    "w": 30,
+    "h": 30,
+    "material": "wood",
+    "target": true
+   }
+  ],
+  "barrels": [],
+  "cars": [
+   {
+    "x": 100,
+    "y": 213.0,
+    "w": 220,
+    "h": 34,
+    "from": -300,
+    "to": 1260,
+    "speed": 380,
+    "mode": "flow",
+    "style": "train",
+    "protected": true
+   }
+  ],
+  "solution": {
+   "charges": [
+    {
+     "x": 280,
+     "y": 330
+    },
+    {
+     "x": 620,
+     "y": 330
+    }
+   ],
+   "fireAt": 1.65
+  },
+  "hint": "Gece treni daha hızlı. Pencere daha dar."
+ },
+ {
+  "id": "w5-08",
+  "name": "Yakıt Deposu",
+  "world": 5,
+  "order": 8,
+  "charges": {
+   "max": 1,
+   "par": 1
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 560,
+    "y": 400,
+    "w": 60,
+    "h": 80
+   }
+  ],
+  "blocks": [
+   {
+    "x": 40,
+    "y": 365.0,
+    "w": 30,
+    "h": 230,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 520,
+    "y": 365.0,
+    "w": 30,
+    "h": 230,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 920,
+    "y": 365.0,
+    "w": 30,
+    "h": 230,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 160,
+    "y": 230.0,
+    "w": 600,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 800,
+    "y": 230.0,
+    "w": 600,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 745.0,
+    "y": 405.0,
+    "w": 20,
+    "h": 150,
+    "material": "wood"
+   },
+   {
+    "x": 815.0,
+    "y": 405.0,
+    "w": 20,
+    "h": 150,
+    "material": "wood"
+   },
+   {
+    "x": 780,
+    "y": 320.0,
+    "w": 110,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 780,
+    "y": 294.0,
+    "w": 32,
+    "h": 32,
+    "material": "wood",
+    "target": true
+   }
+  ],
+  "barrels": [
+   {
+    "x": 650,
+    "y": 464
+   },
+   {
+    "x": 710,
+    "y": 464
+   }
+  ],
+  "cars": [
+   {
+    "x": 600,
+    "y": 213.0,
+    "w": 220,
+    "h": 34,
+    "from": -300,
+    "to": 1260,
+    "speed": 260,
+    "mode": "flow",
+    "style": "train",
+    "protected": true
+   }
+  ],
+  "solution": {
+   "charges": [
+    {
+     "x": 600,
+     "y": 450
+    }
+   ],
+   "fireAt": 1.2
+  },
+  "hint": "Varil zinciri yukarıya doğru da savurur. Treni bekle."
+ },
+ {
+  "id": "w5-09",
+  "name": "Kavşak Altı",
+  "world": 5,
+  "order": 9,
+  "charges": {
+   "max": 2,
+   "par": 2
+  },
+  "bonusCollapse": 0.4,
+  "zones": [
+   {
+    "x": 300,
+    "y": 330.0,
+    "w": 90,
+    "h": 38
+   }
+  ],
+  "blocks": [
+   {
+    "x": 40,
+    "y": 365.0,
+    "w": 30,
+    "h": 230,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 520,
+    "y": 365.0,
+    "w": 30,
+    "h": 230,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 920,
+    "y": 365.0,
+    "w": 30,
+    "h": 230,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 160,
+    "y": 230.0,
+    "w": 600,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 800,
+    "y": 230.0,
+    "w": 600,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 60,
+    "y": 435.0,
+    "w": 30,
+    "h": 90,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 500,
+    "y": 435.0,
+    "w": 30,
+    "h": 90,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 280.0,
+    "y": 380.0,
+    "w": 490,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   }
+  ],
+  "barrels": [],
+  "cars": [
+   {
+    "x": 260,
+    "y": 358.0,
+    "w": 56,
+    "h": 24,
+    "from": 40,
+    "to": 520,
+    "speed": 140,
+    "target": true,
+    "mode": "flow"
+   },
+   {
+    "x": 40,
+    "y": 358.0,
+    "w": 56,
+    "h": 24,
+    "from": 40,
+    "to": 520,
+    "speed": 140,
+    "target": true,
+    "mode": "flow"
+   },
+   {
+    "x": 1100,
+    "y": 213.0,
+    "w": 220,
+    "h": 34,
+    "from": -300,
+    "to": 1260,
+    "speed": 260,
+    "mode": "flow",
+    "style": "train",
+    "protected": true
+   }
+  ],
+  "solution": {
+   "charges": [
+    {
+     "x": 320,
+     "y": 358.0,
+     "delay": 0
+    },
+    {
+     "x": 355,
+     "y": 358.0,
+     "delay": 1.8
+    }
+   ],
+   "fireAt": 0.55
+  },
+  "hint": "İki araç alt yolda, tren üstte. Gecikmeleri ikisine göre kur."
+ },
+ {
+  "id": "w5-10",
+  "name": "Tokyo Finali",
+  "world": 5,
+  "order": 10,
+  "charges": {
+   "max": 3,
+   "par": 2
+  },
+  "bonusCollapse": 0.45,
+  "zones": [
+   {
+    "x": 590,
+    "y": 300,
+    "w": 260,
+    "h": 60
+   }
+  ],
+  "blocks": [
+   {
+    "x": 40,
+    "y": 365.0,
+    "w": 30,
+    "h": 230,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 520,
+    "y": 365.0,
+    "w": 30,
+    "h": 230,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 920,
+    "y": 365.0,
+    "w": 30,
+    "h": 230,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 160,
+    "y": 230.0,
+    "w": 600,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 800,
+    "y": 230.0,
+    "w": 600,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 620,
+    "y": 405.0,
+    "w": 24,
+    "h": 150,
+    "material": "wood"
+   },
+   {
+    "x": 720,
+    "y": 405.0,
+    "w": 24,
+    "h": 150,
+    "material": "wood"
+   },
+   {
+    "x": 820,
+    "y": 405.0,
+    "w": 24,
+    "h": 150,
+    "material": "wood"
+   },
+   {
+    "x": 720.0,
+    "y": 321.0,
+    "w": 240,
+    "h": 18,
+    "material": "wood"
+   },
+   {
+    "x": 720,
+    "y": 296.0,
+    "w": 32,
+    "h": 32,
+    "material": "wood",
+    "target": true
+   },
+   {
+    "x": 420,
+    "y": 450.0,
+    "w": 50,
+    "h": 60,
+    "material": "concrete",
+    "protected": true
+   }
+  ],
+  "barrels": [],
+  "cars": [
+   {
+    "x": 300,
+    "y": 213.0,
+    "w": 220,
+    "h": 34,
+    "from": -300,
+    "to": 1260,
+    "speed": 260,
+    "mode": "flow",
+    "style": "train",
+    "protected": true
+   }
+  ],
+  "solution": {
+   "charges": [
+    {
+     "x": 720,
+     "y": 330
+    }
+   ],
+   "fireAt": 0.0
+  },
+  "hint": "Dar şantiye, korunan büfe ve sefer saati. Hepsini birlikte düşün.",
+  "chargeKinds": [
+   "standard",
+   "precision"
+  ],
+  "footprint": {
+   "from": 560,
+   "to": 900,
+   "ratio": 0.75
+  }
+ }
+]

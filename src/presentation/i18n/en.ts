@@ -29,6 +29,7 @@ export const en: Strings = {
   delayTitle: 'Detonation delay (ms)',
   chargeKinds: { standard: 'Standard', precision: 'Precision' },
   chargeKindLabel: 'Charge type',
+  trainHint: 'The train is protected. Do not fire while a circle is red.',
   footprintHint: 'Keep the debris inside the striped site. Precision charges throw less.',
   ms: (seconds: number) => `+${Math.round(seconds * 1000)} ms`,
   targets: 'Targets',

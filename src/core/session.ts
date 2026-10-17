@@ -1,7 +1,7 @@
 import type { BlastSource, EventBus, GameEvents } from './events';
 import { WORLD, type CarDef, type ChargeKind, type LevelDefinition } from './level';
 import { MATERIALS, type MaterialId } from './materials';
-import { createRng, distance, hashString, rectContains, sub, length, scale, vec, type Vec2 } from './math';
+import { createRng, distance, hashString, rectContains, rotate, sub, length, scale, vec, type Vec2 } from './math';
 import type { BodyState, PhysicsWorld, Shape } from './ports';
 import { err, ok, type Result } from './result';
 import { scoreLevel, type LevelResult } from './scoring';
@@ -46,6 +46,7 @@ export interface EntityView {
 }
 
 export interface CarView {
+  readonly style: 'car' | 'train';
   readonly driving: boolean;
   readonly wrecked: boolean;
   readonly direction: 1 | -1;
@@ -111,6 +112,7 @@ interface SpawnSpec {
   readonly driver?: Driver;
   /** Debris broken off a structure to demolish: still counts as its material for the footprint. */
   readonly fromStructure?: boolean;
+  readonly kinematic?: boolean;
 }
 
 const BLASTS: Readonly<Record<BlastKind, { radius: number; pressure: number; damage: number }>> = {
@@ -132,7 +134,20 @@ const halfExtent = (shape: Shape): number => (shape.kind === 'rect' ? Math.max(s
 /** Gap between the ground and a body's lowest possible point (any orientation). */
 const clearance = (shape: Shape, position: Vec2): number => WORLD.groundY - halfExtent(shape) - position.y;
 const innerRadius = (shape: Shape): number => (shape.kind === 'rect' ? Math.min(shape.w, shape.h) / 2 : shape.r);
-/** How far a blast must travel past `center` to touch a body: the one rule for damage and for the preview. */
+/**
+ * Whether a blast circle touches a body's actual outline (rotated rectangle or
+ * circle). This is the contract rule for protected property, and the preview
+ * uses the same function, so what the player sees is what is judged.
+ */
+export const circleTouches = (center: Vec2, radius: number, shape: Shape, position: Vec2, angle: number): boolean => {
+  const local = rotate(sub(center, position), -angle);
+  if (shape.kind === 'circle') return length(local) < radius + shape.r;
+  const dx = Math.max(Math.abs(local.x) - shape.w / 2, 0);
+  const dy = Math.max(Math.abs(local.y) - shape.h / 2, 0);
+  return dx * dx + dy * dy < radius * radius;
+};
+
+/** How far a blast travels past `center` before it starts to hurt a body (damage falloff). */
 const blastReach = (center: Vec2, shape: Shape, position: Vec2): number =>
   Math.max(0, length(sub(position, center)) - innerRadius(shape));
 
@@ -200,6 +215,9 @@ export class LevelSession {
         angle: 0,
         material: 'vehicle',
         target: c.target,
+        guarded: c.protected,
+        // Trains run on rails.
+        kinematic: c.style === 'train',
         driver: { def: c, direction, engine: c.speed > 0, wrecked: false },
       });
     }
@@ -230,6 +248,11 @@ export class LevelSession {
 
   get result(): LevelResult | undefined {
     return this.finalResult;
+  }
+
+  /** Protected property in this job: buildings and third-party vehicles. */
+  get protectedTotal(): number {
+    return this.level.blocks.filter((b) => b.protected).length + this.level.cars.filter((c) => c.protected).length;
   }
 
   /** Simulated seconds since the session began (placing included). */
@@ -264,6 +287,7 @@ export class LevelSession {
         damage: Number.isFinite(e.maxHp) ? 1 - Math.max(0, e.hp) / e.maxHp : 0,
         state,
         car: e.driver && {
+          style: e.driver.def.style,
           driving: e.driver.engine,
           wrecked: e.driver.wrecked,
           direction: e.driver.direction,
@@ -279,7 +303,7 @@ export class LevelSession {
     for (const e of this.entities.values()) {
       if (!e.guarded) continue;
       const s = this.physics.state(e.id);
-      if (s && blastReach(center, e.shape, s.position) < chargeRadius(kind)) reached.push(e.id);
+      if (s && circleTouches(center, chargeRadius(kind), e.shape, s.position, s.angle)) reached.push(e.id);
     }
     return reached;
   }
@@ -368,6 +392,7 @@ export class LevelSession {
     }
     this.detonateDue();
     this.drive();
+    this.cruise(dt, true);
     this.physics.step(dt);
     this.applyImpacts();
     this.removeOutOfBounds();
@@ -406,9 +431,9 @@ export class LevelSession {
       if (!state) continue;
       const offset = sub(state.position, center);
       const reach = blastReach(center, e.shape, state.position);
+      // Contract rule, shown to the player as the blast circle: no blast may touch protected property.
+      if (e.guarded && circleTouches(center, radius, e.shape, state.position, state.angle)) this.compromise(e, state.position);
       if (reach >= radius) continue;
-      // Contract rule, shown to the player as the blast circle: no blast may reach protected property.
-      this.compromise(e, state.position);
       const falloff = Math.pow(1 - reach / radius, 1.2);
       const dir = length(offset) > 0.001 ? scale(offset, 1 / length(offset)) : vec(0, -1);
       const speed = (spec.pressure * falloff) / MATERIALS[e.material].density;
@@ -440,6 +465,7 @@ export class LevelSession {
     }
     if (e.driver) {
       // Cars are wrecked, not shattered: the engine dies and the fuel tank goes up.
+      this.compromise(e, state.position);
       e.driver.engine = false;
       e.driver.wrecked = true;
       this.events.emit('carWrecked', { position: state.position });
@@ -477,12 +503,16 @@ export class LevelSession {
 
   // ---- cars --------------------------------------------------------------
 
-  /** Scripted driving while the world is frozen: exact, so the timing is learnable. */
-  private cruise(dt: number): void {
+  /**
+   * Scripted driving: every vehicle while the world is frozen (exact, so timing
+   * is learnable), and trains always, because trains run on rails.
+   */
+  private cruise(dt: number, railOnly = false): void {
     for (const e of this.entities.values()) {
       const d = e.driver;
       const s = this.physics.state(e.id);
       if (!d?.engine || !s) continue;
+      if (railOnly && d.def.style !== 'train') continue;
       let x = s.position.x + d.direction * d.def.speed * dt;
       if (d.def.mode === 'flow') {
         if (x >= d.def.to) x = d.def.from + (x - d.def.to);
@@ -499,7 +529,7 @@ export class LevelSession {
     for (const e of this.entities.values()) {
       const d = e.driver;
       const s = this.physics.state(e.id);
-      if (!d?.engine || !s) continue;
+      if (!d?.engine || !s || d.def.style === 'train') continue;
       if (Math.abs(s.angle) > TUNING.vehicle.maxTilt || s.position.y > d.def.y + 8) {
         d.engine = false;
         continue;
@@ -543,7 +573,9 @@ export class LevelSession {
       const s = this.physics.state(e.id);
       if (!s) continue;
       const p = s.position;
-      if (p.x < -m || p.x > WORLD.width + m || p.y > WORLD.height + m) {
+      // Traffic still on its route may run past the edges; it comes back.
+      const onRoute = e.driver?.engine === true;
+      if (p.y > WORLD.height + m || (!onRoute && (p.x < -m || p.x > WORLD.width + m))) {
         if (e.target) this.markDown(e, p);
         this.compromise(e, p);
         if (e.structural) this.lostStructural++;
@@ -570,8 +602,12 @@ export class LevelSession {
       if (!e.guarded || e.compromised) continue;
       const s = this.physics.state(e.id);
       if (!s) continue;
+      // A moving vehicle travels by design: judge it by leaving its track, tilting, stalling or damage.
+      const moved = e.driver
+        ? Math.abs(s.position.y - e.driver.def.y) >= p.displacement || !e.driver.engine
+        : distance(s.position, e.origin.position) >= p.displacement;
       if (
-        distance(s.position, e.origin.position) >= p.displacement ||
+        moved ||
         Math.abs(s.angle - e.origin.angle) >= p.rotation ||
         e.hp <= e.maxHp * (1 - p.strengthLoss)
       ) {
@@ -645,7 +681,7 @@ export class LevelSession {
         chargesMax: this.level.charges.max,
         blocksCollapsed: Math.min(collapsed, this.structuralTotal),
         blocksTotal: this.structuralTotal,
-        protectedTotal: this.level.blocks.filter((b) => b.protected).length,
+        protectedTotal: this.protectedTotal,
         protectedDamaged: this.compromisedCount,
         duration: this.finishedAt - this.firedAt,
         footprint: this.level.footprint && {
@@ -724,6 +760,7 @@ export class LevelSession {
       angle: spec.angle,
       material: spec.material,
       isStatic: spec.anchored ?? false,
+      ...(spec.kinematic ? { kinematic: true } : {}),
       ...(spec.motion ? { velocity: spec.motion.velocity, angularVelocity: spec.motion.angularVelocity } : {}),
     });
   }

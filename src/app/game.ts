@@ -45,7 +45,9 @@ const RESULT_DELAY_MS = 450;
 /** Replays run at this fraction of real time. */
 const REPLAY_SPEED = 0.45;
 
-type Mode = { readonly kind: 'campaign' } | { readonly kind: 'daily'; readonly day: string; readonly baseId: string };
+type Mode =
+  | { readonly kind: 'campaign' }
+  | { readonly kind: 'daily'; readonly day: string; readonly baseId: string };
 
 /** One go at a mission: what it is, what the player did, and how to show it again. */
 interface Attempt {
@@ -116,7 +118,8 @@ export class Game {
     });
     this.events.on('explosion', (e) => {
       this.buzz(e.source === 'charge' ? 45 : 30);
-      if (e.source === 'barrel' && this.attempt && !this.attempt.replaying) this.attempt.stats.barrelsBlown++;
+      if (e.source === 'barrel' && this.attempt && !this.attempt.replaying)
+        this.attempt.stats.barrelsBlown++;
     });
     this.events.on('carWrecked', () => {
       this.buzz(60);
@@ -163,7 +166,10 @@ export class Game {
   private showAchievements(): void {
     this.leaveLevel();
     this.ui.achievements(
-      ACHIEVEMENTS.map((a) => ({ ...T.achievements[a.id], unlocked: this.progress.achievements.includes(a.id) })),
+      ACHIEVEMENTS.map((a) => ({
+        ...T.achievements[a.id],
+        unlocked: this.progress.achievements.includes(a.id),
+      })),
       () => this.showMenu(),
     );
   }
@@ -190,7 +196,10 @@ export class Game {
           previousCity: previous && this.text.city(previous),
         };
       }),
-      Math.max(0, worlds.findIndex((w) => w.world === this.currentWorld)),
+      Math.max(
+        0,
+        worlds.findIndex((w) => w.world === this.currentWorld),
+      ),
       (world) => this.showLevels(world),
       () => this.showMenu(),
     );
@@ -252,7 +261,8 @@ export class Game {
 
   /** Instant restart: a new session and physics world are cheap to build (FR-10). */
   private play(level: LevelDefinition, mode: Mode): void {
-    const base = mode.kind === 'daily' ? this.campaign.levels.find((l) => l.id === mode.baseId) : level;
+    const base =
+      mode.kind === 'daily' ? this.campaign.levels.find((l) => l.id === mode.baseId) : level;
     const city = this.campaign.worlds.find((w) => w.world === level.world);
     if (!city || !base) return;
     const cityLevels = levelsOf(this.campaign, level.world);
@@ -261,9 +271,19 @@ export class Game {
     this.ui.hideReplay();
     this.pointer = undefined;
     // Each city runs from dawn (first level) to night (last level).
-    this.renderer.setScene(city.key, cityLevels.length > 1 ? (level.order - 1) / (cityLevels.length - 1) : 0);
+    this.renderer.setScene(
+      city.key,
+      cityLevels.length > 1 ? (level.order - 1) / (cityLevels.length - 1) : 0,
+    );
     this.session = new LevelSession(level, new MatterPhysicsWorld(), this.events);
-    this.attempt = { level, mode, replaying: false, plan: undefined, stats: { barrelsBlown: 0, carsWrecked: 0 }, report: undefined };
+    this.attempt = {
+      level,
+      mode,
+      replaying: false,
+      plan: undefined,
+      stats: { barrelsBlown: 0, carsWrecked: 0 },
+      report: undefined,
+    };
     this.ui.showHud(
       () => this.fire(),
       () => this.play(level, mode),
@@ -291,13 +311,15 @@ export class Game {
     if (mode.kind === 'daily') {
       this.ui.toast(T.dailyRule(level.charges.par), 3200);
     } else if (!tutorial && !cleared) {
-      const fallback = level.footprint
-        ? T.footprintHint
-        : level.blocks.some((b) => b.protected)
-        ? T.protectedHint
-        : level.cars.length > 0
-          ? T.carHint
-          : T.placeHint;
+      const fallback = level.cars.some((c) => c.protected)
+        ? T.trainHint
+        : level.footprint
+          ? T.footprintHint
+          : level.blocks.some((b) => b.protected)
+            ? T.protectedHint
+            : level.cars.length > 0
+              ? T.carHint
+              : T.placeHint;
       this.ui.toast(this.text.levelHint(level) ?? fallback, 3200);
     }
   }
@@ -357,7 +379,11 @@ export class Game {
       this.progress = recordScore(this.progress, level.id, result.score);
       if (result.success) this.progress = recordDailyWin(this.progress, attempt.mode.day);
     } else {
-      this.progress = recordScore(recordStars(this.progress, level.id, result.stars), level.id, result.score);
+      this.progress = recordScore(
+        recordStars(this.progress, level.id, result.stars),
+        level.id,
+        result.score,
+      );
     }
     const stats: AttemptStats = attempt.stats;
     const earned = newAchievements({
@@ -367,12 +393,17 @@ export class Game {
       stats,
       streak: currentStreak(this.progress, today),
     });
-    this.progress = unlockAchievements(this.progress, earned.map((a) => a.id));
+    this.progress = unlockAchievements(
+      this.progress,
+      earned.map((a) => a.id),
+    );
     this.saves.save(this.progress);
 
     const daily = attempt.mode.kind === 'daily';
     const next = daily ? undefined : this.nextLevel(level);
-    const cityDone = levelsOf(this.campaign, level.world).every((l) => (this.progress.stars[l.id] ?? 0) > 0);
+    const cityDone = levelsOf(this.campaign, level.world).every(
+      (l) => (this.progress.stars[l.id] ?? 0) > 0,
+    );
     const lastInCity = !daily && next === undefined;
     const world = this.campaign.worlds.find((w) => w.world === level.world);
     const city = world ? this.text.city(world) : '';
@@ -408,7 +439,10 @@ export class Game {
       if (this.session !== session) return;
       attempt.report?.();
       if (earned.length > 0) {
-        this.ui.toast(T.achievementUnlocked(earned.map((a) => T.achievements[a.id].title).join(' · ')), 3200);
+        this.ui.toast(
+          T.achievementUnlocked(earned.map((a) => T.achievements[a.id].title).join(' · ')),
+          3200,
+        );
       }
     }, RESULT_DELAY_MS);
   }
@@ -416,13 +450,16 @@ export class Game {
   /** A daily mission shows its base mission's name. */
   private displayName(level: LevelDefinition): string {
     const mode = this.attempt?.mode;
-    const base = mode?.kind === 'daily' ? this.campaign.levels.find((l) => l.id === mode.baseId) : undefined;
+    const base =
+      mode?.kind === 'daily' ? this.campaign.levels.find((l) => l.id === mode.baseId) : undefined;
     return this.text.levelName(base ?? level);
   }
 
   /** Picks the language from the saved choice (or the device) and returns the matching content text. */
   private applyLanguage(): ContentText {
-    setLanguage(resolveLanguage(this.progress.settings.language, navigator.languages ?? [navigator.language]));
+    setLanguage(
+      resolveLanguage(this.progress.settings.language, navigator.languages ?? [navigator.language]),
+    );
     return contentText(language);
   }
 
@@ -445,7 +482,11 @@ export class Game {
       coach: this.coach.worldMarker,
       kind: this.chargeKind,
       ghost:
-        placing && ghostAt && !this.session?.chargeAt(ghostAt) && this.session && this.session.chargesLeft > 0
+        placing &&
+        ghostAt &&
+        !this.session?.chargeAt(ghostAt) &&
+        this.session &&
+        this.session.chargesLeft > 0
           ? { position: ghostAt, valid: this.session.canPlaceAt(ghostAt).ok }
           : undefined,
       drag:
@@ -462,7 +503,7 @@ export class Game {
       levelOrder: s.level.order,
       levelName: this.displayName(s.level),
       chargesUsed: s.charges.length,
-      protectedTotal: s.level.blocks.filter((b) => b.protected).length,
+      protectedTotal: s.protectedTotal,
       chargesMax: s.level.charges.max,
       par: s.level.charges.par,
       targetsLeft: s.targetsRemaining,
@@ -489,7 +530,13 @@ export class Game {
       const radius = touch
         ? Math.max(TUNING.charge.pickRadius, TOUCH_PICK_CSS_PX * this.renderer.worldPerCssPixel)
         : TUNING.charge.pickRadius;
-      this.pointer = { chargeId: s.chargeAt(p, radius)?.id, touch, start: p, moved: false, position: p };
+      this.pointer = {
+        chargeId: s.chargeAt(p, radius)?.id,
+        touch,
+        start: p,
+        moved: false,
+        position: p,
+      };
     });
     c.addEventListener('pointermove', (e) => {
       const p = this.renderer.toWorld(e.clientX, e.clientY);
@@ -529,8 +576,7 @@ export class Game {
       if (e.key === ' ' || e.key === 'Enter') {
         e.preventDefault();
         this.fire();
-      }
-      else if (e.key === 'r' || e.key === 'R') this.startLevel(this.session.level.id);
+      } else if (e.key === 'r' || e.key === 'R') this.startLevel(this.session.level.id);
       else if (e.key === 'Escape') this.showLevels();
     });
   }
@@ -541,7 +587,11 @@ export class Game {
     if (document.fullscreenElement || !root.requestFullscreen) return;
     root
       .requestFullscreen({ navigationUI: 'hide' })
-      .then(() => (screen.orientation as ScreenOrientation & { lock?: (o: string) => Promise<void> }).lock?.('landscape'))
+      .then(() =>
+        (screen.orientation as ScreenOrientation & { lock?: (o: string) => Promise<void> }).lock?.(
+          'landscape',
+        ),
+      )
       .catch(() => undefined);
   }
 

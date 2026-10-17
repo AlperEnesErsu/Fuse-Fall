@@ -138,6 +138,25 @@ const TUTORIALS: Readonly<Record<string, readonly TutorialStep[]>> = {
     },
     { text: { tr: 'ATEŞLE.', en: 'FIRE.' }, highlight: { selector: '.fire-btn' }, until: 'fired' },
   ],
+  // The train window.
+  'w5-01': [
+    {
+      text: {
+        tr: 'Viyadükteki tren korunuyor ve birkaç saniyede bir geçiyor. Şarjı işaretli alana yerleştir.',
+        en: 'The train on the viaduct is protected and passes every few seconds. Place the charge in the marked area.',
+      },
+      highlight: { world: { x: 280, y: 330 }, radius: 30 },
+      until: 'placed',
+    },
+    {
+      text: {
+        tr: 'Tren yaklaşınca çember kırmızıya döner. Çember sarıyken ATEŞLE.',
+        en: 'The circle turns red as the train approaches. FIRE while it is yellow.',
+      },
+      highlight: { selector: '.fire-btn' },
+      until: 'fired',
+    },
+  ],
 };
 
 export const tutorialIds = (): string[] => Object.keys(TUTORIALS);

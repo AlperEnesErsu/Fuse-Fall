@@ -32,6 +32,7 @@ export const tr = {
   delayTitle: 'Ateşleme gecikmesi (ms)',
   chargeKinds: { standard: 'Standart', precision: 'Hassas' },
   chargeKindLabel: 'Şarj tipi',
+  trainHint: 'Tren korunuyor. Çemberler kırmızıyken ateşleme.',
   footprintHint: 'Enkaz sarı çizgili şantiye alanında kalmalı. Hassas şarj daha az savurur.',
   ms: (seconds: number) => `+${Math.round(seconds * 1000)} ms`,
   targets: 'Hedef',

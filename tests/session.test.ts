@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { EventBus, type GameEvents } from '../src/core/events';
 import { WORLD, type LevelDefinition } from '../src/core/level';
-import { chargeRadius, LevelSession } from '../src/core/session';
+import { chargeRadius, circleTouches, LevelSession } from '../src/core/session';
 import { TUNING } from '../src/core/tuning';
 import { FakePhysics } from './fake-physics';
 
@@ -198,7 +198,19 @@ describe('outcome', () => {
 });
 
 describe('cars', () => {
-  const road = { x: 600, y: 300, w: 56, h: 24, from: 560, to: 700, speed: 60, target: true, mode: 'patrol' } as const;
+  const road = {
+    x: 600,
+    y: 300,
+    w: 56,
+    h: 24,
+    from: 560,
+    to: 700,
+    speed: 60,
+    target: true,
+    mode: 'patrol',
+    protected: false,
+    style: 'car',
+  } as const;
   const carLevel = (patch: Partial<LevelDefinition> = {}) =>
     setup({ blocks: [], cars: [road], zones: [{ x: 0, y: 250, w: 960, h: 230 }], ...patch });
 
@@ -214,7 +226,7 @@ describe('cars', () => {
   });
 
   it('in flow mode, re-enter at the start of the route instead of turning back', () => {
-    const { physics, run } = carLevel({ cars: [{ ...road, mode: 'flow' }] });
+    const { physics, run } = carLevel({ cars: [{ ...road, mode: 'flow' as const }] });
     run(1.8); // 600 → 700 in 1.67 s, then back to 560 and onwards
     const s = physics.state('car-1');
     expect(s?.velocity.x).toBeGreaterThan(0);
@@ -350,5 +362,60 @@ describe('debris footprint', () => {
     session.fire();
     run(TUNING.settle.timeout + 0.1); // fake debris never slows down, so the level ends on the timeout
     expect(session.result?.footprint?.achieved).toBeCloseTo(1);
+  });
+});
+
+describe('protected trains', () => {
+  const train = {
+    x: -200,
+    y: 463,
+    w: 220,
+    h: 34,
+    from: -300,
+    to: 1260,
+    speed: 300,
+    target: false,
+    mode: 'flow',
+    protected: true,
+    style: 'train',
+  } as const;
+  const withTrain = () => setup({ cars: [train] });
+
+  it('runs past the screen edges without being removed', () => {
+    const { physics, run } = withTrain();
+    run(4.5); // 1350 px of travel: wraps from past the right edge back to the left
+    expect(physics.state('car-3')).toBeDefined();
+  });
+
+  it('is untouched by a blast far from the track', () => {
+    const { session, run } = withTrain();
+    session.placeCharge({ x: 100, y: 450 });
+    session.fire();
+    run(TUNING.settle.hold + 0.3);
+    expect(session.result?.protectedDamaged).toBe(0);
+  });
+
+  it('voids the contract when a blast reaches it', () => {
+    const { session, physics, run } = setup({ cars: [{ ...train, x: 150 }], zones: [{ x: 0, y: 380, w: 300, h: 100 }] });
+    session.placeCharge({ x: 150, y: 440 });
+    session.fire();
+    run(1 / 60);
+    expect(session.result).toBeUndefined();
+    run(TUNING.settle.hold + 0.3);
+    expect(session.result?.failure).toBe('collateral-damage');
+    expect(physics.state('car-3')).toBeDefined();
+  });
+});
+
+describe('blast contact', () => {
+  const beam = { kind: 'rect', w: 220, h: 30 } as const;
+  it('uses the real outline, so the end of a long body counts', () => {
+    // 150 px circle, 200 px from the beam's centre but only 90 px from its end.
+    expect(circleTouches({ x: 200, y: 0 }, 150, beam, { x: 0, y: 0 }, 0)).toBe(true);
+    expect(circleTouches({ x: 300, y: 0 }, 150, beam, { x: 0, y: 0 }, 0)).toBe(false);
+  });
+  it('follows rotation', () => {
+    expect(circleTouches({ x: 0, y: 200 }, 100, beam, { x: 0, y: 0 }, Math.PI / 2)).toBe(true);
+    expect(circleTouches({ x: 0, y: 200 }, 100, beam, { x: 0, y: 0 }, 0)).toBe(false);
   });
 });

@@ -28,7 +28,8 @@ export class MatterPhysicsWorld implements PhysicsWorld {
     const options: Matter.IChamferableBodyDefinition = {
       label: spec.id,
       angle: spec.angle,
-      isStatic: spec.isStatic,
+      // Matter has no kinematic type: a static body that is repositioned each step behaves as one.
+      isStatic: spec.isStatic || spec.kinematic === true,
       density: material.density,
       friction: material.friction,
       frictionStatic: material.friction * 1.2,
