@@ -2,7 +2,7 @@ import { WORLD, type LevelDefinition } from '../core/level';
 import { difficultyOf } from '../core/difficulty';
 import type { ContractKind } from '../core/contracts';
 import type { ShareError } from '../core/share-code';
-import type { EditorTool } from '../core/editor';
+import type { DraftMaterial, EditorTool } from '../core/editor';
 import type { Payout, Rank } from '../core/economy';
 import type { ScrapPack } from '../core/ports';
 import { SANDBOX_VARIANTS, type SandboxVariant } from '../content/sandbox';
@@ -543,7 +543,10 @@ export class Ui {
   }
 
   /** Pasting a mission code: a box for it, play and back, and why the last code did not load. */
-  codeEntry(a: { onPlay: (code: string) => void; onBack: () => void; onBuild?: () => void }, error?: ShareError): void {
+  codeEntry(
+    a: { onPlay: (code: string) => void; onEdit: (code: string) => void; onBack: () => void; onBuild?: () => void },
+    error?: ShareError,
+  ): void {
     this.hideHud();
     const S = T.shareCode;
     const box = h('textarea', { rows: '4', placeholder: S.placeholder, 'aria-label': S.title }) as HTMLTextAreaElement;
@@ -559,6 +562,7 @@ export class Ui {
           'div',
           { class: 'actions' },
           this.button(S.play, () => a.onPlay(box.value.trim()), 'primary'),
+          this.button(S.open, () => a.onEdit(box.value.trim())),
           a.onBuild ? this.button(S.build, a.onBuild) : undefined,
           this.button(S.back, a.onBack),
         ),
@@ -569,6 +573,8 @@ export class Ui {
   /** The mission builder's bar on the field: tools, counts, test and back. */
   showEditor(s: {
     readonly tool: EditorTool;
+    readonly material: DraftMaterial;
+    readonly onMaterial: () => void;
     readonly blocks: number;
     readonly zones: number;
     readonly onTool: (tool: EditorTool) => void;
@@ -591,6 +597,7 @@ export class Ui {
         ...tools.map((t) =>
           h('button', { class: `btn small${t === s.tool ? ' primary' : ''}`, click: () => this.tap(() => s.onTool(t)) }, E.tools[t]),
         ),
+        h('button', { class: 'btn small', click: () => this.tap(s.onMaterial) }, E.materials[s.material]),
         this.button(E.test, s.onTest, 'primary'),
       ),
     );

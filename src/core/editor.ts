@@ -1,5 +1,4 @@
 import { WORLD, parseLevel, type LevelDefinition, type SolutionCharge } from './level';
-import type { MaterialId } from './materials';
 import type { Rect, Vec2 } from './math';
 import { err, ok, type Result } from './result';
 
@@ -23,7 +22,7 @@ export type EditAction =
 
 export interface DraftBlock {
   readonly kind: DraftKind;
-  readonly material: MaterialId;
+  readonly material: DraftMaterial;
   readonly x: number;
   readonly y: number;
   readonly w: number;
@@ -45,6 +44,10 @@ export const DRAFT_LIMITS = {
 } as const;
 
 export const emptyDraft = (): Draft => ({ blocks: [], zones: [] });
+
+/** The block materials a player can choose, in the order the builder cycles them. */
+export type DraftMaterial = 'wood' | 'concrete' | 'metal';
+export const DRAFT_MATERIALS: readonly DraftMaterial[] = ['wood', 'concrete', 'metal'];
 
 /** Blocks are placed on a 10 px grid, so the mission lines up when shared. */
 export const snap = (v: number): number => Math.round(v / 10) * 10;
@@ -121,6 +124,30 @@ export const draftProblem = (draft: Draft): 'zone' | 'target' | undefined => {
   if (draft.zones.length === 0) return 'zone';
   if (!draft.blocks.some((b) => b.kind === 'target')) return 'target';
   return undefined;
+};
+
+const isDraftMaterial = (m: string): m is DraftMaterial => (DRAFT_MATERIALS as readonly string[]).includes(m);
+
+/** A mission as a draft, for changing it in the builder. Only missions made of plain blocks and zones can be opened there. */
+export const levelToDraft = (level: LevelDefinition): Result<Draft, 'not-editable'> => {
+  const plain =
+    level.balls.length === 0 &&
+    level.barrels.length === 0 &&
+    level.cars.length === 0 &&
+    level.dropZones.length === 0 &&
+    level.footprint === undefined &&
+    level.instantBlasts === undefined &&
+    level.blocks.every((b) => b.angle === 0 && !b.anchored && isDraftMaterial(b.material));
+  if (!plain || level.blocks.length > DRAFT_LIMITS.blocks || level.zones.length > DRAFT_LIMITS.zones) return err('not-editable');
+  const blocks: DraftBlock[] = level.blocks.map((b) => ({
+    kind: b.target ? 'target' : b.protected ? 'protected' : 'block',
+    material: isDraftMaterial(b.material) ? b.material : 'wood',
+    x: b.x - b.w / 2,
+    y: b.y - b.h / 2,
+    w: b.w,
+    h: b.h,
+  }));
+  return ok({ blocks, zones: level.zones.map((z) => ({ x: z.x, y: z.y, w: z.w, h: z.h })) });
 };
 
 /** How the editor draws a draft before it is valid: the same shapes, without the rules a finished mission must pass.

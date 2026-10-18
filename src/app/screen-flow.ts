@@ -33,6 +33,7 @@ export interface Launcher {
   play(level: LevelDefinition, mode: Mode): void;
   startLevel(id: string): void;
   openEditor(draft?: Draft): void;
+  editFrom(level: LevelDefinition): boolean;
 }
 
 /** The screens play returns to. */
@@ -112,9 +113,21 @@ export class ScreenFlow implements Navigator {
   shareCode(error?: ShareError): void {
     this.d.play.leave();
     this.d.ui.codeEntry(
-      { onPlay: (code) => void this.playCode(code), onBack: () => this.menu(), onBuild: () => this.d.play.openEditor() },
+      {
+        onPlay: (code) => void this.playCode(code),
+        onEdit: (code) => void this.editCode(code),
+        onBack: () => this.menu(),
+        onBuild: () => this.d.play.openEditor(),
+      },
       error,
     );
+  }
+
+  /** A pasted mission opened in the builder, to change it and share it again. */
+  private async editCode(code: string): Promise<void> {
+    const decoded = await decodeLevel(code);
+    if (!decoded.ok) return this.shareCode(decoded.error);
+    if (!this.d.play.editFrom(decoded.value)) return this.shareCode('not-editable');
   }
 
   private async playCode(code: string): Promise<void> {

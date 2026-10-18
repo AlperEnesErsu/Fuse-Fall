@@ -1,4 +1,4 @@
-import { snap, type DraftBlock, type DraftKind, type EditAction, type EditorTool } from '../core/editor';
+import { snap, type DraftBlock, type DraftKind, type DraftMaterial, type EditAction, type EditorTool } from '../core/editor';
 import { distance, type Vec2 } from '../core/math';
 import type { Renderer } from '../presentation/renderer';
 
@@ -9,10 +9,10 @@ const TAP_ZONE = { w: 120, h: 50 };
 /** A tapped block: its size, centred on the tap. */
 const TAP_BLOCK = 40;
 
-/** A block for a tap: protected buildings are concrete, everything else timber. */
-export const blockAt = (kind: DraftKind, at: Vec2): DraftBlock => ({
+/** A block for a tap: protected buildings are always concrete; everything else takes the chosen material. */
+export const blockAt = (kind: DraftKind, at: Vec2, material: DraftMaterial): DraftBlock => ({
   kind,
-  material: kind === 'protected' ? 'concrete' : 'wood',
+  material: kind === 'protected' ? 'concrete' : material,
   x: snap(at.x - TAP_BLOCK / 2),
   y: snap(at.y - TAP_BLOCK / 2),
   w: TAP_BLOCK,

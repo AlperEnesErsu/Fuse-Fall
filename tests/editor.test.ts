@@ -5,6 +5,7 @@ import {
   addZone,
   draftProblem,
   draftToLevel,
+  levelToDraft,
   previewLevel,
   emptyDraft,
   removeAt,
@@ -13,6 +14,7 @@ import {
   type DraftBlock,
 } from '../src/core/editor';
 import { decodeLevel, encodeLevel } from '../src/core/share-code';
+import { loadCampaign } from '../src/content/levels';
 import type { SolutionCharge } from '../src/core/level';
 
 const block = (x: number, y: number, kind: DraftBlock['kind'] = 'block', w = 40, h = 40): DraftBlock => ({
@@ -137,5 +139,37 @@ describe('preview', () => {
     expect(p.blocks).toHaveLength(1);
     expect(p.blocks[0]?.target).toBe(true);
     expect(p.zones).toEqual([]);
+  });
+});
+
+describe('opening a mission in the builder', () => {
+  it('a built mission opens back into the same draft', () => {
+    const draft: Draft = {
+      blocks: [
+        { kind: 'target', material: 'metal', x: 500, y: 400, w: 40, h: 40 },
+        { kind: 'protected', material: 'wood', x: 200, y: 440, w: 40, h: 40 },
+        { kind: 'block', material: 'concrete', x: 600, y: 440, w: 40, h: 40 },
+      ],
+      zones: [{ x: 300, y: 430, w: 120, h: 50 }],
+    };
+    const level = draftToLevel(draft, [shot(360, 455)], { id: 'shared', name: 'x', world: 9 });
+    if (!level.ok) throw new Error('setup');
+    const back = levelToDraft(level.value);
+    expect(back.ok).toBe(true);
+    if (!back.ok) return;
+    expect(back.value.zones).toEqual(draft.zones);
+    expect(back.value.blocks.map((b) => [b.kind, b.material, b.x, b.y, b.w, b.h])).toEqual([
+      ['target', 'metal', 500, 400, 40, 40],
+      ['protected', 'wood', 200, 440, 40, 40],
+      ['block', 'concrete', 600, 440, 40, 40],
+    ]);
+  });
+
+  it('a mission with vehicles, barrels or a ball is not opened there', () => {
+    const campaign = loadCampaign();
+    const withCars = campaign.levels.find((l) => l.cars.length > 0);
+    const withBall = campaign.levels.find((l) => l.balls.length > 0);
+    expect(withCars && levelToDraft(withCars)).toEqual({ ok: false, error: 'not-editable' });
+    expect(withBall && levelToDraft(withBall)).toEqual({ ok: false, error: 'not-editable' });
   });
 });

@@ -15,7 +15,7 @@ const MAX_JSON = 48_000;
 /** Shared missions carry this id: they never touch a campaign mission's stars. */
 export const SHARED_ID = 'shared';
 
-export type ShareError = 'format' | 'too-large' | 'invalid-level';
+export type ShareError = 'format' | 'too-large' | 'invalid-level' | 'not-editable';
 
 const toBase64Url = (bytes: Uint8Array): string => {
   let binary = '';

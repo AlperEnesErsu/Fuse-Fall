@@ -11,6 +11,9 @@ import {
   previewLevel,
   removeAt,
   type Draft,
+  DRAFT_MATERIALS,
+  type DraftMaterial,
+  levelToDraft,
   type EditAction,
   type EditorTool,
 } from '../core/editor';
@@ -93,7 +96,7 @@ export class PlayController implements Launcher {
   private chargeKind: ChargeKind = 'standard';
   private readonly input: PlayInput;
   /** The mission builder: the draft being edited and the tool in hand. Undefined outside the builder. */
-  private editing: { draft: Draft; tool: EditorTool } | undefined;
+  private editing: { draft: Draft; tool: EditorTool; material: DraftMaterial } | undefined;
   /** What the builder draws: the draft, even before it is a valid mission. */
   private previewSession: LevelSession | undefined;
 
@@ -620,7 +623,7 @@ export class PlayController implements Launcher {
   openEditor(draft: Draft = emptyDraft()): void {
     this.session = undefined;
     this.attempt = undefined;
-    this.editing = { draft, tool: 'block' };
+    this.editing = { draft, tool: 'block', material: 'wood' };
     this.previewSession = new LevelSession(previewLevel(draft), new MatterPhysicsWorld(), new EventBus<GameEvents>());
     this.d.juice.reset();
     this.d.coach.stop();
@@ -636,10 +639,17 @@ export class PlayController implements Launcher {
     if (!e) return;
     this.d.ui.showEditor({
       tool: e.tool,
+      material: e.material,
       blocks: e.draft.blocks.length,
       zones: e.draft.zones.length,
       onTool: (tool) => {
         if (this.editing) this.editing = { ...this.editing, tool };
+        this.showEditorBar();
+      },
+      onMaterial: () => {
+        if (!this.editing) return;
+        const next = DRAFT_MATERIALS[(DRAFT_MATERIALS.indexOf(this.editing.material) + 1) % DRAFT_MATERIALS.length] ?? 'wood';
+        this.editing = { ...this.editing, material: next };
         this.showEditorBar();
       },
       onTest: () => this.testDraft(),
@@ -658,7 +668,7 @@ export class PlayController implements Launcher {
       if (!r.ok) return this.d.ui.toast(T.editor.errors[r.error]);
       draft = r.value;
     } else {
-      const r = addBlock(draft, blockAt(a.kind, a.at));
+      const r = addBlock(draft, blockAt(a.kind, a.at, e.material));
       if (!r.ok) return this.d.ui.toast(T.editor.errors[r.error]);
       draft = r.value;
     }
@@ -691,6 +701,14 @@ export class PlayController implements Launcher {
     this.editing = undefined;
     this.previewSession = undefined;
     this.play(built.value, { kind: 'editor', draft: e.draft });
+  }
+
+  /** Pasted missions open in the builder, so a friend's mission can be changed and shared again. */
+  editFrom(level: LevelDefinition): boolean {
+    const draft = levelToDraft(level);
+    if (!draft.ok) return false;
+    this.openEditor(draft.value);
+    return true;
   }
 
   /** Copies any text (a mission code) to the clipboard. */
