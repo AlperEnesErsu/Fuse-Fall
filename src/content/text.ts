@@ -93,6 +93,16 @@ const EN_LEVELS: Readonly<Record<string, { readonly name: string; readonly hint:
   'w8-08': { name: 'Depot Bridge', hint: 'The barrels on the bridge go off in a chain. Start it as the tram comes under them.' },
   'w8-09': { name: 'Night Line', hint: 'Two trams in a row. Set the second delay to the gap between them.' },
   'w8-10': { name: 'Madrid Finale', hint: 'The tram on the upper line and the house on the right are protected. Bring down the lower tram and the tower.' },
+  'w9-01': { name: 'First Roll', hint: 'A rolling charge sits on the ground, drives forward on FIRE and goes off where it hits.' },
+  'w9-02': { name: 'Back Door', hint: 'The shop is protected. Do not blow anything up here; drive a rolling charge to the job.' },
+  'w9-03': { name: 'Two Ways', hint: 'A tower on each side. Each rolling charge faces the nearest target; tap one to turn it if needed.' },
+  'w9-04': { name: 'Choice', hint: 'This job hands out one standard and one rolling charge. Which goes where?' },
+  'w9-05': { name: 'Fuel Line', hint: 'Let the charge drive to the barrels; the chain does the rest.' },
+  'w9-06': { name: 'Ramp', hint: 'Set the charge on the raised deck. It drives off the edge and keeps going.' },
+  'w9-07': { name: 'The Right Tool', hint: 'Next to the shop only a precision charge is safe. A rolling charge for the far tower.' },
+  'w9-08': { name: 'Barrier', hint: 'One rolling charge cannot get past the barrier. The second, right behind, clears the way.' },
+  'w9-09': { name: 'Three Ways', hint: 'Two rolling charges out to the sides, a standard under the middle tower. Place the carts first: the order is the firing order.' },
+  'w9-10': { name: 'New York Finale', hint: 'One of each. Implode the block between the neighbours, send a rolling charge to the far mast.' },
   'w6-10': { name: 'Istanbul Finale', hint: 'The apartment and the chimney come down together. Fuse on the middle column, bomb on top of the chimney.' },
 };
 
@@ -105,6 +115,7 @@ const EN_CITIES: Readonly<Record<string, { readonly city: string; readonly count
   istanbul: { city: 'Istanbul', country: 'Türkiye' },
   berlin: { city: 'Berlin', country: 'Germany' },
   madrid: { city: 'Madrid', country: 'Spain' },
+  newyork: { city: 'New York', country: 'United States' },
 };
 
 /** Daily missions have their own id: callers pass the base mission for its text. */

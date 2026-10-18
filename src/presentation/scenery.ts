@@ -446,7 +446,64 @@ const madrid: Landmarks = (c, color, accent) => {
   for (const t of towers) for (let wy = G - t.h + 40; wy < G - 20; wy += 40) c.fillRect(t.x - t.w / 2 + 6, wy, t.w - 12, 2);
 };
 
-const LANDMARKS: Readonly<Record<string, Landmarks>> = { ankara, paris, london, rome, tokyo, istanbul, berlin, madrid };
+const newyork: Landmarks = (c, color, accent) => {
+  c.fillStyle = color;
+  // Statue of Liberty on her pedestal: torch raised, crown, robe.
+  const sx = 120;
+  c.fillRect(sx - 34, G - 70, 68, 70);
+  c.fillRect(sx - 24, G - 96, 48, 26);
+  c.beginPath();
+  c.moveTo(sx - 16, G - 96);
+  c.lineTo(sx - 10, G - 190);
+  c.lineTo(sx + 12, G - 190);
+  c.lineTo(sx + 18, G - 96);
+  c.fill();
+  c.beginPath();
+  c.arc(sx + 1, G - 198, 10, 0, Math.PI * 2);
+  c.fill();
+  c.fillRect(sx + 9, G - 252, 6, 60);
+  c.fillStyle = accent;
+  c.beginPath();
+  c.arc(sx + 12, G - 258, 6, 0, Math.PI * 2);
+  c.fill();
+  for (let k = -2; k <= 2; k++) c.fillRect(sx + 1 + k * 5 - 1, G - 214, 2, 8);
+  c.fillStyle = color;
+  // Empire State: stepped setbacks up to the mast.
+  const ex = 470;
+  c.fillRect(ex - 60, G - 200, 120, 200);
+  c.fillRect(ex - 44, G - 270, 88, 70);
+  c.fillRect(ex - 28, G - 330, 56, 60);
+  c.fillRect(ex - 14, G - 370, 28, 40);
+  c.fillRect(ex - 3, G - 420, 6, 50);
+  // Chrysler: a crown of stacked arches, a needle on top.
+  const cx = 640;
+  c.fillRect(cx - 34, G - 260, 68, 260);
+  for (let k = 0; k < 4; k++) {
+    const r = 30 - k * 7;
+    c.beginPath();
+    c.arc(cx, G - 260 - k * 20, r, Math.PI, 0);
+    c.fill();
+  }
+  c.fillRect(cx - 2, G - 380, 4, 50);
+  // One World Trade: a tapering prism.
+  const wx = 860;
+  c.beginPath();
+  c.moveTo(wx - 40, G);
+  c.lineTo(wx - 40, G - 120);
+  c.lineTo(wx - 18, G - 400);
+  c.lineTo(wx + 18, G - 400);
+  c.lineTo(wx + 40, G - 120);
+  c.lineTo(wx + 40, G);
+  c.fill();
+  c.fillRect(wx - 2, G - 450, 4, 50);
+  c.fillStyle = accent;
+  for (const [x0, w, top] of [[ex - 52, 104, G - 190], [cx - 26, 52, G - 250]] as const) {
+    for (let wy = top; wy < G - 20; wy += 26) c.fillRect(x0, wy, w, 3);
+  }
+  for (let wy = G - 380; wy < G - 20; wy += 34) c.fillRect(wx - 12, wy, 24, 2);
+};
+
+const LANDMARKS: Readonly<Record<string, Landmarks>> = { ankara, paris, london, rome, tokyo, istanbul, berlin, madrid, newyork };
 
 /** Paints the whole backdrop for a city and time of day, in world coordinates. */
 export const paintScene = (c: Ctx, cityKey: string, sky: SkyState): void => {

@@ -51,6 +51,8 @@ export interface Progress {
   readonly career: CareerStats;
   /** Rewarded ads watched, by day, for the daily cap. */
   readonly ads: { readonly day: string; readonly count: number };
+  /** Features whose intro card the player has seen (see content/features.ts). */
+  readonly seenFeatures: readonly string[];
   /** This week's contracts and how far each has come. */
   readonly contracts: ContractProgress;
   /** Store payment tokens already credited (the latest few), so a payment is never credited twice. */
@@ -103,6 +105,7 @@ export const emptyProgress = (): Progress => ({
   ads: { day: '', count: 0 },
   purchases: [],
   contracts: NO_CONTRACTS,
+  seenFeatures: [],
   settings: DEFAULT_SETTINGS,
 });
 
@@ -206,6 +209,9 @@ export const parseProgress = (input: unknown): Result<Progress, ProgressError> =
     ads,
     purchases,
     contracts,
+    seenFeatures: Array.isArray(input.seenFeatures)
+      ? [...new Set(input.seenFeatures.filter((f): f is string => typeof f === 'string' && /^[a-z-]{1,24}$/.test(f)))].slice(0, 64)
+      : [],
     settings: {
       language: s.language === 'tr' || s.language === 'en' || s.language === 'auto' ? s.language : DEFAULT_SETTINGS.language,
       sfxVolume: volume(s.sfxVolume, DEFAULT_SETTINGS.sfxVolume),
@@ -282,6 +288,12 @@ export const recordCareer = (
       cars: c.cars + job.cars,
     },
   };
+};
+
+/** Marks feature intro cards as seen, so each shows once. */
+export const markFeaturesSeen = (progress: Progress, ids: readonly string[]): Progress => {
+  const fresh = [...new Set(ids)].filter((id) => !progress.seenFeatures.includes(id));
+  return fresh.length === 0 ? progress : { ...progress, seenFeatures: [...progress.seenFeatures, ...fresh] };
 };
 
 /** Adds a finished job to this week's contracts and pays for each one it finishes. */

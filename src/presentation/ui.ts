@@ -161,6 +161,8 @@ export interface HudActions {
   readonly onMenu: () => void;
   readonly onDelay: (chargeId: number, seconds: number) => void;
   readonly onKind: (kind: ChargeKind) => void;
+  /** Shows this job's feature cards again; no "?" button without it. */
+  readonly onHelp?: () => void;
 }
 
 export interface ResultActions {
@@ -755,6 +757,7 @@ export class Ui {
         h(
           'div',
           { class: 'hud-actions' },
+          a.onHelp ? this.helpButton(a.onHelp) : undefined,
           hint,
           undo,
           this.iconButton(ICONS.retry(), a.onRetry, T.retry),
@@ -796,6 +799,22 @@ export class Ui {
   /** The delay timeline shows while placing whenever there is a charge to time. */
   updateTimeline(charges: readonly TimelineCharge[], placing: boolean): void {
     this.hudParts?.timeline.update(charges, placing);
+  }
+
+  /** A loadout: each kind's button shows how many are left, and an empty one dims. */
+  setKindCounts(counts: Readonly<Partial<Record<ChargeKind, number>>> | undefined): void {
+    for (const b of this.hudParts?.kinds.querySelectorAll('button') ?? []) {
+      const kind = b.getAttribute('data-kind') as ChargeKind | null;
+      if (!kind) continue;
+      const n = counts?.[kind];
+      b.textContent = n === undefined ? T.chargeKinds[kind] : `${T.chargeKinds[kind]} ×${n}`;
+      b.classList.toggle('empty', n === 0);
+    }
+  }
+
+  /** The "?" button: a round button with a question mark, no icon file needed. */
+  private helpButton(onHelp: () => void): HTMLElement {
+    return h('button', { class: 'btn icon help-btn', title: T.features.help, 'aria-label': T.features.help, click: () => this.tap(onHelp) }, '?');
   }
 
   setChargeKind(kind: ChargeKind): void {
@@ -927,6 +946,46 @@ export class Ui {
     }
     this.screen.append(layer);
     window.setTimeout(() => layer.remove(), 3400);
+  }
+
+  /**
+   * Intro cards for what a job brings in, one after another over the site:
+   * a tag, a title, what it is and the trick that makes it work.
+   */
+  featureCards(cards: readonly { readonly title: string; readonly text: string; readonly tip: string }[], fresh: boolean, onDone: () => void): void {
+    const F = T.features;
+    let index = 0;
+    const render = () => {
+      const card = cards[index];
+      if (!card) {
+        this.hideScreen();
+        onDone();
+        return;
+      }
+      const last = index === cards.length - 1;
+      this.show(
+        h(
+          'div',
+          { class: 'panel feature-card', role: 'dialog', 'aria-label': card.title },
+          h('span', { class: 'tag new' }, fresh ? F.new : F.reminder),
+          h('h2', {}, card.title),
+          h('p', {}, card.text),
+          h('p', { class: 'tip' }, h('strong', {}, F.trick), ' ', card.tip),
+          h(
+            'div',
+            { class: 'row-buttons' },
+            cards.length > 1 ? h('span', { class: 'meta' }, `${index + 1} / ${cards.length}`) : undefined,
+            this.button(last ? F.gotIt : F.next, () => {
+              index++;
+              render();
+            }, 'primary'),
+          ),
+        ),
+        'feature',
+      );
+      this.screen.querySelector<HTMLButtonElement>('.feature-card .btn.primary')?.focus();
+    };
+    render();
   }
 
   toast(text: string, ms = 1400): void {

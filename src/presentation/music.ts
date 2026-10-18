@@ -39,6 +39,7 @@ const KEYS: Readonly<Record<string, Key>> = {
   istanbul: { root: 50, scale: [0, 1, 4, 5, 7, 8, 10] }, // D hijaz
   berlin: { root: 45, scale: [0, 1, 3, 5, 7, 8, 10] }, // A phrygian
   madrid: { root: 52, scale: [0, 1, 4, 5, 7, 8, 10] }, // E phrygian dominant
+  newyork: { root: 46, scale: [0, 2, 3, 5, 7, 9, 10] }, // B-flat dorian: a little jazz
 };
 
 export const BPM = 92;

@@ -10,9 +10,10 @@ import tokyo from './levels/tokyo.json';
 import istanbul from './levels/istanbul.json';
 import berlin from './levels/berlin.json';
 import madrid from './levels/madrid.json';
+import newyork from './levels/newyork.json';
 
 /** Level packs in campaign order. A city listed in cities.json without a pack shows as "coming soon". */
-const PACKS: readonly unknown[][] = [ankara, paris, london, rome, tokyo, istanbul, berlin, madrid];
+const PACKS: readonly unknown[][] = [ankara, paris, london, rome, tokyo, istanbul, berlin, madrid, newyork];
 
 /** Bundled content, validated once at startup. Bad content fails loudly in development and tests. */
 export const loadCampaign = (): Campaign => {

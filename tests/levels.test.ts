@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { WORLD } from '../src/core/level';
+import { WORLD, type LevelDefinition } from '../src/core/level';
 import { levelsOf } from '../src/core/progress';
 import { LevelSession } from '../src/core/session';
 import { TUNING } from '../src/core/tuning';
@@ -16,9 +16,15 @@ const levels = campaign.levels;
 const STEP = 1 / 60;
 const cases = levels.map((l) => [l.id, l] as const);
 
+const variant = (id: string, change: (c: LevelDefinition['solution']['charges'][number]) => LevelDefinition['solution']['charges'][number]) => {
+  const level = levels.find((l) => l.id === id);
+  if (!level) throw new Error(`no ${id}`);
+  return playSolution(level, level.solution.fireAt, level.solution.charges.map(change)).result?.cleared;
+};
+
 describe('campaign content', () => {
   it('ships ten ordered levels for each playable city', () => {
-    for (const world of [1, 2, 3, 4, 5, 6, 7, 8]) {
+    for (const world of [1, 2, 3, 4, 5, 6, 7, 8, 9]) {
       expect(levelsOf(campaign, world).map((l) => l.order)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
     }
   });
@@ -101,7 +107,7 @@ describe('campaign content', () => {
 
   // Precision puzzles: the same placement with standard charges must not win.
   // w4-05 is forgiving since the tolerances were loosened: either charge type works there.
-  it.each(cases.filter(([, l]) => l.solution.charges.some((c) => c.kind === 'precision') && l.id !== 'w4-05'))(
+  it.each(cases.filter(([, l]) => l.solution.charges.some((c) => c.kind === 'precision') && l.id !== 'w4-05' && !l.charges.stock))(
     '%s needs precision charges',
     (_id, level) => {
       const standard = level.solution.charges.map((c) => ({ ...c, kind: 'standard' as const }));
@@ -170,5 +176,25 @@ describe('campaign content', () => {
     if (!level) throw new Error(`missing ${id}`);
     const result = playSolution(level, 0, [wrong]).result;
     expect(result?.failure, JSON.stringify(result)).toBe('collateral-damage');
+  });
+});
+
+describe('New York: rolling charges and loadouts', () => {
+  // A cart is the point: the same spots with standard charges do not clear the job.
+  it.each(['w9-01', 'w9-02', 'w9-05', 'w9-06', 'w9-10'])('%s needs the rolling charge', (id) => {
+    expect(variant(id, (c) => (c.kind === 'roller' ? { ...c, kind: 'standard' } : c))).toBe(false);
+  });
+
+  it('w9-08 needs both carts', () => {
+    const level = levels.find((l) => l.id === 'w9-08');
+    if (!level) throw new Error('no w9-08');
+    expect(playSolution(level, 0, level.solution.charges.slice(0, 1)).result?.cleared).toBe(false);
+  });
+
+  it.each([
+    ['w9-07', 'precision'],
+    ['w9-10', 'implosion'],
+  ] as const)('%s needs its %s charge', (id, kind) => {
+    expect(variant(id, (c) => (c.kind === kind ? { ...c, kind: 'standard' } : c))).toBe(false);
   });
 });

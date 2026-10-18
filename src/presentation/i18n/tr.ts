@@ -73,6 +73,14 @@ export const tr = {
     fireAt: (s: string) => ` ATEŞLE'ye yaklaşık ${s} sn sonra bas.`,
     detonateAt: (s: string) => ` ATEŞLE'den ${s} sn sonra PATLAT.`,
   },
+  features: {
+    new: 'YENİ',
+    reminder: 'HATIRLATMA',
+    trick: 'Püf noktası:',
+    next: 'Sonraki',
+    gotIt: 'Anladım',
+    help: 'Bu işteki özellikler',
+  },
   contracts: {
     title: 'Haftalık sözleşmeler',
     renews: 'Her pazartesi yenilenir. Seferler ve günlük görev sayılır.',

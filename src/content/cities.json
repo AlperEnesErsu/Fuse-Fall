@@ -6,5 +6,6 @@
   {"world": 5, "key": "tokyo", "city": "Tokyo", "country": "Japonya", "unlockStars": 84},
   {"world": 6, "key": "istanbul", "city": "İstanbul", "country": "Türkiye", "unlockStars": 110},
   {"world": 7, "key": "berlin", "city": "Berlin", "country": "Almanya", "unlockStars": 135},
-  {"world": 8, "key": "madrid", "city": "Madrid", "country": "İspanya", "unlockStars": 160}
+  {"world": 8, "key": "madrid", "city": "Madrid", "country": "İspanya", "unlockStars": 160},
+  {"world": 9, "key": "newyork", "city": "New York", "country": "ABD", "unlockStars": 185}
 ]

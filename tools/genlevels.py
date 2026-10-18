@@ -46,6 +46,7 @@ class L:
             c = dict(x=round(p[0], 1), y=round(p[1], 1))
             if len(p) > 2 and p[2] is not None: c['delay'] = p[2]
             if len(p) > 3: c['kind'] = p[3]
+            if len(p) > 4: c['dir'] = p[4]
             return c
         s.d['solution']['charges'] = [charge(p) for p in pts]
         s.d['solution']['fireAt'] = fireAt
@@ -945,11 +946,112 @@ def madrid():
     return out
 
 
+def newyork():
+    """New York: the rolling charge, and loadouts that make the choice of charge the puzzle."""
+    out = []
+    R = 'roller'
+    P = 'precision'
+    I = 'implosion'
+    Y = G - 12  # a rolling charge sits on the ground
+
+    # 1. First roll: the zone is far from the tower; only something that travels gets there.
+    l = L(9, 1, 'İlk Yürüyüş', 1, 1, 0.5, 'Yürüyen şarj yere konur, ATEŞLE ile ileri sürer ve çarptığı yerde patlar.')
+    l.d['chargeKinds'] = ['standard', R]
+    top = tower(l, 700, G, 60, 110); l.col(700, top, 34, 34, 'wood', True)
+    l.zone(90, 430, 150, 50)
+    l.sol((170, Y, None, R)); out.append(l)
+
+    # 2. Back door: the zone is against a protected shop; a charge there would wreck it, a cart drives away to the job.
+    l = L(9, 2, 'Arka Kapı', 1, 1, 0.5, 'Dükkân korunuyor. Şarjı buraya patlatma; yürüyen şarjla işe sür.')
+    l.d['chargeKinds'] = ['standard', R]
+    l.house(150, 80, 90)
+    top = tower(l, 720, G, 60, 120); l.col(720, top, 34, 34, 'wood', True)
+    l.zone(200, 430, 110, 50)
+    l.sol((260, Y, None, R)); out.append(l)
+
+    # 3. Two ways: two towers, one either side; one of the carts has to be turned round.
+    l = L(9, 3, 'İki Yön', 2, 2, 0.5, 'İki kule iki yanda. Her yürüyen şarj en yakın hedefe döner; gerekirse dokunup yönünü çevir.')
+    l.d['chargeKinds'] = [R]
+    for x in (150, 810):
+        top = tower(l, x, G, 50, 100); l.col(x, top, 30, 30, 'wood', True)
+    l.zone(420, 430, 120, 50)
+    l.sol((450, Y, None, R, -1), (510, Y, None, R, 1)); out.append(l)
+
+    # 4. Choose: one standard, one cart. The near tower takes the standard, the far one the cart.
+    l = L(9, 4, 'Seçim', 2, 2, 0.5, 'Bu işte bir standart, bir yürüyen şarj var. Hangisi nereye?')
+    l.d['chargeKinds'] = ['standard', R]
+    l.d['charges']['stock'] = {'standard': 1, R: 1}
+    top = tower(l, 300, G, 60, 110); l.col(300, top, 30, 30, 'wood', True)
+    top = tower(l, 800, G, 60, 110); l.col(800, top, 30, 30, 'wood', True)
+    l.zone(250, 430, 160, 50)
+    l.sol((380, Y, None, R, 1), (300, 466)); out.append(l)
+
+    # 5. Fuel run: the cart shoves into a row of barrels; their chain takes the depot down.
+    l = L(9, 5, 'Yakıt Hattı', 1, 1, 0.5, 'Şarj varillere kadar sürsün; gerisini zincir halleder.')
+    l.d['chargeKinds'] = ['standard', R]
+    for x in (520, 560):
+        l.barrel(x)
+    top = tower(l, 690, G, 80, 120, plank='metal'); l.col(690, top, 34, 34, 'wood', True)
+    l.zone(90, 430, 140, 50)
+    l.sol((160, Y, None, R)); out.append(l)
+
+    # 6. Off the ramp: set on a raised deck, the cart drives off the end and on to the tower.
+    l = L(9, 6, 'Rampa', 1, 1, 0.5, 'Şarjı yükseltinin üstüne koy. Kenardan düşer, yoluna devam eder.')
+    l.d['chargeKinds'] = ['standard', R]
+    deck = road(l, 120, 300, 80, anchored=True)
+    top = tower(l, 760, G, 60, 120); l.col(760, top, 34, 34, 'wood', True)
+    l.zone(130, deck - 40, 150, 38)
+    l.sol((200, deck - 8, None, R)); out.append(l)
+
+    # 7. The right tool: next to a protected shop only a precision charge is safe; the far tower needs the cart.
+    l = L(9, 7, 'Doğru Alet', 2, 2, 0.5, 'Dükkânın yanında yalnızca hassas şarj güvenli. Uzaktaki kuleye yürüyen şarj.')
+    l.d['chargeKinds'] = ['standard', P, R]
+    l.d['charges']['stock'] = {'standard': 1, P: 1, R: 1}
+    l.d['charges']['max'] = 3
+    l.house(240, 70, 80)
+    top = tower(l, 340, G, 50, 100); l.col(340, top, 30, 30, 'wood', True)
+    top = tower(l, 810, G, 60, 110); l.col(810, top, 30, 30, 'wood', True)
+    l.zone(300, 430, 160, 50)
+    l.sol((420, Y, None, R, 1), (360, 466, None, P)); out.append(l)
+
+    # 8. Barrier: one cart cannot get past it; the second shoves what is left of it all the way to the tower.
+    l = L(9, 8, 'Bariyer', 2, 2, 0.5, 'Tek yürüyen şarj bariyeri aşamaz. Arkasından gelen ikincisi yolu açar.')
+    l.d['chargeKinds'] = [R]
+    l.col(450, G, 24, 40, 'concrete')
+    top = tower(l, 760, G, 60, 120); l.col(760, top, 34, 34, 'wood', True)
+    l.zone(90, 430, 160, 50)
+    l.sol((200, Y, None, R, 1), (130, Y, None, R, 1)); out.append(l)
+
+    # 9. Three at once: carts out to both sides first, then the standard under the middle tower, once they are clear.
+    l = L(9, 9, 'Üç Yöne', 3, 3, 0.5, 'İki yürüyen şarj iki yana, ortadaki kuleye standart. Önce arabaları yerleştir: sıra, gecikme sırasıdır.')
+    l.d['chargeKinds'] = ['standard', R]
+    l.d['charges']['stock'] = {'standard': 1, R: 2}
+    for x in (130, 830):
+        top = tower(l, x, G, 50, 100); l.col(x, top, 30, 30, 'wood', True)
+    top = tower(l, 480, G, 60, 100); l.col(480, top, 30, 30, 'wood', True)
+    l.zone(400, 430, 160, 50)
+    l.sol((420, Y, None, R, -1), (540, Y, None, R, 1), (480, 466)); out.append(l)
+
+    # 10. Finale: one of each. Implosion for the block between the neighbours, the cart for the far mast.
+    l = L(9, 10, 'New York Finali', 3, 2, 0.45, 'Her türden bir tane. Komşular arasındaki bloğu içe çökert, uzaktaki direğe yürüyen şarj.')
+    l.d['chargeKinds'] = ['standard', I, R]
+    l.d['charges']['stock'] = {'standard': 1, I: 1, R: 1}
+    l.house(200, 60, 90)
+    l.house(520, 60, 90)
+    base = frame(l, [330, 390], G, 70, col_m='wood', deck_m='wood')
+    l.col(360, base, 30, 30, 'wood', True)
+    top = tower(l, 850, G, 50, 110); l.col(850, top, 30, 30, 'wood', True)
+    l.zone(320, 420, 80, 60)
+    l.zone(580, 430, 120, 50)
+    l.sol((360, 440, None, I), (620, Y, None, R, 1)); out.append(l)
+    return out
+
+
 def scale_zones(l, levels_total=80):
     """Charge zones follow the difficulty curve: roomy on the first jobs, tight on the
     last. Every solution charge stays inside its zone (with a margin), small special
     zones (crane hooks) keep their size, and zones never go below the ground."""
-    d = ((l.d['world'] - 1) * 10 + (l.d['order'] - 1)) / (levels_total - 1)
+    d = min(1.0, ((l.d['world'] - 1) * 10 + (l.d['order'] - 1)) / (levels_total - 1))
     f = 1.35 - 0.6 * d
     points = [(c['x'], c['y']) for c in l.d['solution']['charges']]
     for z in l.d['zones']:
@@ -966,7 +1068,7 @@ def scale_zones(l, levels_total=80):
 
 
 outdir = sys.argv[1]
-for name, levels in (('ankara', ankara()), ('paris', paris()), ('london', london()), ('rome', rome()), ('tokyo', tokyo()), ('istanbul', istanbul()), ('berlin', berlin()), ('madrid', madrid())):
+for name, levels in (('ankara', ankara()), ('paris', paris()), ('london', london()), ('rome', rome()), ('tokyo', tokyo()), ('istanbul', istanbul()), ('berlin', berlin()), ('madrid', madrid()), ('newyork', newyork())):
     for l in levels:
         # Footprint jobs offer the implosion charge: it folds a structure onto its own site.
         if 'footprint' in l.d and 'implosion' not in l.d.get('chargeKinds', ['standard']):

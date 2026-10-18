@@ -177,6 +177,33 @@ const TUTORIALS: Readonly<Record<string, readonly TutorialStep[]>> = {
       until: 'fired',
     },
   ],
+  // The first rolling charge: pick the kind, set it on the ground, fire.
+  'w9-01': [
+    {
+      text: {
+        tr: 'Alttan "Yürüyen" şarjı seç ve sarı alana, yere koy. Okun yönü, gideceği yöndür.',
+        en: 'Pick "Roller" below and set it on the ground in the zone. The arrow is the way it will drive.',
+      },
+      highlight: { world: { x: 170, y: 466 }, radius: 34 },
+      until: 'placed',
+    },
+    {
+      text: { tr: 'ATEŞLE: şarj kuleye kadar sürer ve çarptığı yerde patlar.', en: 'FIRE: it drives to the tower and goes off where it hits.' },
+      highlight: { selector: '.fire-btn' },
+      until: 'fired',
+    },
+  ],
+  // Turning a rolling charge round.
+  'w9-03': [
+    {
+      text: {
+        tr: 'Yürüyen şarjlar en yakın hedefe dönük konur. Bir şarja dokununca seçilir: tekrar dokun, yönü döner; kırmızı × siler.',
+        en: 'Rolling charges face the nearest target. Tap one to select it: tap again to turn it, the red × removes it.',
+      },
+      highlight: { world: { x: 480, y: 466 }, radius: 56 },
+      until: 'tap',
+    },
+  ],
   // The first wrecking ball: Fire alone lets the crane go.
   'w7-01': [
     {

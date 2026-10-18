@@ -492,16 +492,15 @@ export class LevelSession {
     return ok(flipped);
   }
 
-  /** The way a new rolling charge faces: toward the middle of the targets. */
+  /** The way a new rolling charge faces: toward the nearest target still standing. */
   private towardTargets(from: Vec2): 1 | -1 {
-    const xs: number[] = [];
+    let nearest: number | undefined;
     for (const e of this.entities.values()) {
-      if (!e.target) continue;
+      if (!e.target || e.down) continue;
       const s = this.physics.state(e.id);
-      if (s) xs.push(s.position.x);
+      if (s && (nearest === undefined || Math.abs(s.position.x - from.x) < Math.abs(nearest - from.x))) nearest = s.position.x;
     }
-    if (xs.length === 0) return 1;
-    return xs.reduce((a, b) => a + b, 0) / xs.length >= from.x ? 1 : -1;
+    return nearest === undefined || nearest >= from.x ? 1 : -1;
   }
 
   removeCharge(id: number): void {

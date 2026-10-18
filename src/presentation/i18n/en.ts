@@ -70,6 +70,14 @@ export const en: Strings = {
     fireAt: (s: string) => ` Press FIRE after about ${s} s.`,
     detonateAt: (s: string) => ` DETONATE ${s} s after FIRE.`,
   },
+  features: {
+    new: 'NEW',
+    reminder: 'REMINDER',
+    trick: 'Trick:',
+    next: 'Next',
+    gotIt: 'Got it',
+    help: 'What this job has',
+  },
   contracts: {
     title: 'Weekly contracts',
     renews: 'New ones every Monday. Campaign jobs and the daily count.',

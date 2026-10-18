@@ -1,0 +1,984 @@
+[
+ {
+  "id": "w9-01",
+  "name": "İlk Yürüyüş",
+  "world": 9,
+  "order": 1,
+  "charges": {
+   "max": 1,
+   "par": 1
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 109,
+    "y": 436,
+    "w": 112,
+    "h": 44
+   }
+  ],
+  "blocks": [
+   {
+    "x": 670.0,
+    "y": 425.0,
+    "w": 20,
+    "h": 110,
+    "material": "wood"
+   },
+   {
+    "x": 730.0,
+    "y": 425.0,
+    "w": 20,
+    "h": 110,
+    "material": "wood"
+   },
+   {
+    "x": 700,
+    "y": 360.0,
+    "w": 100,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 700,
+    "y": 333.0,
+    "w": 34,
+    "h": 34,
+    "material": "wood",
+    "target": true
+   }
+  ],
+  "barrels": [],
+  "cars": [],
+  "solution": {
+   "charges": [
+    {
+     "x": 170,
+     "y": 468,
+     "kind": "roller"
+    }
+   ],
+   "fireAt": 0
+  },
+  "hint": "Yürüyen şarj yere konur, ATEŞLE ile ileri sürer ve çarptığı yerde patlar.",
+  "chargeKinds": [
+   "standard",
+   "roller"
+  ]
+ },
+ {
+  "id": "w9-02",
+  "name": "Arka Kapı",
+  "world": 9,
+  "order": 2,
+  "charges": {
+   "max": 1,
+   "par": 1
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 214,
+    "y": 436,
+    "w": 82,
+    "h": 44
+   }
+  ],
+  "blocks": [
+   {
+    "x": 150,
+    "y": 435.0,
+    "w": 80,
+    "h": 90,
+    "material": "concrete",
+    "protected": true
+   },
+   {
+    "x": 690.0,
+    "y": 420.0,
+    "w": 20,
+    "h": 120,
+    "material": "wood"
+   },
+   {
+    "x": 750.0,
+    "y": 420.0,
+    "w": 20,
+    "h": 120,
+    "material": "wood"
+   },
+   {
+    "x": 720,
+    "y": 350.0,
+    "w": 100,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 720,
+    "y": 323.0,
+    "w": 34,
+    "h": 34,
+    "material": "wood",
+    "target": true
+   }
+  ],
+  "barrels": [],
+  "cars": [],
+  "solution": {
+   "charges": [
+    {
+     "x": 260,
+     "y": 468,
+     "kind": "roller"
+    }
+   ],
+   "fireAt": 0
+  },
+  "hint": "Dükkân korunuyor. Şarjı buraya patlatma; yürüyen şarjla işe sür.",
+  "chargeKinds": [
+   "standard",
+   "roller"
+  ]
+ },
+ {
+  "id": "w9-03",
+  "name": "İki Yön",
+  "world": 9,
+  "order": 3,
+  "charges": {
+   "max": 2,
+   "par": 2
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 435,
+    "y": 436,
+    "w": 90,
+    "h": 44
+   }
+  ],
+  "blocks": [
+   {
+    "x": 125.0,
+    "y": 430.0,
+    "w": 20,
+    "h": 100,
+    "material": "wood"
+   },
+   {
+    "x": 175.0,
+    "y": 430.0,
+    "w": 20,
+    "h": 100,
+    "material": "wood"
+   },
+   {
+    "x": 150,
+    "y": 370.0,
+    "w": 90,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 150,
+    "y": 345.0,
+    "w": 30,
+    "h": 30,
+    "material": "wood",
+    "target": true
+   },
+   {
+    "x": 785.0,
+    "y": 430.0,
+    "w": 20,
+    "h": 100,
+    "material": "wood"
+   },
+   {
+    "x": 835.0,
+    "y": 430.0,
+    "w": 20,
+    "h": 100,
+    "material": "wood"
+   },
+   {
+    "x": 810,
+    "y": 370.0,
+    "w": 90,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 810,
+    "y": 345.0,
+    "w": 30,
+    "h": 30,
+    "material": "wood",
+    "target": true
+   }
+  ],
+  "barrels": [],
+  "cars": [],
+  "solution": {
+   "charges": [
+    {
+     "x": 450,
+     "y": 468,
+     "kind": "roller",
+     "dir": -1
+    },
+    {
+     "x": 510,
+     "y": 468,
+     "kind": "roller",
+     "dir": 1
+    }
+   ],
+   "fireAt": 0
+  },
+  "hint": "İki kule iki yanda. Her yürüyen şarj en yakın hedefe döner; gerekirse dokunup yönünü çevir.",
+  "chargeKinds": [
+   "roller"
+  ]
+ },
+ {
+  "id": "w9-04",
+  "name": "Seçim",
+  "world": 9,
+  "order": 4,
+  "charges": {
+   "max": 2,
+   "par": 2,
+   "stock": {
+    "standard": 1,
+    "roller": 1
+   }
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 270,
+    "y": 436,
+    "w": 124,
+    "h": 44
+   }
+  ],
+  "blocks": [
+   {
+    "x": 270.0,
+    "y": 425.0,
+    "w": 20,
+    "h": 110,
+    "material": "wood"
+   },
+   {
+    "x": 330.0,
+    "y": 425.0,
+    "w": 20,
+    "h": 110,
+    "material": "wood"
+   },
+   {
+    "x": 300,
+    "y": 360.0,
+    "w": 100,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 300,
+    "y": 335.0,
+    "w": 30,
+    "h": 30,
+    "material": "wood",
+    "target": true
+   },
+   {
+    "x": 770.0,
+    "y": 425.0,
+    "w": 20,
+    "h": 110,
+    "material": "wood"
+   },
+   {
+    "x": 830.0,
+    "y": 425.0,
+    "w": 20,
+    "h": 110,
+    "material": "wood"
+   },
+   {
+    "x": 800,
+    "y": 360.0,
+    "w": 100,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 800,
+    "y": 335.0,
+    "w": 30,
+    "h": 30,
+    "material": "wood",
+    "target": true
+   }
+  ],
+  "barrels": [],
+  "cars": [],
+  "solution": {
+   "charges": [
+    {
+     "x": 380,
+     "y": 468,
+     "kind": "roller",
+     "dir": 1
+    },
+    {
+     "x": 300,
+     "y": 466
+    }
+   ],
+   "fireAt": 0
+  },
+  "hint": "Bu işte bir standart, bir yürüyen şarj var. Hangisi nereye?",
+  "chargeKinds": [
+   "standard",
+   "roller"
+  ]
+ },
+ {
+  "id": "w9-05",
+  "name": "Yakıt Hattı",
+  "world": 9,
+  "order": 5,
+  "charges": {
+   "max": 1,
+   "par": 1
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 108,
+    "y": 436,
+    "w": 105,
+    "h": 44
+   }
+  ],
+  "blocks": [
+   {
+    "x": 650.0,
+    "y": 420.0,
+    "w": 20,
+    "h": 120,
+    "material": "wood"
+   },
+   {
+    "x": 730.0,
+    "y": 420.0,
+    "w": 20,
+    "h": 120,
+    "material": "wood"
+   },
+   {
+    "x": 690,
+    "y": 350.0,
+    "w": 120,
+    "h": 20,
+    "material": "metal"
+   },
+   {
+    "x": 690,
+    "y": 323.0,
+    "w": 34,
+    "h": 34,
+    "material": "wood",
+    "target": true
+   }
+  ],
+  "barrels": [
+   {
+    "x": 520,
+    "y": 464
+   },
+   {
+    "x": 560,
+    "y": 464
+   }
+  ],
+  "cars": [],
+  "solution": {
+   "charges": [
+    {
+     "x": 160,
+     "y": 468,
+     "kind": "roller"
+    }
+   ],
+   "fireAt": 0
+  },
+  "hint": "Şarj varillere kadar sürsün; gerisini zincir halleder.",
+  "chargeKinds": [
+   "standard",
+   "roller"
+  ]
+ },
+ {
+  "id": "w9-06",
+  "name": "Rampa",
+  "world": 9,
+  "order": 6,
+  "charges": {
+   "max": 1,
+   "par": 1
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 149,
+    "y": 345,
+    "w": 112,
+    "h": 41
+   }
+  ],
+  "blocks": [
+   {
+    "x": 120,
+    "y": 440.0,
+    "w": 30,
+    "h": 80,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 300,
+    "y": 440.0,
+    "w": 30,
+    "h": 80,
+    "material": "concrete",
+    "anchored": true
+   },
+   {
+    "x": 210.0,
+    "y": 390.0,
+    "w": 230,
+    "h": 20,
+    "material": "metal",
+    "anchored": true
+   },
+   {
+    "x": 730.0,
+    "y": 420.0,
+    "w": 20,
+    "h": 120,
+    "material": "wood"
+   },
+   {
+    "x": 790.0,
+    "y": 420.0,
+    "w": 20,
+    "h": 120,
+    "material": "wood"
+   },
+   {
+    "x": 760,
+    "y": 350.0,
+    "w": 100,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 760,
+    "y": 323.0,
+    "w": 34,
+    "h": 34,
+    "material": "wood",
+    "target": true
+   }
+  ],
+  "barrels": [],
+  "cars": [],
+  "solution": {
+   "charges": [
+    {
+     "x": 200,
+     "y": 372.0,
+     "kind": "roller"
+    }
+   ],
+   "fireAt": 0
+  },
+  "hint": "Şarjı yükseltinin üstüne koy. Kenardan düşer, yoluna devam eder.",
+  "chargeKinds": [
+   "standard",
+   "roller"
+  ]
+ },
+ {
+  "id": "w9-07",
+  "name": "Doğru Alet",
+  "world": 9,
+  "order": 7,
+  "charges": {
+   "max": 3,
+   "par": 2,
+   "stock": {
+    "standard": 1,
+    "precision": 1,
+    "roller": 1
+   }
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 320,
+    "y": 436,
+    "w": 120,
+    "h": 44
+   }
+  ],
+  "blocks": [
+   {
+    "x": 240,
+    "y": 440.0,
+    "w": 70,
+    "h": 80,
+    "material": "concrete",
+    "protected": true
+   },
+   {
+    "x": 315.0,
+    "y": 430.0,
+    "w": 20,
+    "h": 100,
+    "material": "wood"
+   },
+   {
+    "x": 365.0,
+    "y": 430.0,
+    "w": 20,
+    "h": 100,
+    "material": "wood"
+   },
+   {
+    "x": 340,
+    "y": 370.0,
+    "w": 90,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 340,
+    "y": 345.0,
+    "w": 30,
+    "h": 30,
+    "material": "wood",
+    "target": true
+   },
+   {
+    "x": 780.0,
+    "y": 425.0,
+    "w": 20,
+    "h": 110,
+    "material": "wood"
+   },
+   {
+    "x": 840.0,
+    "y": 425.0,
+    "w": 20,
+    "h": 110,
+    "material": "wood"
+   },
+   {
+    "x": 810,
+    "y": 360.0,
+    "w": 100,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 810,
+    "y": 335.0,
+    "w": 30,
+    "h": 30,
+    "material": "wood",
+    "target": true
+   }
+  ],
+  "barrels": [],
+  "cars": [],
+  "solution": {
+   "charges": [
+    {
+     "x": 420,
+     "y": 468,
+     "kind": "roller",
+     "dir": 1
+    },
+    {
+     "x": 360,
+     "y": 466,
+     "kind": "precision"
+    }
+   ],
+   "fireAt": 0
+  },
+  "hint": "Dükkânın yanında yalnızca hassas şarj güvenli. Uzaktaki kuleye yürüyen şarj.",
+  "chargeKinds": [
+   "standard",
+   "precision",
+   "roller"
+  ]
+ },
+ {
+  "id": "w9-08",
+  "name": "Bariyer",
+  "world": 9,
+  "order": 8,
+  "charges": {
+   "max": 2,
+   "par": 2
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 110,
+    "y": 436,
+    "w": 120,
+    "h": 44
+   }
+  ],
+  "blocks": [
+   {
+    "x": 450,
+    "y": 460.0,
+    "w": 24,
+    "h": 40,
+    "material": "concrete"
+   },
+   {
+    "x": 730.0,
+    "y": 420.0,
+    "w": 20,
+    "h": 120,
+    "material": "wood"
+   },
+   {
+    "x": 790.0,
+    "y": 420.0,
+    "w": 20,
+    "h": 120,
+    "material": "wood"
+   },
+   {
+    "x": 760,
+    "y": 350.0,
+    "w": 100,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 760,
+    "y": 323.0,
+    "w": 34,
+    "h": 34,
+    "material": "wood",
+    "target": true
+   }
+  ],
+  "barrels": [],
+  "cars": [],
+  "solution": {
+   "charges": [
+    {
+     "x": 200,
+     "y": 468,
+     "kind": "roller",
+     "dir": 1
+    },
+    {
+     "x": 130,
+     "y": 468,
+     "kind": "roller",
+     "dir": 1
+    }
+   ],
+   "fireAt": 0
+  },
+  "hint": "Tek yürüyen şarj bariyeri aşamaz. Arkasından gelen ikincisi yolu açar.",
+  "chargeKinds": [
+   "roller"
+  ]
+ },
+ {
+  "id": "w9-09",
+  "name": "Üç Yöne",
+  "world": 9,
+  "order": 9,
+  "charges": {
+   "max": 3,
+   "par": 3,
+   "stock": {
+    "standard": 1,
+    "roller": 2
+   }
+  },
+  "bonusCollapse": 0.5,
+  "zones": [
+   {
+    "x": 406,
+    "y": 436,
+    "w": 148,
+    "h": 44
+   }
+  ],
+  "blocks": [
+   {
+    "x": 105.0,
+    "y": 430.0,
+    "w": 20,
+    "h": 100,
+    "material": "wood"
+   },
+   {
+    "x": 155.0,
+    "y": 430.0,
+    "w": 20,
+    "h": 100,
+    "material": "wood"
+   },
+   {
+    "x": 130,
+    "y": 370.0,
+    "w": 90,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 130,
+    "y": 345.0,
+    "w": 30,
+    "h": 30,
+    "material": "wood",
+    "target": true
+   },
+   {
+    "x": 805.0,
+    "y": 430.0,
+    "w": 20,
+    "h": 100,
+    "material": "wood"
+   },
+   {
+    "x": 855.0,
+    "y": 430.0,
+    "w": 20,
+    "h": 100,
+    "material": "wood"
+   },
+   {
+    "x": 830,
+    "y": 370.0,
+    "w": 90,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 830,
+    "y": 345.0,
+    "w": 30,
+    "h": 30,
+    "material": "wood",
+    "target": true
+   },
+   {
+    "x": 450.0,
+    "y": 430.0,
+    "w": 20,
+    "h": 100,
+    "material": "wood"
+   },
+   {
+    "x": 510.0,
+    "y": 430.0,
+    "w": 20,
+    "h": 100,
+    "material": "wood"
+   },
+   {
+    "x": 480,
+    "y": 370.0,
+    "w": 100,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 480,
+    "y": 345.0,
+    "w": 30,
+    "h": 30,
+    "material": "wood",
+    "target": true
+   }
+  ],
+  "barrels": [],
+  "cars": [],
+  "solution": {
+   "charges": [
+    {
+     "x": 420,
+     "y": 468,
+     "kind": "roller",
+     "dir": -1
+    },
+    {
+     "x": 540,
+     "y": 468,
+     "kind": "roller",
+     "dir": 1
+    },
+    {
+     "x": 480,
+     "y": 466
+    }
+   ],
+   "fireAt": 0
+  },
+  "hint": "İki yürüyen şarj iki yana, ortadaki kuleye standart. Önce arabaları yerleştir: sıra, gecikme sırasıdır.",
+  "chargeKinds": [
+   "standard",
+   "roller"
+  ]
+ },
+ {
+  "id": "w9-10",
+  "name": "New York Finali",
+  "world": 9,
+  "order": 10,
+  "charges": {
+   "max": 3,
+   "par": 2,
+   "stock": {
+    "standard": 1,
+    "implosion": 1,
+    "roller": 1
+   }
+  },
+  "bonusCollapse": 0.45,
+  "zones": [
+   {
+    "x": 330,
+    "y": 426,
+    "w": 60,
+    "h": 46
+   },
+   {
+    "x": 595,
+    "y": 436,
+    "w": 90,
+    "h": 44
+   }
+  ],
+  "blocks": [
+   {
+    "x": 200,
+    "y": 435.0,
+    "w": 60,
+    "h": 90,
+    "material": "concrete",
+    "protected": true
+   },
+   {
+    "x": 520,
+    "y": 435.0,
+    "w": 60,
+    "h": 90,
+    "material": "concrete",
+    "protected": true
+   },
+   {
+    "x": 330,
+    "y": 445.0,
+    "w": 24,
+    "h": 70,
+    "material": "wood"
+   },
+   {
+    "x": 390,
+    "y": 445.0,
+    "w": 24,
+    "h": 70,
+    "material": "wood"
+   },
+   {
+    "x": 360.0,
+    "y": 401.0,
+    "w": 100,
+    "h": 18,
+    "material": "wood"
+   },
+   {
+    "x": 360,
+    "y": 377.0,
+    "w": 30,
+    "h": 30,
+    "material": "wood",
+    "target": true
+   },
+   {
+    "x": 825.0,
+    "y": 425.0,
+    "w": 20,
+    "h": 110,
+    "material": "wood"
+   },
+   {
+    "x": 875.0,
+    "y": 425.0,
+    "w": 20,
+    "h": 110,
+    "material": "wood"
+   },
+   {
+    "x": 850,
+    "y": 360.0,
+    "w": 90,
+    "h": 20,
+    "material": "wood"
+   },
+   {
+    "x": 850,
+    "y": 335.0,
+    "w": 30,
+    "h": 30,
+    "material": "wood",
+    "target": true
+   }
+  ],
+  "barrels": [],
+  "cars": [],
+  "solution": {
+   "charges": [
+    {
+     "x": 360,
+     "y": 440,
+     "kind": "implosion"
+    },
+    {
+     "x": 620,
+     "y": 468,
+     "kind": "roller",
+     "dir": 1
+    }
+   ],
+   "fireAt": 0
+  },
+  "hint": "Her türden bir tane. Komşular arasındaki bloğu içe çökert, uzaktaki direğe yürüyen şarj.",
+  "chargeKinds": [
+   "standard",
+   "implosion",
+   "roller"
+  ]
+ }
+]
