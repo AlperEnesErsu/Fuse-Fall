@@ -24,7 +24,23 @@ export interface Overlay {
   readonly time: number;
   /** A tutorial spot to point at. */
   readonly coach: { readonly world: Vec2; readonly radius: number } | undefined;
+  /** The charge the player tapped: ringed, with its remove badge (see `removeBadgeOf`). */
+  readonly selected?: number;
+  /** A finger is dragging here: show a magnified view of it, clear of the finger. */
+  readonly loupe?: Vec2;
+  /** Hint: the recorded solution, drawn as faint outlines to copy. */
+  readonly solution?: readonly { readonly position: Vec2; readonly kind: ChargeKind; readonly delay: number | undefined; readonly direction?: 1 | -1 }[];
 }
+
+/** Where a selected charge's remove badge sits, in world px from the charge. */
+const BADGE_OFFSET = { x: 0, y: -30 };
+/** How big the remove badge is to a finger (world px radius). */
+export const BADGE_RADIUS = 13;
+/** The remove badge of the charge at `p`, for hit-testing taps. */
+export const removeBadgeOf = (p: Vec2): Vec2 => ({ x: p.x + BADGE_OFFSET.x, y: p.y + BADGE_OFFSET.y });
+
+/** The loupe: its radius and magnification, in CSS px, and how far above the finger it floats. */
+const LOUPE = { radius: 52, zoom: 2.2, lift: 120 };
 
 /** Bodies higher than this above the ground cast no visible shadow. */
 const SHADOW_REACH = 240;
@@ -170,6 +186,7 @@ export class Renderer {
     }
     this.effects(juice);
     if (overlay.coach) this.coachMarker(overlay.coach.world, overlay.coach.radius, overlay.time);
+    if (overlay.loupe && session?.phase === 'placing') this.loupe(overlay.loupe);
 
     const flash = juice.flashAlpha();
     if (flash > 0) {
@@ -302,6 +319,8 @@ export class Renderer {
       this.bomb(e.shape.r, time, true);
     } else if (e.kind === 'ball' && e.shape.kind === 'circle') {
       this.wreckingBall(e.shape.r);
+    } else if (e.kind === 'roller' && e.shape.kind === 'rect') {
+      this.rollerCart(e.shape.w, e.shape.h, time, e.state.velocity.x >= 0 ? 1 : -1, true);
     } else if (e.shape.kind === 'circle') {
       this.barrel(e.shape.r, time);
     } else if (e.shape.kind === 'poly') {
@@ -878,16 +897,18 @@ export class Renderer {
       session.charges.forEach((ch, i) => {
         if (overlay.drag?.id === ch.id) return;
         if (ch.kind === 'bomb') this.rackedBomb(ch.position, overlay.time);
-        else this.charge(ch.position, i + 1, false, overlay.time, ch.kind);
+        else this.charge(ch.position, i + 1, false, overlay.time, ch.kind, 1, ch.direction);
         this.delayTag(ch.position, ch.delay);
+        if (overlay.selected === ch.id) this.selection(ch.position, overlay.time);
       });
       const dragged = session.charges.find((ch) => ch.id === overlay.drag?.id);
-      if (overlay.drag && dragged) this.charge(overlay.drag.position, 0, false, overlay.time, dragged.kind, 0.7);
+      if (overlay.drag && dragged) this.charge(overlay.drag.position, 0, false, overlay.time, dragged.kind, 0.7, dragged.direction);
       if (overlay.ghost && !overlay.drag) this.ghost(overlay.ghost.position, overlay.ghost.valid);
+      if (overlay.solution) this.solutionGhosts(overlay.solution, overlay.time);
     } else {
       for (const a of session.armedCharges) {
         if (a.kind === 'bomb') this.rackedBomb(a.position, overlay.time);
-        else this.charge(a.position, 0, true, overlay.time, a.kind);
+        else this.charge(a.position, 0, true, overlay.time, a.kind, 1, a.direction);
       }
     }
   }
@@ -923,8 +944,17 @@ export class Renderer {
    * A plastic explosive brick with a detonator and status LED; the LED blinks
    * fast once armed. Precision charges are smaller, with a white band.
    */
-  private charge(p: Vec2, index: number, armed: boolean, time: number, kind: ChargeKind, alpha = 1): void {
+  private charge(p: Vec2, index: number, armed: boolean, time: number, kind: ChargeKind, alpha = 1, direction: 1 | -1 = 1): void {
     const c = this.ctx;
+    if (kind === 'roller') {
+      c.save();
+      c.globalAlpha = alpha;
+      c.translate(p.x, p.y);
+      this.rollerCart(24, 12, time, direction, armed);
+      this.directionArrow(direction, time);
+      c.restore();
+      return;
+    }
     c.save();
     c.globalAlpha = alpha;
     c.translate(p.x, p.y);
@@ -971,6 +1001,159 @@ export class Renderer {
       c.textBaseline = 'middle';
       c.fillText(String(index), 0, 3);
     }
+    c.restore();
+  }
+
+  /** A rolling charge: a low steel cart on two wheels, explosive box on top, light blinking. Drawn at the origin. */
+  private rollerCart(w: number, h: number, time: number, direction: 1 | -1, live: boolean): void {
+    const c = this.ctx;
+    c.save();
+    c.scale(direction, 1);
+    c.fillStyle = '#4a4f57';
+    c.fillRect(-w / 2, -h / 2, w, h * 0.65);
+    c.fillStyle = '#c0392b';
+    c.fillRect(-w / 2 + 3, -h / 2 - 5, w * 0.55, 6);
+    c.strokeStyle = '#1c1f14';
+    c.lineWidth = 1.2;
+    c.strokeRect(-w / 2, -h / 2, w, h * 0.65);
+    // Nose: a sloped bumper on the side it drives toward.
+    c.fillStyle = '#e0a52e';
+    c.beginPath();
+    c.moveTo(w / 2, -h / 2);
+    c.lineTo(w / 2 + 4, h * 0.15 - h / 2 + 2);
+    c.lineTo(w / 2, h * 0.15);
+    c.closePath();
+    c.fill();
+    // Wheels, turning when it drives.
+    const spin = live ? time * 18 : 0;
+    for (const x of [-w / 2 + 5, w / 2 - 5]) {
+      c.fillStyle = '#17191c';
+      c.beginPath();
+      c.arc(x, h / 2 - 2, 4, 0, Math.PI * 2);
+      c.fill();
+      c.strokeStyle = '#8d939c';
+      c.lineWidth = 1;
+      c.beginPath();
+      c.moveTo(x, h / 2 - 2);
+      c.lineTo(x + Math.cos(spin) * 3, h / 2 - 2 + Math.sin(spin) * 3);
+      c.stroke();
+    }
+    const on = Math.floor(time * (live ? 10 : 1.5)) % 2 === 0;
+    c.fillStyle = on ? (live ? '#ff3b30' : '#59d36b') : '#2a2d33';
+    c.beginPath();
+    c.arc(w / 2 - 6, -h / 2 - 2, 1.8, 0, Math.PI * 2);
+    c.fill();
+    c.restore();
+  }
+
+  /** The way a placed rolling charge will drive: a chevron that creeps forward. Drawn at the charge. */
+  private directionArrow(direction: 1 | -1, time: number): void {
+    const c = this.ctx;
+    const creep = ((time * 1.2) % 1) * 6;
+    c.save();
+    c.scale(direction, 1);
+    c.strokeStyle = PALETTE.accent;
+    c.lineWidth = 2.4;
+    c.lineCap = 'round';
+    for (const k of [0, 1]) {
+      const x = 20 + creep + k * 7;
+      c.globalAlpha = k === 0 ? 0.9 : 0.5;
+      c.beginPath();
+      c.moveTo(x, -6);
+      c.lineTo(x + 5, 0);
+      c.lineTo(x, 6);
+      c.stroke();
+    }
+    c.restore();
+  }
+
+  /** A tapped charge: a ring around it and a round remove badge above it. */
+  private selection(p: Vec2, time: number): void {
+    const c = this.ctx;
+    const pulse = (Math.sin(time * 6) + 1) / 2;
+    const b = removeBadgeOf(p);
+    c.save();
+    c.strokeStyle = `rgba(242, 177, 52, ${0.6 + 0.4 * pulse})`;
+    c.lineWidth = 2;
+    c.beginPath();
+    c.arc(p.x, p.y, 20, 0, Math.PI * 2);
+    c.stroke();
+    c.fillStyle = '#c0392b';
+    c.beginPath();
+    c.arc(b.x, b.y, BADGE_RADIUS, 0, Math.PI * 2);
+    c.fill();
+    c.strokeStyle = '#f4efe6';
+    c.lineWidth = 2.2;
+    c.lineCap = 'round';
+    c.beginPath();
+    c.moveTo(b.x - 5, b.y - 5);
+    c.lineTo(b.x + 5, b.y + 5);
+    c.moveTo(b.x + 5, b.y - 5);
+    c.lineTo(b.x - 5, b.y + 5);
+    c.stroke();
+    c.restore();
+  }
+
+  /** Hint: where the solution's charges go, as breathing outlines with their order and delay. */
+  private solutionGhosts(list: NonNullable<Overlay['solution']>, time: number): void {
+    const c = this.ctx;
+    const alpha = 0.35 + 0.2 * ((Math.sin(time * 3) + 1) / 2);
+    c.save();
+    list.forEach((s, i) => {
+      c.globalAlpha = alpha;
+      c.strokeStyle = PALETTE.accent;
+      c.lineWidth = 2;
+      c.setLineDash([3, 3]);
+      c.strokeRect(s.position.x - 14, s.position.y - 9, 28, 18);
+      c.setLineDash([]);
+      c.globalAlpha = Math.min(1, alpha + 0.3);
+      c.fillStyle = PALETTE.accent;
+      c.font = '700 10px Bahnschrift, system-ui, sans-serif';
+      c.textAlign = 'center';
+      c.textBaseline = 'bottom';
+      const label = s.delay === undefined ? `${i + 1}` : `${i + 1} · +${Math.round(s.delay * 1000)}`;
+      c.fillText(s.kind === 'roller' ? `${label} ${s.direction === -1 ? '←' : '→'}` : label, s.position.x, s.position.y - 11);
+    });
+    c.restore();
+  }
+
+  /**
+   * The loupe: a magnified circle of the scene around `p`, floating above the
+   * finger so the exact spot stays visible while dragging. Screen space.
+   */
+  private loupe(p: Vec2): void {
+    const c = this.ctx;
+    const dpr = this.canvas.width / Math.max(1, this.canvas.clientWidth);
+    const sx = this.offsetX + p.x * this.scale;
+    const sy = this.offsetY + p.y * this.scale;
+    const r = LOUPE.radius * dpr;
+    const cx = Math.min(this.canvas.width - r - 4, Math.max(r + 4, sx));
+    // Above the finger; below it when the finger is near the top.
+    const above = sy - LOUPE.lift * dpr;
+    const cy = above - r < 0 ? sy + LOUPE.lift * dpr : above;
+    const src = r / LOUPE.zoom;
+    c.save();
+    c.setTransform(1, 0, 0, 1, 0, 0);
+    c.beginPath();
+    c.arc(cx, cy, r, 0, Math.PI * 2);
+    c.closePath();
+    c.fillStyle = '#0f1114';
+    c.fill();
+    c.save();
+    c.clip();
+    c.drawImage(this.canvas, sx - src, sy - src, src * 2, src * 2, cx - r, cy - r, r * 2, r * 2);
+    c.restore();
+    c.strokeStyle = PALETTE.accent;
+    c.lineWidth = 2 * dpr;
+    c.stroke();
+    c.strokeStyle = 'rgba(244, 239, 230, 0.8)';
+    c.lineWidth = 1 * dpr;
+    c.beginPath();
+    c.moveTo(cx - 8 * dpr, cy);
+    c.lineTo(cx + 8 * dpr, cy);
+    c.moveTo(cx, cy - 8 * dpr);
+    c.lineTo(cx, cy + 8 * dpr);
+    c.stroke();
     c.restore();
   }
 

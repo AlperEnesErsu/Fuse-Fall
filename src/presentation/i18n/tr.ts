@@ -37,7 +37,7 @@ export const tr = {
   menu: 'Menü',
   charges: 'Şarj',
   delayTitle: 'Ateşleme gecikmesi (ms)',
-  chargeKinds: { standard: 'Standart', precision: 'Hassas', implosion: 'İçe Çöken', bomb: 'Bomba' },
+  chargeKinds: { standard: 'Standart', precision: 'Hassas', implosion: 'İçe Çöken', bomb: 'Bomba', roller: 'Yürüyen' },
   detonate: 'PATLAT',
   scrap: (n: number) => `${n} hurda`,
   scrapLabel: 'HURDA',

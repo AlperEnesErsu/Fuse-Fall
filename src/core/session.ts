@@ -1,3 +1,4 @@
+import { placementFor } from './placement';
 import type { BlastSource, EventBus, GameEvents } from './events';
 import { WORLD, onRails, type CarDef, type ChargeKind, type LevelDefinition, type VehicleStyle } from './level';
 import { MATERIALS, type MaterialId } from './materials';
@@ -11,7 +12,7 @@ import { findJoints, type JointDef } from './joints';
 import { TUNING } from './tuning';
 
 export type Phase = 'placing' | 'running' | 'finished';
-export type EntityKind = 'block' | 'debris' | 'barrel' | 'car' | 'bomb' | 'ball';
+export type EntityKind = 'block' | 'debris' | 'barrel' | 'car' | 'bomb' | 'ball' | 'roller';
 
 export interface Charge {
   readonly id: number;
@@ -19,6 +20,8 @@ export interface Charge {
   /** Seconds after Fire that this charge detonates. */
   readonly delay: number;
   readonly kind: ChargeKind;
+  /** Which way it drives, for a rolling charge (1 = right). */
+  readonly direction: 1 | -1;
 }
 
 /** Snaps a delay to the blasting machine's step and range. */
@@ -103,6 +106,22 @@ interface Release {
   readonly position: Vec2;
 }
 
+/** A rolling charge waiting for its delay, before it starts driving. */
+interface Launch {
+  readonly at: number;
+  readonly position: Vec2;
+  readonly direction: 1 | -1;
+}
+
+/** A rolling charge on the move. */
+interface Roller {
+  readonly direction: 1 | -1;
+  readonly since: number;
+  /** When its fuse sets it off by itself (a nearby blast brings this forward). */
+  until: number;
+  stalledFor: number;
+}
+
 interface Detonation {
   readonly at: number;
   readonly position: Vec2;
@@ -135,6 +154,7 @@ const BLASTS: Readonly<Record<BlastKind, { radius: number; pressure: number; dam
   barrel: { radius: TUNING.barrel.blastRadius, pressure: TUNING.barrel.pressure, damage: TUNING.barrel.damage },
   vehicle: { radius: TUNING.vehicle.blastRadius, pressure: TUNING.vehicle.pressure, damage: TUNING.vehicle.damage },
   bomb: { radius: TUNING.bomb.blastRadius, pressure: TUNING.bomb.pressure, damage: TUNING.bomb.damage },
+  roller: { radius: TUNING.roller.blastRadius, pressure: TUNING.roller.pressure, damage: TUNING.roller.damage },
 };
 
 const sourceOf = (blast: BlastKind): BlastSource => (blast === 'standard' || blast === 'precision' ? 'charge' : blast);
@@ -172,6 +192,9 @@ export class LevelSession {
   private readonly chargeList: Charge[] = [];
   private readonly pending: Detonation[] = [];
   private readonly releases: Release[] = [];
+  private readonly launches: Launch[] = [];
+  /** Rolling charges driving now, by entity id. */
+  private readonly rollers = new Map<string, Roller>();
   private readonly rng: () => number;
   private nextChargeId = 1;
   private nextEntityId = 1;
@@ -278,13 +301,21 @@ export class LevelSession {
     return this.level.charges.max - this.chargeList.length;
   }
 
+  /** Charges of one kind still to place: its own count in a loadout, else what is left overall. */
+  stockLeft(kind: ChargeKind): number {
+    const stock = this.level.charges.stock;
+    if (!stock) return this.level.chargeKinds.includes(kind) ? this.chargesLeft : 0;
+    return (stock[kind] ?? 0) - this.chargeList.filter((c) => c.kind === kind).length;
+  }
+
   /** Charges that were fired but whose fuse is still burning, and bombs still on their rack. */
-  get armedCharges(): { readonly position: Vec2; readonly kind: ChargeKind }[] {
-    const armed: { position: Vec2; kind: ChargeKind }[] = [];
+  get armedCharges(): { readonly position: Vec2; readonly kind: ChargeKind; readonly direction?: 1 | -1 }[] {
+    const armed: { position: Vec2; kind: ChargeKind; direction?: 1 | -1 }[] = [];
     for (const d of this.pending) {
       if (isFixedCharge(d.blast)) armed.push({ position: d.position, kind: d.blast });
     }
     for (const r of this.releases) armed.push({ position: r.position, kind: 'bomb' });
+    for (const l of this.launches) armed.push({ position: l.position, kind: 'roller', direction: l.direction });
     return armed;
   }
 
@@ -397,10 +428,23 @@ export class LevelSession {
     return crowded ? err('too-close') : ok(undefined);
   }
 
+  /**
+   * Where a charge aimed at `position` would actually go: the same spot when it
+   * is allowed, else the nearest allowed one close by (a finger is not a mouse).
+   * Undefined when nothing within reach is allowed.
+   */
+  snapPlacement(position: Vec2, kind: ChargeKind = 'standard', ignore?: number): Vec2 | undefined {
+    if (this.currentPhase !== 'placing') return undefined;
+    const zones = kind === 'bomb' ? this.level.dropZones : this.level.zones;
+    const others = this.chargeList.filter((c) => c.id !== ignore).map((c) => c.position);
+    return placementFor(position, zones, others, TUNING.charge.placementSpacing);
+  }
+
   /** Without an explicit delay, a new charge fires one step after the latest one. */
-  placeCharge(position: Vec2, delay?: number, kind: ChargeKind = 'standard'): Result<Charge, PlacementError> {
+  placeCharge(position: Vec2, delay?: number, kind: ChargeKind = 'standard', direction?: 1 | -1): Result<Charge, PlacementError> {
     if (this.currentPhase === 'placing' && this.chargesLeft <= 0) return err('no-charges-left');
     if (this.currentPhase === 'placing' && !this.level.chargeKinds.includes(kind)) return err('kind-unavailable');
+    if (this.currentPhase === 'placing' && this.stockLeft(kind) <= 0) return err('no-charges-left');
     const allowed = this.canPlaceAt(position, undefined, kind);
     if (!allowed.ok) return allowed;
     const latest = this.chargeList.reduce((m, c) => Math.max(m, c.delay), -TUNING.charge.delay.defaultStep);
@@ -409,6 +453,7 @@ export class LevelSession {
       position,
       delay: quantizeDelay(delay ?? latest + TUNING.charge.delay.defaultStep),
       kind,
+      direction: direction ?? this.towardTargets(position),
     };
     this.chargeList.push(charge);
     this.events.emit('chargePlaced', { position });
@@ -436,6 +481,29 @@ export class LevelSession {
     return ok(updated);
   }
 
+  /** Turns a rolling charge around. */
+  flipCharge(id: number): Result<Charge, PlacementError> {
+    if (this.currentPhase !== 'placing') return err('not-placing');
+    const index = this.chargeList.findIndex((c) => c.id === id);
+    const current = this.chargeList[index];
+    if (!current) return err('unknown-charge');
+    const flipped = { ...current, direction: current.direction === 1 ? (-1 as const) : (1 as const) };
+    this.chargeList[index] = flipped;
+    return ok(flipped);
+  }
+
+  /** The way a new rolling charge faces: toward the middle of the targets. */
+  private towardTargets(from: Vec2): 1 | -1 {
+    const xs: number[] = [];
+    for (const e of this.entities.values()) {
+      if (!e.target) continue;
+      const s = this.physics.state(e.id);
+      if (s) xs.push(s.position.x);
+    }
+    if (xs.length === 0) return 1;
+    return xs.reduce((a, b) => a + b, 0) / xs.length >= from.x ? 1 : -1;
+  }
+
   removeCharge(id: number): void {
     if (this.currentPhase !== 'placing') return;
     const index = this.chargeList.findIndex((c) => c.id === id);
@@ -451,6 +519,7 @@ export class LevelSession {
     this.firedAt = this.time;
     for (const c of this.chargeList) {
       if (c.kind === 'bomb') this.releases.push({ at: this.time + c.delay, position: c.position });
+      else if (c.kind === 'roller') this.launches.push({ at: this.time + c.delay, position: c.position, direction: c.direction });
       else this.pending.push({ at: this.time + c.delay, position: c.position, blast: c.kind });
     }
     return ok(undefined);
@@ -479,8 +548,10 @@ export class LevelSession {
       return;
     }
     this.releaseDue();
+    this.launchDue();
     this.detonateDue();
     this.drive();
+    this.roll(dt);
     this.cruise(dt, true);
     this.physics.step(dt);
     this.checkJoints();
@@ -528,10 +599,58 @@ export class LevelSession {
     }
   }
 
+  /** Starts rolling charges whose delay has come. */
+  private launchDue(): void {
+    for (let i = this.launches.length - 1; i >= 0; i--) {
+      const l = this.launches[i];
+      if (!l || l.at > this.time) continue;
+      this.launches.splice(i, 1);
+      const id = this.spawn({
+        kind: 'roller',
+        shape: { kind: 'rect', w: TUNING.roller.width, h: TUNING.roller.height },
+        position: l.position,
+        angle: 0,
+        material: 'metal',
+        motion: { velocity: vec(l.direction * TUNING.roller.speed, 0), angularVelocity: 0 },
+      });
+      this.rollers.set(id, { direction: l.direction, since: this.time, until: this.time + TUNING.roller.fuse, stalledFor: 0 });
+    }
+  }
+
+  /** Drives rolling charges, and sets them off when they stall against something, tip over or run out of fuse. */
+  private roll(dt: number): void {
+    const R = TUNING.roller;
+    for (const [id, r] of [...this.rollers]) {
+      const e = this.entities.get(id);
+      const s = this.physics.state(id);
+      if (!e || !s) {
+        this.rollers.delete(id);
+        continue;
+      }
+      const driving = this.time - r.since >= R.spinUp;
+      r.stalledFor = driving && Math.abs(s.velocity.x) < R.speed * R.stalledBelow ? r.stalledFor + dt : 0;
+      const tipped = Math.abs(s.angle) > 1.2;
+      if (r.stalledFor >= R.stall || tipped || this.time >= r.until) {
+        this.rollers.delete(id);
+        this.removeEntity(e);
+        this.pending.push({ at: this.time, position: s.position, blast: 'roller' });
+        continue;
+      }
+      // Wheels on the ground: hold speed along the way it faces, keep the body level.
+      // A level cart: cancel the spin, and steer the angle back to flat, so it does not trip over its own nose.
+      this.physics.kick(id, vec(r.direction * R.speed - s.velocity.x, 0), -s.angularVelocity - s.angle * R.level);
+    }
+  }
+
   private explode(center: Vec2, blast: BlastKind): void {
     const spec = BLASTS[blast];
     const source = sourceOf(blast);
     const radius = spec.radius;
+    // A rolling charge caught in a blast goes off with it.
+    for (const [id, r] of this.rollers) {
+      const s = this.physics.state(id);
+      if (s && distance(s.position, center) <= radius * 0.6) r.until = this.time;
+    }
     this.events.emit('explosion', {
       position: center,
       radius,
@@ -790,7 +909,7 @@ export class LevelSession {
   }
 
   private checkSettled(dt: number): void {
-    if (this.pending.length > 0 || this.liveBombs > 0) {
+    if (this.pending.length > 0 || this.liveBombs > 0 || this.launches.length > 0 || this.rollers.size > 0) {
       this.calmFor = 0;
       return;
     }
@@ -959,7 +1078,7 @@ export class LevelSession {
         ? TUNING.barrel.trigger
         : spec.kind === 'bomb'
           ? TUNING.bomb.trigger
-        : spec.kind === 'debris' || spec.kind === 'ball' || spec.anchored
+        : spec.kind === 'debris' || spec.kind === 'ball' || spec.kind === 'roller' || spec.anchored
           ? Infinity
           : MATERIALS[spec.material].strength;
     this.entities.set(id, {

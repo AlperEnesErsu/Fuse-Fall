@@ -32,6 +32,27 @@ export const TUNING = {
     damage: 110,
   },
   /** A free-fall bomb: released on Fire, falls under gravity, set off by the detonator or its fuse. */
+  /**
+   * A rolling charge: a small motorised cart set on the ground. Fired, it drives
+   * the way its arrow points and goes off when it runs into something (it stalls),
+   * when it tips over, or when its fuse runs out.
+   */
+  roller: {
+    width: 24,
+    height: 12,
+    speed: 150,
+    fuse: 4,
+    /** Driving slower than this share of its speed for `stall` seconds means it has hit something. */
+    stalledBelow: 0.35,
+    stall: 0.1,
+    /** Seconds before it may stall: time to get going. */
+    spinUp: 0.3,
+    /** How hard it rights itself (rad/s of correction per rad of tilt). Only something it hits can tip it now. */
+    level: 12,
+    blastRadius: 130,
+    pressure: 1.0,
+    damage: 120,
+  },
   bomb: {
     radius: 11,
     blastRadius: 140,

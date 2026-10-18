@@ -34,7 +34,7 @@ export const en: Strings = {
   menu: 'Menu',
   charges: 'Charges',
   delayTitle: 'Detonation delay (ms)',
-  chargeKinds: { standard: 'Standard', precision: 'Precision', implosion: 'Implosion', bomb: 'Bomb' },
+  chargeKinds: { standard: 'Standard', precision: 'Precision', implosion: 'Implosion', bomb: 'Bomb', roller: 'Roller' },
   detonate: 'DETONATE',
   scrap: (n: number) => `${n} scrap`,
   scrapLabel: 'SCRAP',

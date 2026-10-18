@@ -70,7 +70,7 @@ export const HEAVY_LANDING = 0.25;
 
 /** Feel parameters. Tweak here; nothing else needs to change. */
 const FEEL = {
-  hitStop: { charge: 0.06, implosion: 0.05, barrel: 0.04, vehicle: 0.045, bomb: 0.07 },
+  hitStop: { charge: 0.06, implosion: 0.05, barrel: 0.04, vehicle: 0.045, bomb: 0.07, roller: 0.06 },
   trauma: { explosion: 0.55, shatter: 0.06, hit: 0.05, decay: 1.5 },
   shakeMaxOffset: 16,
   shakeMaxAngle: 0.02,

@@ -1,6 +1,6 @@
 import { isMaterialId, type MaterialId } from './materials';
 
-export const CHARGE_KINDS = ['standard', 'precision', 'implosion', 'bomb'] as const;
+export const CHARGE_KINDS = ['standard', 'precision', 'implosion', 'bomb', 'roller'] as const;
 export type ChargeKind = (typeof CHARGE_KINDS)[number];
 const isChargeKind = (v: unknown): v is ChargeKind => typeof v === 'string' && (CHARGE_KINDS as readonly string[]).includes(v);
 import type { Rect, Vec2 } from './math';
@@ -59,7 +59,12 @@ export interface SolutionCharge extends Vec2 {
   /** Detonation delay in seconds; omitted means the default sequence. */
   readonly delay: number | undefined;
   readonly kind: ChargeKind;
+  /** Which way a rolling charge drives; omitted means toward the targets. */
+  readonly direction?: 1 | -1;
 }
+
+/** How many charges of each kind a job hands out, when it limits them by kind (a loadout). */
+export type ChargeStock = Readonly<Partial<Record<ChargeKind, number>>>;
 
 /** The ground strip the collapse must stay inside, and the share of the material that must end up there. */
 export interface Footprint {
@@ -94,8 +99,12 @@ export interface LevelDefinition {
   readonly world: number;
   readonly order: number;
   readonly hint: string | undefined;
-  /** Charges the player may place, and the par for the second star. */
-  readonly charges: { readonly max: number; readonly par: number };
+  /**
+   * Charges the player may place, and the par for the second star. With a
+   * `stock`, each kind has its own count (and `max` is their sum): the player
+   * has to choose which of the handed-out charges to use, and where.
+   */
+  readonly charges: { readonly max: number; readonly par: number; readonly stock?: ChargeStock };
   /** Fraction of blocks that must collapse for the third star. */
   readonly bonusCollapse: number;
   readonly zones: readonly Rect[];
@@ -234,12 +243,37 @@ const solution = (v: unknown, path: string, maxCharges: number, minCharges: numb
     const at = `${path}.charges[${i}]`;
     const o = obj(s, at);
     const kind = o.kind === undefined ? 'standard' : isChargeKind(o.kind) ? o.kind : fail(`${at}.kind`, 'unknown charge kind');
-    return { ...point(s, at), delay: o.delay === undefined ? undefined : num(o.delay, `${at}.delay`, 0, 2), kind };
+    const direction = o.dir === undefined ? undefined : o.dir === 1 || o.dir === -1 ? o.dir : fail(`${at}.dir`, 'dir must be 1 or -1');
+    const base = { ...point(s, at), delay: o.delay === undefined ? undefined : num(o.delay, `${at}.delay`, 0, 2), kind };
+    return direction === undefined ? base : { ...base, direction };
   });
   if (charges.length < minCharges || charges.length > maxCharges) fail(`${path}.charges`, `solution must use ${minCharges}..max charges`);
   const detonateAt =
     o.detonateAt === undefined ? [] : arr(o.detonateAt, `${path}.detonateAt`).map((t, i) => num(t, `${path}.detonateAt[${i}]`, 0, 10));
   return { charges, detonateAt, fireAt: o.fireAt === undefined ? 0 : num(o.fireAt, `${path}.fireAt`, 0, 30) };
+};
+
+/** A loadout: a count for each offered kind, adding up to the job's charge limit. */
+const chargeStock = (v: unknown, path: string, kinds: readonly ChargeKind[], max: number): ChargeStock => {
+  const o = obj(v, path);
+  const stock: Partial<Record<ChargeKind, number>> = {};
+  for (const [k, n] of Object.entries(o)) {
+    if (!isChargeKind(k) || !kinds.includes(k)) fail(`${path}.${k}`, 'stock kind must be one of chargeKinds');
+    stock[k as ChargeKind] = int(n, `${path}.${k}`, 1, 6);
+  }
+  const total = Object.values(stock).reduce((a, b) => a + b, 0);
+  if (total !== max) fail(path, `stock must add up to charges.max (${max}), got ${total}`);
+  return stock;
+};
+
+/** The shipped solution must fit the loadout too. */
+const withinStock = (s: LevelSolution, stock: ChargeStock | undefined, path: string): LevelSolution => {
+  if (!stock) return s;
+  for (const k of CHARGE_KINDS) {
+    const used = s.charges.filter((c) => c.kind === k).length;
+    if (used > (stock[k] ?? 0)) fail(`${path}.charges`, `uses ${used} ${k} but the stock has ${stock[k] ?? 0}`);
+  }
+  return s;
 };
 
 const footprint = (v: unknown, path: string): Footprint => {
@@ -271,6 +305,7 @@ export const parseLevel = (input: unknown): Result<LevelDefinition, LevelError> 
             isChargeKind(k) ? k : fail(`${p}.chargeKinds[${i}]`, 'unknown charge kind'),
           );
     if (chargeKinds.length === 0) fail(`${p}.chargeKinds`, 'at least one charge kind');
+    const stock = chargesObj.stock === undefined ? undefined : chargeStock(chargesObj.stock, `${p}.charges.stock`, chargeKinds, max);
     if (!blocks.some((b) => b.target) && !cars.some((c) => c.target)) fail(`${p}.blocks`, 'level needs at least one target');
     const zones = arr(o.zones, `${p}.zones`).map((z, i) => rect(z, `${p}.zones[${i}]`));
     const balls = o.balls === undefined ? [] : arr(o.balls, `${p}.balls`).map((b, i) => wreckingBall(b, `${p}.balls[${i}]`));
@@ -281,7 +316,7 @@ export const parseLevel = (input: unknown): Result<LevelDefinition, LevelError> 
       world: int(o.world, `${p}.world`, 1, 99),
       order: int(o.order, `${p}.order`, 1, 99),
       hint: o.hint === undefined ? undefined : str(o.hint, `${p}.hint`),
-      charges: { max, par },
+      charges: stock ? { max, par, stock } : { max, par },
       bonusCollapse: num(o.bonusCollapse, `${p}.bonusCollapse`, 0, 1),
       zones,
       dropZones: o.dropZones === undefined ? [] : arr(o.dropZones, `${p}.dropZones`).map((z, i) => rect(z, `${p}.dropZones[${i}]`)),
@@ -292,7 +327,7 @@ export const parseLevel = (input: unknown): Result<LevelDefinition, LevelError> 
       chargeKinds,
       footprint: o.footprint === undefined ? undefined : footprint(o.footprint, `${p}.footprint`),
       // A wrecking ball can do a job alone (Fire releases it), so its solution may place no charges.
-      solution: solution(o.solution, `${p}.solution`, max, balls.length > 0 ? 0 : 1),
+      solution: withinStock(solution(o.solution, `${p}.solution`, max, balls.length > 0 ? 0 : 1), stock, `${p}.solution`),
     });
   } catch (e) {
     if (e instanceof Invalid) return err({ kind: 'invalid-level', path: e.path, message: e.message });

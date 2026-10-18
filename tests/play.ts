@@ -15,7 +15,7 @@ export const playSolution = (
 ): LevelSession => {
   const session = new LevelSession(level, new MatterPhysicsWorld(), new EventBus<GameEvents>());
   for (const p of charges) {
-    const placed = session.placeCharge(p, 'delay' in p ? p.delay : undefined, 'kind' in p ? p.kind : 'standard');
+    const placed = session.placeCharge(p, 'delay' in p ? p.delay : undefined, 'kind' in p ? p.kind : 'standard', 'direction' in p ? p.direction : undefined);
     if (!placed.ok) throw new Error(`${level.id}: solution charge rejected (${placed.error})`);
   }
   for (let t = 0; t + STEP / 2 < fireAt; t += STEP) session.step(STEP);
