@@ -3,6 +3,7 @@ import { WORLD } from '../core/level';
 import type { Vec2 } from '../core/math';
 import type { Settings } from '../core/progress';
 import { HEAVY_LANDING, landingWeight } from './juice';
+import { MusicPlayer, type Mood } from './music';
 import { SoundSynth } from './sound-synth';
 
 /** Stereo position from the world x: sounds come from where things happen. */
@@ -10,13 +11,16 @@ const panOf = (p: Vec2): number => ((p.x / WORLD.width) * 2 - 1) * 0.7;
 
 /**
  * Wires game events to the synthesiser and owns the live AudioContext.
- * There is deliberately no background drone: silence between blasts makes
- * the blasts land harder.
+ * The background music ducks out at every blast, so silence still comes
+ * before the boom and the blasts land just as hard.
  */
 export class SoundDirector {
   private ctx: AudioContext | undefined;
   private volume: GainNode | undefined;
   private synth: SoundSynth | undefined;
+  private music: MusicPlayer | undefined;
+  /** The mood asked for before audio was unlocked, played once it is. */
+  private mood: { mood: Mood; city: string | undefined } = { mood: 'menu', city: undefined };
   private tap: MediaStreamAudioDestinationNode | undefined;
   private lastHit = 0;
   /** Targets down so far in this attempt: each ding is pitched a step higher. */
@@ -29,9 +33,17 @@ export class SoundDirector {
     events: EventBus<GameEvents>,
     private readonly settings: () => Settings,
   ) {
-    events.on('explosion', (e) =>
-      e.source === 'implosion' ? this.synth?.implosion(panOf(e.position)) : this.synth?.explosion(e.power, panOf(e.position)),
-    );
+    events.on('explosion', (e) => {
+      this.music?.duck();
+      if (e.source === 'implosion') this.synth?.implosion(panOf(e.position));
+      else this.synth?.explosion(e.power, panOf(e.position));
+    });
+    // A phone in a pocket should not keep playing: the whole context sleeps while the game is hidden.
+    document.addEventListener('visibilitychange', () => {
+      if (!this.ctx) return;
+      if (document.hidden) void this.ctx.suspend();
+      else void this.ctx.resume();
+    });
     events.on('blockShattered', (e) => this.synth?.shatter(e.material, e.size / 60, panOf(e.position)));
     events.on('blockHit', (e) => this.hit(e));
     events.on('jointBroken', (e) => this.jointBroken(e.position));
@@ -52,6 +64,8 @@ export class SoundDirector {
       this.volume = ctx.createGain();
       this.volume.connect(ctx.destination);
       this.synth = new SoundSynth(ctx, this.volume);
+      this.music = new MusicPlayer(ctx);
+      this.music.setMood(this.mood.mood, this.mood.city);
       this.ctx = ctx;
     }
     void this.ctx.resume();
@@ -60,6 +74,13 @@ export class SoundDirector {
 
   applyVolumes(): void {
     if (this.volume) this.volume.gain.value = this.settings().sfxVolume;
+    this.music?.setVolume(this.settings().musicVolume);
+  }
+
+  /** What the music should play now: menus, planning a job in a city, the lit fuse, the result. */
+  setMood(mood: Mood, city?: string): void {
+    this.mood = { mood, city: city ?? this.mood.city };
+    this.music?.setMood(mood, city);
   }
 
   /** The game's sound as a stream, for recording clips; undefined until audio is unlocked. */

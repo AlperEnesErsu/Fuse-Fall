@@ -1,4 +1,14 @@
 import { adsToday, credit, creditPurchase, purchase, type PurchaseError, type ShopItem, type Wallet } from './economy';
+import {
+  advanceContracts,
+  CONTRACT_KINDS,
+  CONTRACTS_PER_WEEK,
+  NO_CONTRACTS,
+  type ContractDef,
+  type ContractKind,
+  type ContractProgress,
+  type JobFacts,
+} from './contracts';
 import type { LevelDefinition } from './level';
 import { err, ok, type Result } from './result';
 import type { Stars } from './scoring';
@@ -12,6 +22,8 @@ export type LanguageChoice = 'auto' | 'tr' | 'en';
 export interface Settings {
   readonly language: LanguageChoice;
   readonly sfxVolume: number;
+  /** Background music, 0 turns it off. */
+  readonly musicVolume: number;
   readonly screenShake: boolean;
   readonly flashes: boolean;
   readonly haptics: boolean;
@@ -39,6 +51,8 @@ export interface Progress {
   readonly career: CareerStats;
   /** Rewarded ads watched, by day, for the daily cap. */
   readonly ads: { readonly day: string; readonly count: number };
+  /** This week's contracts and how far each has come. */
+  readonly contracts: ContractProgress;
   /** Store payment tokens already credited (the latest few), so a payment is never credited twice. */
   readonly purchases: readonly string[];
   /** One Shot: the best collapse (whole percent) per Free Site structure. */
@@ -67,6 +81,7 @@ export const DEFAULT_BLOCK_THEME = 'theme:standard';
 export const DEFAULT_SETTINGS: Settings = {
   language: 'auto',
   sfxVolume: 0.8,
+  musicVolume: 0.5,
   screenShake: true,
   flashes: true,
   haptics: true,
@@ -87,6 +102,7 @@ export const emptyProgress = (): Progress => ({
   career: NO_CAREER,
   ads: { day: '', count: 0 },
   purchases: [],
+  contracts: NO_CONTRACTS,
   settings: DEFAULT_SETTINGS,
 });
 
@@ -167,6 +183,15 @@ export const parseProgress = (input: unknown): Result<Progress, ProgressError> =
   const purchases = Array.isArray(input.purchases)
     ? input.purchases.filter((t): t is string => typeof t === 'string' && t.length > 0 && t.length <= MAX_TOKEN).slice(-KEPT_PURCHASES)
     : [];
+  const k = isRecord(input.contracts) ? input.contracts : {};
+  const kinds = Array.isArray(k.kinds)
+    ? [...new Set(k.kinds.filter((x): x is ContractKind => (CONTRACT_KINDS as readonly unknown[]).includes(x)))].slice(0, CONTRACTS_PER_WEEK)
+    : [];
+  const savedCounts = isRecord(k.counts) ? k.counts : {};
+  const contractCounts: Partial<Record<ContractKind, number>> = {};
+  for (const kind of kinds) contractCounts[kind] = count(savedCounts[kind]);
+  const contracts: ContractProgress =
+    typeof k.week === 'string' && /^\d{4}-W\d{2}$/.test(k.week) && kinds.length > 0 ? { week: k.week, kinds, counts: contractCounts } : NO_CONTRACTS;
   const s = isRecord(input.settings) ? input.settings : {};
   return ok({
     version: PROGRESS_VERSION,
@@ -180,9 +205,11 @@ export const parseProgress = (input: unknown): Result<Progress, ProgressError> =
     career,
     ads,
     purchases,
+    contracts,
     settings: {
       language: s.language === 'tr' || s.language === 'en' || s.language === 'auto' ? s.language : DEFAULT_SETTINGS.language,
       sfxVolume: volume(s.sfxVolume, DEFAULT_SETTINGS.sfxVolume),
+      musicVolume: volume(s.musicVolume, DEFAULT_SETTINGS.musicVolume),
       screenShake: flag(s.screenShake, DEFAULT_SETTINGS.screenShake),
       flashes: flag(s.flashes, DEFAULT_SETTINGS.flashes),
       haptics: flag(s.haptics, DEFAULT_SETTINGS.haptics),
@@ -255,6 +282,13 @@ export const recordCareer = (
       cars: c.cars + job.cars,
     },
   };
+};
+
+/** Adds a finished job to this week's contracts and pays for each one it finishes. */
+export const recordContracts = (progress: Progress, week: string, job: JobFacts): { progress: Progress; finished: ContractDef[] } => {
+  const advanced = advanceContracts(progress.contracts, week, totalStars(progress), job);
+  const paid = advanced.finished.reduce((p, c) => earnScrap(p, c.reward), { ...progress, contracts: advanced.progress });
+  return { progress: paid, finished: advanced.finished };
 };
 
 /** A rewarded ad watched today: its scrap, counted against the daily cap. */

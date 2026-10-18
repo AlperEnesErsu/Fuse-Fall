@@ -1,5 +1,6 @@
 import { WORLD, type LevelDefinition } from '../core/level';
 import { difficultyOf } from '../core/difficulty';
+import type { ContractKind } from '../core/contracts';
 import type { Payout, Rank } from '../core/economy';
 import type { ScrapPack } from '../core/ports';
 import { SANDBOX_VARIANTS, type SandboxVariant } from '../content/sandbox';
@@ -107,8 +108,17 @@ export interface WorkshopOffers {
   readonly demo: boolean;
 }
 
+/** A weekly contract as shown: what to do, how far along, and what it pays. */
+export interface ContractView {
+  readonly kind: ContractKind;
+  readonly goal: number;
+  readonly reward: number;
+  readonly count: number;
+}
+
 export interface WorkshopView {
   readonly scrap: number;
+  readonly contracts: readonly ContractView[];
   readonly rank: Rank;
   readonly items: readonly {
     readonly id: string;
@@ -134,6 +144,7 @@ export interface MenuState {
   readonly onWorkshop: () => void;
   readonly scrap: number;
   readonly rank: Rank;
+  readonly contracts: { readonly done: number; readonly total: number };
   readonly onAchievements: () => void;
   readonly onSettings: () => void;
 }
@@ -248,7 +259,7 @@ export class Ui {
           'p',
           { class: 'meta' },
           h('strong', { class: 'rank-inline' }, T.ranks[m.rank.index] ?? ''),
-          ` · ${T.scrap(m.scrap)} · ${T.totalStars(m.totalStars)} · ${T.offline}`,
+          ` · ${T.scrap(m.scrap)} · ${T.totalStars(m.totalStars)} · ${T.contracts.footer(m.contracts.done, m.contracts.total)} · ${T.offline}`,
         ),
       ),
     );
@@ -312,10 +323,43 @@ export class Ui {
         h('div', { class: 'levels-head' }, this.iconButton(ICONS.back(), a.onBack, T.back), h('h2', {}, W.title)),
         this.career(v.rank, v.scrap),
         h('p', { class: 'meta' }, `${T.career(v.rank.next)} · ${W.tagline}`),
+        this.contractsSection(v.contracts),
         offers && (offers.ad || offers.packs.length > 0) ? this.offersSection(offers, a) : undefined,
         section(W.styles, 'blast-style'),
         section(W.themes, 'block-theme'),
         section(W.structures, 'structure'),
+      ),
+    );
+  }
+
+  /** This week's contracts, each with a progress bar. */
+  private contractsSection(list: readonly ContractView[]): HTMLElement | undefined {
+    if (list.length === 0) return undefined;
+    const C = T.contracts;
+    return h(
+      'section',
+      { class: 'contracts' },
+      h('span', { class: 'label section' }, C.title),
+      h('p', { class: 'meta' }, C.renews),
+      h(
+        'ul',
+        { class: 'shop-list' },
+        ...list.map((c) => {
+          const count = Math.min(c.count, c.goal);
+          const done = count >= c.goal;
+          return h(
+            'li',
+            { class: `shop-item contract${done ? ' owned' : ''}` },
+            h(
+              'div',
+              { class: 'shop-text' },
+              h('strong', {}, C.kinds[c.kind](c.goal)),
+              h('small', {}, C.reward(c.reward, count, c.goal)),
+              h('div', { class: 'progress' }, h('div', { class: 'bar', style: `width:${Math.round((count / c.goal) * 100)}%` })),
+            ),
+            done ? h('span', { class: 'tag active' }, C.done) : undefined,
+          );
+        }),
       ),
     );
   }
@@ -642,6 +686,19 @@ export class Ui {
             step: '0.05',
             value: String(s.sfxVolume),
             input: (e) => onChange({ sfxVolume: Number((e.target as HTMLInputElement).value) }),
+          }),
+        ),
+        h(
+          'label',
+          { class: 'row' },
+          T.music,
+          h('input', {
+            type: 'range',
+            min: '0',
+            max: '1',
+            step: '0.05',
+            value: String(s.musicVolume),
+            input: (e) => onChange({ musicVolume: Number((e.target as HTMLInputElement).value) }),
           }),
         ),
         this.button(T.testSound, onTestSound),

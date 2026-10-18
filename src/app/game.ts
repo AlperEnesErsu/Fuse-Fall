@@ -15,6 +15,7 @@ import {
   currentStreak,
   recordDailyWin,
   recordCareer,
+  recordContracts,
   recordOneShot,
   recordScore,
   recordStars,
@@ -36,7 +37,7 @@ import { SoundDirector } from '../presentation/audio';
 import { JuiceDirector } from '../presentation/juice';
 import { Renderer } from '../presentation/renderer';
 import { T, language, resolveLanguage, setLanguage } from '../presentation/strings';
-import { Ui, type WorkshopOffers } from '../presentation/ui';
+import { Ui, type ContractView, type WorkshopOffers } from '../presentation/ui';
 import { Coach } from '../presentation/coach';
 import { tutorialFor } from '../content/tutorials';
 import { SANDBOX_TEMPLATES, sandboxLevel, type SandboxVariant } from '../content/sandbox';
@@ -49,6 +50,7 @@ import { ACHIEVEMENTS } from '../core/achievements';
 import { FIXED_STEP, FixedStepLoop } from './loop';
 import { newAchievements, type AttemptStats } from '../core/achievements';
 import { dailyChallenge, dayOf } from '../core/daily';
+import { contractsOf, defsOf, weekOf, type ContractDef } from '../core/contracts';
 import type { LevelResult } from '../core/scoring';
 
 const DRAG_THRESHOLD = 6;
@@ -213,6 +215,10 @@ export class Game {
       onWorkshop: () => this.showWorkshop(),
       scrap: this.progress.wallet.balance,
       rank: rankOf(this.progress.wallet.earned),
+      contracts: (() => {
+        const list = this.contractViews();
+        return { done: list.filter((c) => c.count >= c.goal).length, total: list.length };
+      })(),
       onAchievements: () => this.showAchievements(),
       onSettings: () => this.showSettings(),
     });
@@ -243,6 +249,7 @@ export class Game {
       {
         scrap: this.progress.wallet.balance,
         rank: rankOf(this.progress.wallet.earned),
+        contracts: this.contractViews(),
         items: WORKSHOP.map((item) => ({
           id: item.id,
           kind: item.kind,
@@ -282,6 +289,12 @@ export class Game {
       },
       offers,
     );
+  }
+
+  /** This week's contracts with their counts (a new week starts them afresh). */
+  private contractViews(): ContractView[] {
+    const week = contractsOf(this.progress.contracts, weekOf(new Date()), totalStars(this.progress));
+    return defsOf(week.kinds).map((c) => ({ ...c, count: week.counts[c.kind] ?? 0 }));
   }
 
   /** What the offer store has now: rewarded ads (with today's count) and packs. */
@@ -444,6 +457,7 @@ export class Game {
 
   private leaveLevel(): void {
     this.renderer.setFocus(FULL_VIEW);
+    this.sound.setMood('menu');
     this.session = undefined;
     this.attempt = undefined;
     this.juice.reset();
@@ -556,6 +570,7 @@ export class Game {
     );
     setBlockTheme(activeLook(this.progress.workshop.owned, this.progress.workshop.blockTheme, 'block-theme'));
     this.renderer.setFocus(focusOf(level));
+    this.sound.setMood('plan', city.key);
     this.hintIndex = 0;
     this.session = new LevelSession(level, new MatterPhysicsWorld(), this.events);
     this.perchBirds(this.session);
@@ -704,6 +719,7 @@ export class Game {
     if (this.session?.fire().ok) {
       this.coach.notify('fired');
       this.sound.fuse();
+      this.sound.setMood('tension');
       this.ui.setFireVisible(false);
       this.refreshHud();
     }
@@ -734,6 +750,7 @@ export class Game {
     const session = this.session;
     const attempt = this.attempt;
     if (!session || !attempt) return;
+    this.sound.setMood('result');
     if (attempt.replaying) {
       window.setTimeout(() => this.endReplay(true), RESULT_DELAY_MS * 2);
       return;
@@ -803,6 +820,18 @@ export class Game {
       implosions: attempt.plan?.charges.filter((c) => c.kind === 'implosion').length ?? 0,
       detonations: attempt.plan?.presses.length ?? 0,
     };
+    const contracts = recordContracts(this.progress, weekOf(new Date()), {
+      cleared: result.cleared,
+      stars: result.stars,
+      underPar: result.underPar,
+      // A daily counts once a day: its first win, not replays of it.
+      daily: attempt.mode.kind === 'daily' && firstClear,
+      barrels: attempt.stats.barrelsBlown,
+      cars: attempt.stats.carsWrecked,
+      implosions: stats.implosions,
+      domino: result.styles.domino,
+    });
+    this.progress = contracts.progress;
     const earned = newAchievements({
       progress: this.progress,
       campaign: this.campaign,
@@ -869,7 +898,15 @@ export class Game {
           3200,
         );
       }
+      if (contracts.finished.length > 0) {
+        window.setTimeout(() => this.contractsToast(contracts.finished), earned.length > 0 ? 3400 : 0);
+      }
     }, RESULT_DELAY_MS);
+  }
+
+  private contractsToast(finished: readonly ContractDef[]): void {
+    const names = finished.map((c) => T.contracts.kinds[c.kind](c.goal)).join(' · ');
+    this.ui.toast(T.contracts.finished(names, finished.reduce((sum, c) => sum + c.reward, 0)), 3200);
   }
 
   /** A daily mission shows its base mission's name. */
