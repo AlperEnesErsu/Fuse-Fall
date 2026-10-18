@@ -80,7 +80,7 @@ export default defineConfig(({ mode }) => ({
   test: {
     environment: 'node',
     coverage: {
-      include: ['src/core/**', 'src/infrastructure/**', 'src/app/offer-desk.ts'],
+      include: ['src/core/**', 'src/infrastructure/**', 'src/app/offer-desk.ts', 'src/app/attempt.ts', 'src/app/progression.ts', 'src/app/screen-flow.ts'],
       // NFR-09: game rules stay at or above 80% coverage.
       thresholds: { lines: 80, statements: 80, functions: 80, branches: 75 },
     },
