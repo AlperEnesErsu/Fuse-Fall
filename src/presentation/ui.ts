@@ -2,6 +2,7 @@ import { WORLD, type LevelDefinition } from '../core/level';
 import { difficultyOf } from '../core/difficulty';
 import type { ContractKind } from '../core/contracts';
 import type { ShareError } from '../core/share-code';
+import type { EditorTool } from '../core/editor';
 import type { Payout, Rank } from '../core/economy';
 import type { ScrapPack } from '../core/ports';
 import { SANDBOX_VARIANTS, type SandboxVariant } from '../content/sandbox';
@@ -542,7 +543,7 @@ export class Ui {
   }
 
   /** Pasting a mission code: a box for it, play and back, and why the last code did not load. */
-  codeEntry(a: { onPlay: (code: string) => void; onBack: () => void }, error?: ShareError): void {
+  codeEntry(a: { onPlay: (code: string) => void; onBack: () => void; onBuild?: () => void }, error?: ShareError): void {
     this.hideHud();
     const S = T.shareCode;
     const box = h('textarea', { rows: '4', placeholder: S.placeholder, 'aria-label': S.title }) as HTMLTextAreaElement;
@@ -558,8 +559,58 @@ export class Ui {
           'div',
           { class: 'actions' },
           this.button(S.play, () => a.onPlay(box.value.trim()), 'primary'),
+          a.onBuild ? this.button(S.build, a.onBuild) : undefined,
           this.button(S.back, a.onBack),
         ),
+      ),
+    );
+  }
+
+  /** The mission builder's bar on the field: tools, counts, test and back. */
+  showEditor(s: {
+    readonly tool: EditorTool;
+    readonly blocks: number;
+    readonly zones: number;
+    readonly onTool: (tool: EditorTool) => void;
+    readonly onTest: () => void;
+    readonly onBack: () => void;
+  }): void {
+    this.hideHud();
+    const E = T.editor;
+    const tools: EditorTool[] = ['block', 'target', 'protected', 'zone', 'remove'];
+    this.hud.replaceChildren(
+      h(
+        'div',
+        { class: 'hud-top' },
+        h('div', { class: 'hud-info' }, h('div', { class: 'hud-name' }, E.title), h('div', { class: 'hud-stats' }, E.counts(s.blocks, s.zones))),
+        h('div', { class: 'hud-actions' }, this.button(E.back, s.onBack)),
+      ),
+      h(
+        'div',
+        { class: 'editor-tools' },
+        ...tools.map((t) =>
+          h('button', { class: `btn small${t === s.tool ? ' primary' : ''}`, click: () => this.tap(() => s.onTool(t)) }, E.tools[t]),
+        ),
+        this.button(E.test, s.onTest, 'primary'),
+      ),
+    );
+    this.hud.classList.remove('hidden');
+  }
+
+  /** A finished test run's mission code: read it, copy it, change the mission, or go back to the menu. */
+  showCode(code: string, a: { onCopy: () => void; onEdit: () => void; onMenu: () => void }): void {
+    this.hideHud();
+    const S = T.editor.done;
+    const box = h('textarea', { rows: '4', readonly: 'true', 'aria-label': S.title }, code) as HTMLTextAreaElement;
+    box.value = code;
+    this.show(
+      h(
+        'div',
+        { class: 'panel code-entry' },
+        h('h2', {}, S.title),
+        h('p', { class: 'meta' }, S.hint),
+        box,
+        h('div', { class: 'actions' }, this.button(S.copy, a.onCopy, 'primary'), this.button(S.edit, a.onEdit), this.button(S.menu, a.onMenu)),
       ),
     );
   }

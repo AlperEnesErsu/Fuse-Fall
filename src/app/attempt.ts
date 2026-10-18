@@ -17,6 +17,7 @@ import {
   type Campaign,
   type Progress,
 } from '../core/progress';
+import type { Draft } from '../core/editor';
 import type { LevelResult } from '../core/scoring';
 import type { SandboxVariant } from '../content/sandbox';
 
@@ -25,7 +26,9 @@ export type Mode =
   | { readonly kind: 'daily'; readonly day: string; readonly baseId: string }
   | { readonly kind: 'sandbox'; readonly template: string; readonly variant: SandboxVariant; readonly traffic: boolean }
   /** A mission pasted as a code: played, reported and shared, but it never touches campaign progress. */
-  | { readonly kind: 'shared' };
+  | { readonly kind: 'shared' }
+  /** A mission being built: played as a test; its winning charges become its solution. */
+  | { readonly kind: 'editor'; readonly draft: Draft };
 
 /** What the player did at Fire, so the same physics can be re-simulated for the replay. */
 export interface Plan {

@@ -5,6 +5,7 @@ import {
   addZone,
   draftProblem,
   draftToLevel,
+  previewLevel,
   emptyDraft,
   removeAt,
   snap,
@@ -122,5 +123,19 @@ describe('draft to mission', () => {
     if (!level.ok) throw new Error('setup');
     const back = await decodeLevel(await encodeLevel(level.value));
     expect(back.ok && back.value.name).toBe('Benim Bölümüm');
+  });
+
+  it('a test run gets its own charge budget, and the mission keeps the winning count', () => {
+    const level = draftToLevel(playable(), [shot(360, 455)], { id: 'shared', name: 'x', world: 9, budget: 3 });
+    expect(level.ok && level.value.charges).toEqual({ max: 3, par: 1 });
+  });
+});
+
+describe('preview', () => {
+  it('draws whatever is placed, even before the draft is a mission', () => {
+    const p = previewLevel({ blocks: [block(100, 400, 'target')], zones: [] });
+    expect(p.blocks).toHaveLength(1);
+    expect(p.blocks[0]?.target).toBe(true);
+    expect(p.zones).toEqual([]);
   });
 });

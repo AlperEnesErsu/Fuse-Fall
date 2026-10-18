@@ -274,6 +274,7 @@ Yapıyı incele → Patlayıcı yerleştir → Ateşle → Yıkımı izle → Pu
 | FR-98 | **Ağır çekim tekrarı:** tekrar oynatılırken hız ×0.25, ×0.5 veya ×1 seçilebilir (varsayılan ×0.5). Klip kaydı kendi sabit hızını kullanır ve bu seçimi göstermez. | S |
 | FR-99 | **Atölye efektleri:** Elektrik Arkı (mavi-beyaz alev, lacivert duman) 500 hurda; Altın Toz (altın alev ve her patlamada altın toz) 750 hurda. Bunlar renk ve kıvılcım paletleridir; yeni parçacık şekilleri değildir. | S |
 | FR-100 | **Bölüm kodu:** her görev bir metin koduna dönüşür (`FF1-…`: sıkıştırılmış, base64url). Sonuç raporundaki "Kodu kopyala" koda panoya koyar; menüdeki "Kodla oyna" ekranına yapıştırılınca görev oynanır. Oynanan paylaşılan bölüm kampanya ilerlemesine, yıldızlara, hurdaya ve sözleşmelere dokunmaz. Kod çözülürken uzunluk (12 000 karakter) ve açılmış boyut (48 KB) sınırlanır; bölüm, kampanya verisiyle aynı doğrulamadan geçer. Kodun içinde `id` her zaman `shared`'dir. | M |
+| FR-101 | **Bölüm kurucu:** menüdeki "Kodla oyna" → "Bölüm kur". Dokunarak blok (ahşap), hedef, korunan (beton) ve şarj alanı (sürükleyerek ya da dokunarak) yerleştirilir; silmek için dokunulan en üstteki şey gider. Üst sınırlar: 60 blok, 4 alan; bloklar üst üste binmez, 10 px ızgaraya oturur. "Test et" bölümü oynatır (bütçe 3 şarj); kazanılınca kazanan şarjlar bölümün çözümü olur ve bölüm kodu gösterilir: kopyala, düzenle ya da menü. Bölüm, FR-100'deki kodla aynı doğrulamadan geçer. | M |
 
 ## 6. MVP kapsamı (Sürüm 0.1)
 

@@ -12,6 +12,15 @@ import { err, ok, type Result } from './result';
 
 export type DraftKind = 'block' | 'target' | 'protected';
 
+/** What the editor's toolbar does with a tap or a drag. */
+export type EditorTool = 'block' | 'target' | 'protected' | 'zone' | 'remove';
+
+/** One thing a tap or drag asks for, before the draft's rules decide whether it happens. */
+export type EditAction =
+  | { readonly type: 'block'; readonly kind: DraftKind; readonly at: Vec2 }
+  | { readonly type: 'zone'; readonly rect: Rect }
+  | { readonly type: 'remove'; readonly at: Vec2 };
+
 export interface DraftBlock {
   readonly kind: DraftKind;
   readonly material: MaterialId;
@@ -80,7 +89,7 @@ export const removeAt = (draft: Draft, p: Vec2): Draft => {
 export const draftToLevel = (
   draft: Draft,
   solution: readonly SolutionCharge[],
-  options: { readonly id: string; readonly name: string; readonly world: number },
+  options: { readonly id: string; readonly name: string; readonly world: number; readonly budget?: number },
 ): Result<LevelDefinition, string> => {
   const blocks = draft.blocks.map((b) => ({
     x: b.x + b.w / 2,
@@ -96,7 +105,8 @@ export const draftToLevel = (
     name: options.name,
     world: options.world,
     order: 1,
-    charges: { max: Math.max(1, solution.length), par: Math.max(1, solution.length) },
+    // The charges a player gets: the winning count unless a test run asks for a bigger budget.
+    charges: { max: Math.max(1, options.budget ?? solution.length), par: Math.max(1, solution.length) },
     bonusCollapse: 0.5,
     zones: draft.zones,
     blocks,
@@ -107,8 +117,42 @@ export const draftToLevel = (
 };
 
 /** Why a draft is not a mission yet, in plain words, for the editor to show before a test run. */
-export const draftProblem = (draft: Draft): string | undefined => {
+export const draftProblem = (draft: Draft): 'zone' | 'target' | undefined => {
   if (draft.zones.length === 0) return 'zone';
   if (!draft.blocks.some((b) => b.kind === 'target')) return 'target';
   return undefined;
+};
+
+/** How the editor draws a draft before it is valid: the same shapes, without the rules a finished mission must pass.
+ * Only the renderer reads it; it is never shared or played. */
+export const previewLevel = (draft: Draft): LevelDefinition => {
+  const blocks = draft.blocks.map((b) => ({
+    x: b.x + b.w / 2,
+    y: b.y + b.h / 2,
+    w: b.w,
+    h: b.h,
+    angle: 0,
+    material: b.material,
+    target: b.kind === 'target',
+    protected: b.kind === 'protected',
+    anchored: false,
+  }));
+  return {
+    id: 'preview',
+    name: '',
+    world: 9,
+    order: 1,
+    hint: undefined,
+    charges: { max: 3, par: 3 },
+    bonusCollapse: 0.5,
+    zones: draft.zones,
+    dropZones: [],
+    blocks,
+    barrels: [],
+    cars: [],
+    balls: [],
+    chargeKinds: ['standard'],
+    footprint: undefined,
+    solution: { charges: [], detonateAt: [], fireAt: 0 },
+  } as unknown as LevelDefinition;
 };

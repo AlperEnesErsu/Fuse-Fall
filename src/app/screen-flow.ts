@@ -1,3 +1,4 @@
+import type { Draft } from '../core/editor';
 import { decodeLevel, type ShareError } from '../core/share-code';
 import { ACHIEVEMENTS } from '../core/achievements';
 import { dailyChallenge, dayOf } from '../core/daily';
@@ -31,6 +32,7 @@ export interface Launcher {
   leave(): void;
   play(level: LevelDefinition, mode: Mode): void;
   startLevel(id: string): void;
+  openEditor(draft?: Draft): void;
 }
 
 /** The screens play returns to. */
@@ -109,7 +111,10 @@ export class ScreenFlow implements Navigator {
   /** Pasting a mission code: plays a shared mission, or asks again with the reason it did not load. */
   shareCode(error?: ShareError): void {
     this.d.play.leave();
-    this.d.ui.codeEntry({ onPlay: (code) => void this.playCode(code), onBack: () => this.menu() }, error);
+    this.d.ui.codeEntry(
+      { onPlay: (code) => void this.playCode(code), onBack: () => this.menu(), onBuild: () => this.d.play.openEditor() },
+      error,
+    );
   }
 
   private async playCode(code: string): Promise<void> {

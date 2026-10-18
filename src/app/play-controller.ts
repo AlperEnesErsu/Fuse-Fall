@@ -1,7 +1,20 @@
-import type { EventBus, GameEvents } from '../core/events';
+import { EventBus, type GameEvents } from '../core/events';
 import type { ChargeKind, LevelDefinition } from '../core/level';
 import { levelsOf, type Campaign } from '../core/progress';
-import { encodeLevel } from '../core/share-code';
+import { SHARED_ID, encodeLevel } from '../core/share-code';
+import {
+  addBlock,
+  addZone,
+  draftProblem,
+  draftToLevel,
+  emptyDraft,
+  previewLevel,
+  removeAt,
+  type Draft,
+  type EditAction,
+  type EditorTool,
+} from '../core/editor';
+import { EditorInput, blockAt } from './editor-input';
 import type { ContractDef } from '../core/contracts';
 import type { LevelResult } from '../core/scoring';
 import { LevelSession } from '../core/session';
@@ -79,6 +92,10 @@ export class PlayController implements Launcher {
   /** The charge type the next placement uses. */
   private chargeKind: ChargeKind = 'standard';
   private readonly input: PlayInput;
+  /** The mission builder: the draft being edited and the tool in hand. Undefined outside the builder. */
+  private editing: { draft: Draft; tool: EditorTool } | undefined;
+  /** What the builder draws: the draft, even before it is a valid mission. */
+  private previewSession: LevelSession | undefined;
 
   constructor(private readonly d: PlayDeps) {
     const { events, sound, ui } = d;
@@ -100,6 +117,8 @@ export class PlayController implements Launcher {
       ui.toast(T.report.reasons['collateral-damage'], 2200);
     });
     events.on('levelFinished', (e) => this.onFinished(e.result));
+    // Taps and drags on the field reach the builder through this; it does nothing outside one.
+    new EditorInput(d.canvas, d.renderer, () => this.editing?.tool ?? 'block', (a) => this.applyEdit(a));
     this.input = new PlayInput(d.canvas, d.renderer, sound, ui, d.coach, {
       session: () => this.session,
       replaying: () => this.attempt?.replaying ?? false,
@@ -119,6 +138,8 @@ export class PlayController implements Launcher {
 
   /** Ends the job (if any) for a menu screen. */
   leave(): void {
+    this.editing = undefined;
+    this.previewSession = undefined;
     this.d.renderer.setFocus(FULL_VIEW);
     this.d.sound.setMood('menu');
     this.session = undefined;
@@ -145,6 +166,8 @@ export class PlayController implements Launcher {
     this.d.juice.reset();
     ui.hideReplay();
     this.input.reset();
+    this.editing = undefined;
+    this.previewSession = undefined;
     // Each city runs from dawn (first level) to night (last level).
     renderer.setScene(city.key, cityLevels.length > 1 ? (level.order - 1) / (cityLevels.length - 1) : 0);
     setBlockTheme(activeLook(progress.workshop.owned, progress.workshop.blockTheme, 'block-theme'));
@@ -254,7 +277,7 @@ export class PlayController implements Launcher {
     if (this.session?.phase === 'running') this.refreshHud();
     const placing = this.session?.phase === 'placing';
     this.d.coach.refresh();
-    this.d.renderer.draw(this.session, this.d.juice, {
+    this.d.renderer.draw(this.session ?? (this.editing ? this.previewSession : undefined), this.d.juice, {
       time: this.time,
       coach: this.d.coach.worldMarker,
       kind: this.chargeKind,
@@ -437,6 +460,49 @@ export class PlayController implements Launcher {
     if (attempt.mode.kind === 'campaign') {
       this.failures.set(attempt.level.id, result.cleared ? 0 : (this.failures.get(attempt.level.id) ?? 0) + 1);
     }
+    if (attempt.mode.kind === 'editor') {
+      // A test run of a mission being built: a win makes its charges the solution and its code is ready to share.
+      const draft = attempt.mode.draft;
+      if (result.success && attempt.plan) {
+        const solution = attempt.plan.charges.map((c) => ({
+          x: c.position.x,
+          y: c.position.y,
+          delay: c.delay,
+          kind: c.kind,
+          direction: c.direction,
+        }));
+        const built = draftToLevel(draft, solution, { id: SHARED_ID, name: T.editor.name, world: attempt.level.world, budget: solution.length });
+        attempt.report = () => {
+          if (!built.ok) {
+            this.d.ui.toast(built.error);
+            return;
+          }
+          void encodeLevel(built.value).then((code) =>
+            this.d.ui.showCode(code, {
+              onCopy: () => void this.copyText(code),
+              onEdit: () => this.openEditor(draft),
+              onMenu: () => this.d.nav().menu(),
+            }),
+          );
+        };
+      } else {
+        attempt.report = () =>
+          ui.freeSiteDone(
+            result,
+            {
+              onReset: () => this.play(attempt.level, attempt.mode),
+              onReplay: () => this.replay(),
+              onShare: () => this.recordClip(),
+              onSetup: () => this.openEditor(draft),
+            },
+            undefined,
+          );
+      }
+      window.setTimeout(() => {
+        if (this.session === session) attempt.report?.();
+      }, RESULT_DELAY_MS);
+      return;
+    }
     if (attempt.mode.kind === 'shared') {
       // A pasted mission: its result is shown, but nothing is saved or paid.
       attempt.report = () =>
@@ -548,6 +614,93 @@ export class PlayController implements Launcher {
     const mode = this.attempt?.mode;
     const base = mode?.kind === 'daily' ? this.d.campaign.levels.find((l) => l.id === mode.baseId) : undefined;
     return this.d.text().levelName(base ?? level);
+  }
+
+  /** Opens the mission builder on the field, with a draft (empty unless one is passed in). */
+  openEditor(draft: Draft = emptyDraft()): void {
+    this.session = undefined;
+    this.attempt = undefined;
+    this.editing = { draft, tool: 'block' };
+    this.previewSession = new LevelSession(previewLevel(draft), new MatterPhysicsWorld(), new EventBus<GameEvents>());
+    this.d.juice.reset();
+    this.d.coach.stop();
+    this.d.ui.hideReplay();
+    this.d.ui.hideScreen();
+    this.d.renderer.setFocus(FULL_VIEW);
+    this.d.sound.setMood('plan');
+    this.showEditorBar();
+  }
+
+  private showEditorBar(): void {
+    const e = this.editing;
+    if (!e) return;
+    this.d.ui.showEditor({
+      tool: e.tool,
+      blocks: e.draft.blocks.length,
+      zones: e.draft.zones.length,
+      onTool: (tool) => {
+        if (this.editing) this.editing = { ...this.editing, tool };
+        this.showEditorBar();
+      },
+      onTest: () => this.testDraft(),
+      onBack: () => this.d.nav().menu(),
+    });
+  }
+
+  /** A tap or drag in the builder: a block, a zone or a removal, if the draft's rules allow it. */
+  private applyEdit(a: EditAction): void {
+    const e = this.editing;
+    if (!e) return;
+    let draft = e.draft;
+    if (a.type === 'remove') draft = removeAt(draft, a.at);
+    else if (a.type === 'zone') {
+      const r = addZone(draft, a.rect);
+      if (!r.ok) return this.d.ui.toast(T.editor.errors[r.error]);
+      draft = r.value;
+    } else {
+      const r = addBlock(draft, blockAt(a.kind, a.at));
+      if (!r.ok) return this.d.ui.toast(T.editor.errors[r.error]);
+      draft = r.value;
+    }
+    this.editing = { ...e, draft };
+    this.previewSession = new LevelSession(previewLevel(draft), new MatterPhysicsWorld(), new EventBus<GameEvents>());
+    this.showEditorBar();
+  }
+
+  /** A test run: the draft as a mission with a generous charge budget. The first zone's centre is a placeholder solution. */
+  private testDraft(): void {
+    const e = this.editing;
+    if (!e) return;
+    const problem = draftProblem(e.draft);
+    if (problem) {
+      this.d.ui.toast(T.editor.problems[problem]);
+      return;
+    }
+    const zone = e.draft.zones[0];
+    const world = this.d.campaign.worlds.at(-1);
+    if (!zone || !world) return;
+    const built = draftToLevel(
+      e.draft,
+      [{ x: zone.x + zone.w / 2, y: zone.y + zone.h / 2, delay: undefined, kind: 'standard' }],
+      { id: SHARED_ID, name: T.editor.name, world: world.world, budget: 3 },
+    );
+    if (!built.ok) {
+      this.d.ui.toast(built.error);
+      return;
+    }
+    this.editing = undefined;
+    this.previewSession = undefined;
+    this.play(built.value, { kind: 'editor', draft: e.draft });
+  }
+
+  /** Copies any text (a mission code) to the clipboard. */
+  private async copyText(text: string): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(text);
+      this.d.ui.toast(T.shareCode.copied);
+    } catch {
+      this.d.ui.toast(T.shareCode.failed);
+    }
   }
 
   /** The mission as a code on the clipboard: whoever pastes it can play this mission. */

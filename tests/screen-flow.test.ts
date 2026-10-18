@@ -31,7 +31,7 @@ const setup = (start: Progress = emptyProgress()) => {
     codeEntry: vi.fn(),
     toast: vi.fn(),
   };
-  const play = { leave: vi.fn(), play: vi.fn(), startLevel: vi.fn() };
+  const play = { leave: vi.fn(), play: vi.fn(), startLevel: vi.fn(), openEditor: vi.fn() };
   const deps: ScreenDeps = {
     campaign,
     ledger,
