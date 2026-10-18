@@ -1,6 +1,7 @@
 import type { EventBus, GameEvents } from '../core/events';
 import type { ChargeKind, LevelDefinition } from '../core/level';
 import { levelsOf, type Campaign } from '../core/progress';
+import { encodeLevel } from '../core/share-code';
 import type { ContractDef } from '../core/contracts';
 import type { LevelResult } from '../core/scoring';
 import { LevelSession } from '../core/session';
@@ -436,6 +437,24 @@ export class PlayController implements Launcher {
     if (attempt.mode.kind === 'campaign') {
       this.failures.set(attempt.level.id, result.cleared ? 0 : (this.failures.get(attempt.level.id) ?? 0) + 1);
     }
+    if (attempt.mode.kind === 'shared') {
+      // A pasted mission: its result is shown, but nothing is saved or paid.
+      attempt.report = () =>
+        this.d.ui.freeSiteDone(
+          result,
+          {
+            onReset: () => this.play(attempt.level, attempt.mode),
+            onReplay: () => this.replay(),
+            onShare: () => this.recordClip(),
+            onSetup: () => this.d.nav().menu(),
+          },
+          undefined,
+        );
+      window.setTimeout(() => {
+        if (this.session === session) attempt.report?.();
+      }, RESULT_DELAY_MS);
+      return;
+    }
     if (attempt.mode.kind === 'sandbox') {
       const mode = attempt.mode;
       let record: { best: number; isNew: boolean } | undefined;
@@ -490,6 +509,7 @@ export class PlayController implements Launcher {
             : undefined,
         },
         {
+          onCopy: () => void this.copyCode(level),
           onRetry: () => this.play(level, attempt.mode),
           onReplay: () => this.replay(),
           onShare: () => this.recordClip(),
@@ -528,6 +548,16 @@ export class PlayController implements Launcher {
     const mode = this.attempt?.mode;
     const base = mode?.kind === 'daily' ? this.d.campaign.levels.find((l) => l.id === mode.baseId) : undefined;
     return this.d.text().levelName(base ?? level);
+  }
+
+  /** The mission as a code on the clipboard: whoever pastes it can play this mission. */
+  private async copyCode(level: LevelDefinition): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(await encodeLevel(level));
+      this.d.ui.toast(T.shareCode.copied);
+    } catch {
+      this.d.ui.toast(T.shareCode.failed);
+    }
   }
 
   private refreshHud(): void {

@@ -1,6 +1,7 @@
 import { WORLD, type LevelDefinition } from '../core/level';
 import { difficultyOf } from '../core/difficulty';
 import type { ContractKind } from '../core/contracts';
+import type { ShareError } from '../core/share-code';
 import type { Payout, Rank } from '../core/economy';
 import type { ScrapPack } from '../core/ports';
 import { SANDBOX_VARIANTS, type SandboxVariant } from '../content/sandbox';
@@ -147,6 +148,7 @@ export interface MenuState {
   readonly contracts: { readonly done: number; readonly total: number };
   readonly onAchievements: () => void;
   readonly onSettings: () => void;
+  readonly onShareCode: () => void;
 }
 
 export interface HudActions {
@@ -169,6 +171,7 @@ export interface ResultActions {
   readonly onRetry: () => void;
   readonly onReplay: () => void;
   readonly onShare: () => void;
+  readonly onCopy: () => void;
   readonly onNext: (() => void) | undefined;
   readonly nextLabel: string;
   readonly onLevels: () => void;
@@ -256,6 +259,7 @@ export class Ui {
           this.button(T.workshop.title, m.onWorkshop),
           this.button(`${T.achievementsTitle} ${T.achievementsCount(m.achievements.unlocked, m.achievements.total)}`, m.onAchievements),
           this.button(T.settings, m.onSettings),
+          this.button(T.shareCode.menu, m.onShareCode),
         ),
         h(
           'p',
@@ -532,6 +536,29 @@ export class Ui {
           this.button(T.replay, a.onReplay),
           this.iconButton(ICONS.share(), a.onShare, T.clip.share),
           this.button(T.structureLabel, a.onSetup),
+        ),
+      ),
+    );
+  }
+
+  /** Pasting a mission code: a box for it, play and back, and why the last code did not load. */
+  codeEntry(a: { onPlay: (code: string) => void; onBack: () => void }, error?: ShareError): void {
+    this.hideHud();
+    const S = T.shareCode;
+    const box = h('textarea', { rows: '4', placeholder: S.placeholder, 'aria-label': S.title }) as HTMLTextAreaElement;
+    this.show(
+      h(
+        'div',
+        { class: 'panel code-entry' },
+        h('h2', {}, S.title),
+        h('p', { class: 'meta' }, S.hint),
+        box,
+        error ? h('p', { class: 'code-error', role: 'alert' }, S.errors[error]) : undefined,
+        h(
+          'div',
+          { class: 'actions' },
+          this.button(S.play, () => a.onPlay(box.value.trim()), 'primary'),
+          this.button(S.back, a.onBack),
         ),
       ),
     );
@@ -942,6 +969,7 @@ export class Ui {
           this.button(T.retry, actions.onRetry, r.cleared ? '' : 'primary'),
           this.button(T.replay, actions.onReplay),
           this.iconButton(ICONS.share(), actions.onShare, T.clip.share),
+          this.button(T.shareCode.copy, actions.onCopy),
           actions.onNext && this.button(actions.nextLabel, actions.onNext, 'primary'),
           this.button(T.levels, actions.onLevels),
         ),

@@ -100,6 +100,22 @@ export const tr = {
       domino: (g: number) => `${g} işi domino tarzıyla temizle`,
     },
   },
+  shareCode: {
+    menu: 'Kodla oyna',
+    title: 'Kodla oyna',
+    hint: 'Bir arkadaşının bölüm kodunu buraya yapıştır.',
+    placeholder: 'FF1-…',
+    play: 'Oyna',
+    back: 'Geri',
+    copy: 'Kodu kopyala',
+    copied: 'Bölüm kodu panoya kopyalandı.',
+    failed: 'Kod kopyalanamadı.',
+    errors: {
+      format: 'Bu bir bölüm kodu gibi görünmüyor.',
+      'too-large': 'Kod çok uzun.',
+      'invalid-level': 'Bu kod geçerli bir bölüm değil.',
+    },
+  },
   offers: {
     title: 'Hurda kazan',
     watch: (n: number) => `Reklam izle: +${n} hurda`,

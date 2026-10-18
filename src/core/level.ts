@@ -179,11 +179,11 @@ const rect = (v: unknown, path: string): Rect => {
 const block = (v: unknown, path: string): BlockDef => {
   const o = obj(v, path);
   const material = isMaterialId(o.material) ? o.material : fail(`${path}.material`, 'unknown material');
-  const target = o.target === undefined ? false : o.target === true || fail(`${path}.target`, 'expected boolean');
+  const target = o.target === undefined ? false : typeof o.target === 'boolean' ? o.target : fail(`${path}.target`, 'expected boolean');
   const guarded =
-    o.protected === undefined ? false : o.protected === true || fail(`${path}.protected`, 'expected boolean');
+    o.protected === undefined ? false : typeof o.protected === 'boolean' ? o.protected : fail(`${path}.protected`, 'expected boolean');
   const anchored =
-    o.anchored === undefined ? false : o.anchored === true || fail(`${path}.anchored`, 'expected boolean');
+    o.anchored === undefined ? false : typeof o.anchored === 'boolean' ? o.anchored : fail(`${path}.anchored`, 'expected boolean');
   if (Number(target) + Number(guarded) + Number(anchored) > 1) {
     fail(path, 'a block is at most one of target, protected or anchored');
   }
@@ -215,9 +215,9 @@ const car = (v: unknown, path: string): CarDef => {
     from: num(o.from, `${path}.from`, -ROUTE_OVERRUN, WORLD.width + ROUTE_OVERRUN),
     to: num(o.to, `${path}.to`, -ROUTE_OVERRUN, WORLD.width + ROUTE_OVERRUN),
     speed: num(o.speed, `${path}.speed`, 0, 400),
-    target: o.target === undefined ? false : o.target === true || fail(`${path}.target`, 'expected boolean'),
+    target: o.target === undefined ? false : typeof o.target === 'boolean' ? o.target : fail(`${path}.target`, 'expected boolean'),
     mode: o.mode === undefined || o.mode === 'patrol' ? 'patrol' : o.mode === 'flow' ? 'flow' : fail(`${path}.mode`, 'expected patrol or flow'),
-    protected: o.protected === undefined ? false : o.protected === true || fail(`${path}.protected`, 'expected boolean'),
+    protected: o.protected === undefined ? false : typeof o.protected === 'boolean' ? o.protected : fail(`${path}.protected`, 'expected boolean'),
     style: o.style === undefined ? 'car' : (VEHICLE_STYLES as readonly unknown[]).includes(o.style) ? (o.style as VehicleStyle) : fail(`${path}.style`, 'expected car, train or tram'),
   };
   if (def.target && def.protected) fail(path, 'a vehicle cannot be both a target and protected');
@@ -243,7 +243,9 @@ const solution = (v: unknown, path: string, maxCharges: number, minCharges: numb
     const at = `${path}.charges[${i}]`;
     const o = obj(s, at);
     const kind = o.kind === undefined ? 'standard' : isChargeKind(o.kind) ? o.kind : fail(`${at}.kind`, 'unknown charge kind');
-    const direction = o.dir === undefined ? undefined : o.dir === 1 || o.dir === -1 ? o.dir : fail(`${at}.dir`, 'dir must be 1 or -1');
+    // Authored data says `dir`; parsed levels (and shared codes) say `direction`. Both read back.
+    const rawDir = o.direction ?? o.dir;
+    const direction = rawDir === undefined ? undefined : rawDir === 1 || rawDir === -1 ? rawDir : fail(`${at}.direction`, 'direction must be 1 or -1');
     const base = { ...point(s, at), delay: o.delay === undefined ? undefined : num(o.delay, `${at}.delay`, 0, 2), kind };
     return direction === undefined ? base : { ...base, direction };
   });

@@ -28,6 +28,7 @@ const setup = (start: Progress = emptyProgress()) => {
     cityMap: vi.fn(),
     levelSelect: vi.fn(),
     settings: vi.fn(),
+    codeEntry: vi.fn(),
     toast: vi.fn(),
   };
   const play = { leave: vi.fn(), play: vi.fn(), startLevel: vi.fn() };

@@ -273,6 +273,7 @@ Yapıyı incele → Patlayıcı yerleştir → Ateşle → Yıkımı izle → Pu
 | FR-97 | **Yönlü şarj:** patlaması yalnızca okun gösterdiği yarım düzleme gider; arkasındaki yapılar patlamanın küçük bir kısmını alır (`behind`). Korunan bina arkadaysa sözleşme bozulmaz; ok ona dönünce bozulur. Dokunmak yönünü çevirir (yürüyen şarjla aynı). Önizlemede çember yerine yarım daire gösterilir. | M |
 | FR-98 | **Ağır çekim tekrarı:** tekrar oynatılırken hız ×0.25, ×0.5 veya ×1 seçilebilir (varsayılan ×0.5). Klip kaydı kendi sabit hızını kullanır ve bu seçimi göstermez. | S |
 | FR-99 | **Atölye efektleri:** Elektrik Arkı (mavi-beyaz alev, lacivert duman) 500 hurda; Altın Toz (altın alev ve her patlamada altın toz) 750 hurda. Bunlar renk ve kıvılcım paletleridir; yeni parçacık şekilleri değildir. | S |
+| FR-100 | **Bölüm kodu:** her görev bir metin koduna dönüşür (`FF1-…`: sıkıştırılmış, base64url). Sonuç raporundaki "Kodu kopyala" koda panoya koyar; menüdeki "Kodla oyna" ekranına yapıştırılınca görev oynanır. Oynanan paylaşılan bölüm kampanya ilerlemesine, yıldızlara, hurdaya ve sözleşmelere dokunmaz. Kod çözülürken uzunluk (12 000 karakter) ve açılmış boyut (48 KB) sınırlanır; bölüm, kampanya verisiyle aynı doğrulamadan geçer. Kodun içinde `id` her zaman `shared`'dir. | M |
 
 ## 6. MVP kapsamı (Sürüm 0.1)
 

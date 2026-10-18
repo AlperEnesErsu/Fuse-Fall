@@ -97,6 +97,22 @@ export const en: Strings = {
       domino: (g: number) => `Clear ${g} jobs in domino style`,
     },
   },
+  shareCode: {
+    menu: 'Play a code',
+    title: 'Play a code',
+    hint: 'Paste a friend\'s mission code here.',
+    placeholder: 'FF1-…',
+    play: 'Play',
+    back: 'Back',
+    copy: 'Copy code',
+    copied: 'Mission code copied to the clipboard.',
+    failed: 'Could not copy the code.',
+    errors: {
+      format: 'That does not look like a mission code.',
+      'too-large': 'That code is too long.',
+      'invalid-level': 'That code is not a valid mission.',
+    },
+  },
   offers: {
     title: 'Earn scrap',
     watch: (n: number) => `Watch an ad: +${n} scrap`,

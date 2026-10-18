@@ -1575,3 +1575,26 @@ h2,
 .kind-toggle button.empty {
   opacity: 0.45;
 }
+
+/* ---- play a pasted mission code ---- */
+.code-entry {
+  max-width: 420px;
+  gap: 10px;
+}
+.code-entry textarea {
+  width: 100%;
+  box-sizing: border-box;
+  font: inherit;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 0.9rem;
+  background: #15181d;
+  color: var(--text);
+  border: 1px solid var(--edge);
+  border-radius: var(--radius);
+  padding: 8px 10px;
+  resize: vertical;
+}
+.code-error {
+  color: #ff8a8e;
+  margin: 0;
+}

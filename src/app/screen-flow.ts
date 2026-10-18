@@ -1,3 +1,4 @@
+import { decodeLevel, type ShareError } from '../core/share-code';
 import { ACHIEVEMENTS } from '../core/achievements';
 import { dailyChallenge, dayOf } from '../core/daily';
 import { rankOf } from '../core/economy';
@@ -49,7 +50,7 @@ export interface ScreenDeps {
   readonly text: () => ContentText;
   readonly ui: Pick<
     Ui,
-    'menu' | 'achievements' | 'workshop' | 'isShowing' | 'freeSite' | 'cityMap' | 'levelSelect' | 'settings' | 'toast'
+    'menu' | 'achievements' | 'workshop' | 'isShowing' | 'freeSite' | 'cityMap' | 'levelSelect' | 'settings' | 'toast' | 'codeEntry'
   >;
   readonly renderer: Pick<Renderer, 'setScene'>;
   readonly sound: Pick<SoundDirector, 'denied' | 'test'>;
@@ -101,7 +102,22 @@ export class ScreenFlow implements Navigator {
       contracts: { done: contracts.filter((c) => c.count >= c.goal).length, total: contracts.length },
       onAchievements: () => this.achievements(),
       onSettings: () => this.settings(),
+      onShareCode: () => this.shareCode(),
     });
+  }
+
+  /** Pasting a mission code: plays a shared mission, or asks again with the reason it did not load. */
+  shareCode(error?: ShareError): void {
+    this.d.play.leave();
+    this.d.ui.codeEntry({ onPlay: (code) => void this.playCode(code), onBack: () => this.menu() }, error);
+  }
+
+  private async playCode(code: string): Promise<void> {
+    const decoded = await decodeLevel(code);
+    if (!decoded.ok) return this.shareCode(decoded.error);
+    const level = decoded.value;
+    if (!this.d.campaign.worlds.some((w) => w.world === level.world)) return this.shareCode('invalid-level');
+    this.d.play.play(level, { kind: 'shared' });
   }
 
   achievements(): void {
