@@ -162,7 +162,7 @@ export interface HudActions {
   readonly onDelay: (chargeId: number, seconds: number) => void;
   readonly onKind: (kind: ChargeKind) => void;
   /** Shows this job's feature cards again; no "?" button without it. */
-  readonly onHelp?: () => void;
+  readonly onHelp?: (() => void) | undefined;
 }
 
 export interface ResultActions {

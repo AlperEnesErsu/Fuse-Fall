@@ -25,15 +25,15 @@ export interface Overlay {
   /** A tutorial spot to point at. */
   readonly coach: { readonly world: Vec2; readonly radius: number } | undefined;
   /** The charge the player tapped: ringed, with its remove badge (see `removeBadgeOf`). */
-  readonly selected?: number;
+  readonly selected?: number | undefined;
   /** A finger is dragging here: show a magnified view of it, clear of the finger. */
-  readonly loupe?: Vec2;
+  readonly loupe?: Vec2 | undefined;
   /** Hint: the recorded solution, drawn as faint outlines to copy. */
-  readonly solution?: readonly { readonly position: Vec2; readonly kind: ChargeKind; readonly delay: number | undefined; readonly direction?: 1 | -1 }[];
+  readonly solution?: readonly { readonly position: Vec2; readonly kind: ChargeKind; readonly delay: number | undefined; readonly direction?: 1 | -1 | undefined }[] | undefined;
 }
 
 /** Where a selected charge's remove badge sits, in world px from the charge. */
-const BADGE_OFFSET = { x: 0, y: -30 };
+const BADGE_OFFSET = { x: 0, y: -36 };
 /** How big the remove badge is to a finger (world px radius). */
 export const BADGE_RADIUS = 13;
 /** The remove badge of the charge at `p`, for hit-testing taps. */
@@ -873,7 +873,8 @@ export class Renderer {
     c.setLineDash([6, 6]);
     c.lineWidth = 1.5;
     for (const { position: centre, kind } of centres) {
-      if (kind === 'bomb') continue; // a falling bomb goes off wherever it is; its drop line says where it starts
+      // A falling bomb or a rolling charge goes off wherever it ends up, not where it is set: no circle to mislead.
+      if (kind === 'bomb' || kind === 'roller') continue;
       const hits = session.protectedReachedFrom(centre, kind);
       hits.forEach((id) => threatened.add(id));
       const danger = hits.length > 0;

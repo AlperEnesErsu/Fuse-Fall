@@ -69,6 +69,7 @@ export const tr = {
     button: 'İpucu',
     place: (n: number, total: number, kind: string, delay: string) => `İpucu ${n}/${total}: buraya ${kind} şarj${delay}.`,
     delay: (ms: number) => `, gecikme ${ms} ms`,
+    solution: 'Çözüm sahada kesik çizgilerle gösteriliyor: üstüne koy, ATEŞLE.',
     fireOnly: 'İpucu: şarja gerek yok. Sadece ATEŞLE.',
     fireAt: (s: string) => ` ATEŞLE'ye yaklaşık ${s} sn sonra bas.`,
     detonateAt: (s: string) => ` ATEŞLE'den ${s} sn sonra PATLAT.`,

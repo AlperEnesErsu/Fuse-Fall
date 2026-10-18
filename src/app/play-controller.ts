@@ -9,6 +9,8 @@ import { shareClip } from '../infrastructure/share-clip';
 import { SANDBOX_TEMPLATES } from '../content/sandbox';
 import type { ContentText } from '../content/text';
 import { tutorialFor } from '../content/tutorials';
+import { featureCard, featuresOf, newFeatures, type FeatureId } from '../content/features';
+import { markFeaturesSeen } from '../core/progress';
 import { activeLook } from '../content/workshop';
 import type { SoundDirector } from '../presentation/audio';
 import { FULL_VIEW, focusOf } from '../presentation/camera';
@@ -32,6 +34,8 @@ const TIMELINE_FROM_WORLD = 3;
 const RESULT_DELAY_MS = 450;
 /** Missed attempts at a job (this session) before the hint button appears. */
 const HINT_AFTER_FAILURES = 2;
+/** After this many misses the hint also lays out the whole solution as outlines to copy. */
+const SOLUTION_AFTER_FAILURES = 4;
 /** Replays run at this fraction of real time. */
 const REPLAY_SPEED = 0.45;
 /** Shared clips are kept short for Shorts and Reels: closer to real time than the slow-motion replay. */
@@ -60,6 +64,8 @@ export class PlayController implements Launcher {
   /** Jobs missed in a row this session (not cleared), for offering hints; and which hint is next. */
   private readonly failures = new Map<string, number>();
   private hintIndex = 0;
+  /** The hint shows the whole solution as outlines (after enough misses, or once every step was shown). */
+  private showSolution = false;
   /** The clip being recorded from a replay, if any. */
   private clip: ClipRecorder | undefined;
   private session: LevelSession | undefined;
@@ -140,6 +146,7 @@ export class PlayController implements Launcher {
     renderer.setFocus(focusOf(level));
     this.d.sound.setMood('plan', city.key);
     this.hintIndex = 0;
+    this.showSolution = false;
     this.session = new LevelSession(level, new MatterPhysicsWorld(), this.d.events);
     this.perchBirds(this.session);
     this.attempt = newAttempt(level, mode);
@@ -169,10 +176,35 @@ export class PlayController implements Launcher {
         coach.notify('kind');
         if (kind === 'implosion') ui.toast(T.implosionHint, 3200);
       },
+      onHelp: featuresOf(level).length > 0 ? () => this.showFeatureCards(featuresOf(level), false) : undefined,
     });
     this.chargeKind = level.chargeKinds[0] ?? 'standard';
     ui.setChargeKind(this.chargeKind);
     this.refreshHud();
+    // Anything new in this job gets its card first; the coaching starts once the cards are read.
+    const fresh = mode.kind === 'campaign' ? newFeatures(level, progress.seenFeatures) : [];
+    if (fresh.length > 0) {
+      this.d.ledger.set(markFeaturesSeen(progress, fresh));
+      this.showFeatureCards(fresh, true, () => this.begin(level, mode, base.id));
+    } else {
+      this.begin(level, mode, base.id);
+    }
+  }
+
+  /** The feature cards for a job: new ones before it starts, all of them from the HUD's "?". */
+  private showFeatureCards(ids: readonly FeatureId[], fresh: boolean, then?: () => void): void {
+    const cards = ids.map((id) => {
+      const c = featureCard(id);
+      return { title: c.title[language], text: c.text[language], tip: c.tip[language] };
+    });
+    this.d.ui.featureCards(cards, fresh, () => then?.());
+  }
+
+  /** Coaching or the one-line hint that opens a job. */
+  private begin(level: LevelDefinition, mode: Mode, baseId: string): void {
+    const { ui, coach } = this.d;
+    const progress = this.d.ledger.get();
+    const base = { id: baseId };
     // New ideas are coached step by step until the mission is cleared once; otherwise a one-line hint.
     const cleared = (progress.stars[base.id] ?? 0) > 0;
     const tutorial = cleared || mode.kind === 'daily' ? undefined : tutorialFor(level.id, language);
@@ -216,17 +248,19 @@ export class PlayController implements Launcher {
     this.d.juice.update(realDt, simDt);
     if (this.session?.phase === 'running') this.refreshHud();
     const placing = this.session?.phase === 'placing';
-    const ghostAt = this.input.ghostAt;
     this.d.coach.refresh();
     this.d.renderer.draw(this.session, this.d.juice, {
       time: this.time,
       coach: this.d.coach.worldMarker,
       kind: this.chargeKind,
-      ghost:
-        placing && ghostAt && !this.session?.chargeAt(ghostAt) && this.session && this.session.chargesLeft > 0
-          ? { position: ghostAt, valid: this.session.canPlaceAt(ghostAt).ok }
-          : undefined,
+      ghost: placing ? this.input.preview : undefined,
       drag: placing ? this.input.drag : undefined,
+      selected: placing ? this.input.selected : undefined,
+      loupe: placing ? this.input.loupe : undefined,
+      solution:
+        placing && this.showSolution && this.session
+          ? this.session.level.solution.charges.map((c) => ({ position: { x: c.x, y: c.y }, kind: c.kind, delay: c.delay, direction: c.direction }))
+          : undefined,
     });
   }
 
@@ -256,6 +290,11 @@ export class PlayController implements Launcher {
     }
     const n = this.hintIndex % sol.charges.length;
     this.hintIndex++;
+    // Still stuck: lay the whole solution out as outlines to copy.
+    if (this.hintIndex > sol.charges.length || (this.failures.get(s.level.id) ?? 0) >= SOLUTION_AFTER_FAILURES) {
+      if (!this.showSolution) this.d.ui.toast(T.hint.solution, 2600);
+      this.showSolution = true;
+    }
     const c = sol.charges[n];
     if (!c) return;
     const delay = c.delay !== undefined && c.delay > 0 ? T.hint.delay(Math.round(c.delay * 1000)) : '';
@@ -278,7 +317,7 @@ export class PlayController implements Launcher {
     const s = this.session;
     if (s && this.attempt && s.phase === 'placing') {
       this.attempt.plan = {
-        charges: s.charges.map((c) => ({ position: c.position, delay: c.delay, kind: c.kind })),
+        charges: s.charges.map((c) => ({ position: c.position, delay: c.delay, kind: c.kind, direction: c.direction })),
         fireSteps: Math.round(s.clock / FIXED_STEP),
         presses: [],
       };
@@ -307,7 +346,7 @@ export class PlayController implements Launcher {
     if (!a?.plan) return;
     this.d.juice.reset();
     const session = new LevelSession(a.level, new MatterPhysicsWorld(), this.d.events);
-    for (const c of a.plan.charges) session.placeCharge(c.position, c.delay, c.kind);
+    for (const c of a.plan.charges) session.placeCharge(c.position, c.delay, c.kind, c.direction);
     // Cars cruise while placing, so fast-forward to the exact step the player fired on.
     for (let i = 0; i < a.plan.fireSteps; i++) session.step(FIXED_STEP);
     this.perchBirds(session);
@@ -502,6 +541,8 @@ export class PlayController implements Launcher {
       hintAvailable: s.phase === 'placing' && this.attempt?.mode.kind === 'campaign' && (this.failures.get(s.level.id) ?? 0) >= HINT_AFTER_FAILURES,
     });
     ui.setDetonateVisible(s.phase === 'running' && s.liveBombs > 0 && !this.attempt?.replaying);
+    const stock = s.level.charges.stock;
+    ui.setKindCounts(stock && s.phase === 'placing' ? Object.fromEntries(s.level.chargeKinds.map((k) => [k, s.stockLeft(k)])) : undefined);
     ui.updateTimeline(
       s.charges.map((c, i) => ({ id: c.id, label: i + 1, delay: c.delay })),
       s.phase === 'placing' && (s.level.world >= TIMELINE_FROM_WORLD || this.attempt?.mode.kind === 'sandbox'),

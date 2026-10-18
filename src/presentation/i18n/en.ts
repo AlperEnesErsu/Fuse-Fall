@@ -66,6 +66,7 @@ export const en: Strings = {
     button: 'Hint',
     place: (n: number, total: number, kind: string, delay: string) => `Hint ${n}/${total}: a ${kind} charge here${delay}.`,
     delay: (ms: number) => `, delay ${ms} ms`,
+    solution: 'The solution is outlined on the site: put charges on it, then FIRE.',
     fireOnly: 'Hint: no charge needed. Just FIRE.',
     fireAt: (s: string) => ` Press FIRE after about ${s} s.`,
     detonateAt: (s: string) => ` DETONATE ${s} s after FIRE.`,

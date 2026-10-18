@@ -27,7 +27,7 @@ export type Mode =
 
 /** What the player did at Fire, so the same physics can be re-simulated for the replay. */
 export interface Plan {
-  readonly charges: readonly { position: Vec2; delay: number; kind: ChargeKind }[];
+  readonly charges: readonly { position: Vec2; delay: number; kind: ChargeKind; direction: 1 | -1 }[];
   readonly fireSteps: number;
   /** Detonator presses, in fixed steps after Fire. */
   readonly presses: number[];
