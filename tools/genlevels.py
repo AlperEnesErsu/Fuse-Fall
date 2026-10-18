@@ -962,8 +962,8 @@ def newyork():
     l.sol((170, Y, None, R)); out.append(l)
 
     # 2. Back door: the zone is against a protected shop; a charge there would wreck it, a cart drives away to the job.
-    l = L(9, 2, 'Arka Kapı', 1, 1, 0.5, 'Dükkân korunuyor. Şarjı buraya patlatma; yürüyen şarjla işe sür.')
-    l.d['chargeKinds'] = ['standard', R]
+    l = L(9, 2, 'Arka Kapı', 1, 1, 0.5, 'Dükkân korunuyor. Yönlü şarjı oka dükkândan uzağa bakacak şekilde koy; ya da yürüyen şarjla işe sür.')
+    l.d['chargeKinds'] = ['standard', R, 'directional']
     l.house(150, 80, 90)
     top = tower(l, 720, G, 60, 120); l.col(720, top, 34, 34, 'wood', True)
     l.zone(200, 430, 110, 50)

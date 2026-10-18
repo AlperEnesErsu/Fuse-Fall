@@ -232,11 +232,11 @@ export class PlayInput {
     else this.sound.denied();
   }
 
-  /** A tap on a charge selects it; a second tap turns a rolling charge round (other kinds just stay selected). */
+  /** A tap on a charge selects it; a second tap turns a rolling or directional charge round (other kinds just stay selected). */
   private tapCharge(s: LevelSession, id: number): void {
     const charge = s.charges.find((c) => c.id === id);
     if (!charge) return;
-    if (this.selectedId === id && charge.kind === 'roller') {
+    if (this.selectedId === id && (charge.kind === 'roller' || charge.kind === 'directional')) {
       s.flipCharge(id);
       this.sound.click();
       return;

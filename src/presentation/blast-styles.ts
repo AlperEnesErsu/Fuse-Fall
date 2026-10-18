@@ -49,6 +49,19 @@ export const BLAST_PALETTES: Readonly<Record<string, BlastPalette>> = {
     ...CLASSIC,
     confetti: ['#f2b134', '#e5484d', '#3fb6a8', '#7c6cf0', '#4cb36a', '#ffffff'],
   },
+  lightning: {
+    flame: { core: [240, 250, 255], mid: [90, 170, 255], rim: [30, 50, 140] },
+    light: [140, 200, 255],
+    smoke: '#1d2846',
+    embers: ['#8fd3ff', '#ffffff'],
+  },
+  gold: {
+    flame: { core: [255, 250, 220], mid: [242, 177, 52], rim: [140, 80, 20] },
+    light: [255, 211, 107],
+    smoke: '#4a3c1f',
+    embers: ['#ffd66b', '#fff6d0'],
+    confetti: ['#ffd36b', '#f2b134', '#fff3c4', '#e0a526'],
+  },
 };
 
 export const blastPalette = (style: string): BlastPalette => BLAST_PALETTES[style] ?? CLASSIC;

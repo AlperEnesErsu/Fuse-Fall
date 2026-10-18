@@ -270,6 +270,9 @@ Yapıyı incele → Patlayıcı yerleştir → Ateşle → Yıkımı izle → Pu
 | FR-94 | **Özellik kartları:** bir görevin getirdiği her mekanik (korunan bina, gecikme, varil, araç, hassas, içe çöken, tren, bomba, gülle, tramvay, yürüyen şarj, envanter) ilk karşılaşmada "YENİ" kartı ve bir püf noktasıyla tanıtılır; görülen kartlar kaydedilir. HUD'daki "?" görevin kartlarını yeniden gösterir. Eğitim adımları kartlar kapanınca başlar. | M |
 | FR-95 | **Kademeli ipucu:** 2 başarısızlıktan sonra ipucu şarjları tek tek gösterir; bütün adımlar gösterildiğinde ya da 4 başarısızlıktan sonra tüm çözüm sahada kesik çizgili gölgeler (sıra, gecikme, yön) olarak belirir. | S |
 | FR-96 | New York (Bölüm 9, 185 yıldızla açılır): yürüyen şarj ve envanter üzerine 10 görev. Silüet: Özgürlük Heykeli, Empire State, Chrysler, One World Trade. Testler her görevin kendi püf noktasını gerektirdiğini doğrular (yürüyen şarj, iki araba, hassas ya da içe çöken şarj). | M |
+| FR-97 | **Yönlü şarj:** patlaması yalnızca okun gösterdiği yarım düzleme gider; arkasındaki yapılar patlamanın küçük bir kısmını alır (`behind`). Korunan bina arkadaysa sözleşme bozulmaz; ok ona dönünce bozulur. Dokunmak yönünü çevirir (yürüyen şarjla aynı). Önizlemede çember yerine yarım daire gösterilir. | M |
+| FR-98 | **Ağır çekim tekrarı:** tekrar oynatılırken hız ×0.25, ×0.5 veya ×1 seçilebilir (varsayılan ×0.5). Klip kaydı kendi sabit hızını kullanır ve bu seçimi göstermez. | S |
+| FR-99 | **Atölye efektleri:** Elektrik Arkı (mavi-beyaz alev, lacivert duman) 500 hurda; Altın Toz (altın alev ve her patlamada altın toz) 750 hurda. Bunlar renk ve kıvılcım paletleridir; yeni parçacık şekilleri değildir. | S |
 
 ## 6. MVP kapsamı (Sürüm 0.1)
 

@@ -862,34 +862,49 @@ export class Renderer {
    */
   private blastRadii(session: LevelSession, overlay: Overlay): Set<string> {
     const c = this.ctx;
-    const centres = session.charges
+    // A directional charge's blast only covers the half-plane its arrow points into.
+    const aimOf = (kind: ChargeKind, direction: 1 | -1): 1 | -1 | undefined => (kind === 'directional' ? direction : undefined);
+    const centres: { position: Vec2; kind: ChargeKind; aim: 1 | -1 | undefined }[] = session.charges
       .filter((ch) => overlay.drag?.id !== ch.id)
-      .map((ch) => ({ position: ch.position, kind: ch.kind }));
+      .map((ch) => ({ position: ch.position, kind: ch.kind, aim: aimOf(ch.kind, ch.direction) }));
     const dragged = session.charges.find((ch) => ch.id === overlay.drag?.id);
-    if (overlay.drag && dragged) centres.push({ position: overlay.drag.position, kind: dragged.kind });
-    else if (overlay.ghost?.valid) centres.push({ position: overlay.ghost.position, kind: overlay.kind });
+    if (overlay.drag && dragged) centres.push({ position: overlay.drag.position, kind: dragged.kind, aim: aimOf(dragged.kind, dragged.direction) });
+    // A new charge's direction is only known once placed (it faces the nearest target); the preview assumes right.
+    else if (overlay.ghost?.valid) centres.push({ position: overlay.ghost.position, kind: overlay.kind, aim: aimOf(overlay.kind, 1) });
     const threatened = new Set<string>();
     c.save();
     c.setLineDash([6, 6]);
     c.lineWidth = 1.5;
-    for (const { position: centre, kind } of centres) {
+    for (const { position: centre, kind, aim } of centres) {
       // A falling bomb or a rolling charge goes off wherever it ends up, not where it is set: no circle to mislead.
       if (kind === 'bomb' || kind === 'roller') continue;
-      const hits = session.protectedReachedFrom(centre, kind);
+      const hits = session.protectedReachedFrom(centre, kind, aim);
       hits.forEach((id) => threatened.add(id));
       const danger = hits.length > 0;
       c.fillStyle = danger ? 'rgba(229, 72, 77, 0.10)' : 'rgba(242, 177, 52, 0.06)';
       c.strokeStyle = danger ? 'rgba(229, 72, 77, 0.85)' : 'rgba(242, 177, 52, 0.55)';
       // Filled core: what must stay clear of protected property. Dashed rim: the full blast.
-      c.beginPath();
-      c.arc(centre.x, centre.y, contractRadius(kind), 0, Math.PI * 2);
+      this.blastPath(centre, contractRadius(kind), aim);
       c.fill();
-      c.beginPath();
-      c.arc(centre.x, centre.y, chargeRadius(kind), 0, Math.PI * 2);
+      this.blastPath(centre, chargeRadius(kind), aim);
       c.stroke();
     }
     c.restore();
     return threatened;
+  }
+
+  /** A blast's outline: a full circle, or a half-disc on the side an aimed blast throws into. */
+  private blastPath(centre: Vec2, r: number, aim: 1 | -1 | undefined): void {
+    const c = this.ctx;
+    c.beginPath();
+    if (aim === undefined) {
+      c.arc(centre.x, centre.y, r, 0, Math.PI * 2);
+      return;
+    }
+    const base = aim === 1 ? 0 : Math.PI;
+    c.moveTo(centre.x, centre.y);
+    c.arc(centre.x, centre.y, r, base - Math.PI / 2, base + Math.PI / 2);
+    c.closePath();
   }
 
   private charges(session: LevelSession, overlay: Overlay): void {
@@ -966,9 +981,10 @@ export class Renderer {
     }
     // Implosion charges: a steel-blue casing with a cyan band and inward chevrons.
     const implosion = kind === 'implosion';
-    c.fillStyle = implosion ? '#3d4b5c' : '#5f6a3e';
+    const directional = kind === 'directional';
+    c.fillStyle = implosion ? '#3d4b5c' : directional ? '#7a4f2a' : '#5f6a3e';
     c.fillRect(-13, -8, 26, 16);
-    c.fillStyle = implosion ? '#5fc8d6' : '#4d5733';
+    c.fillStyle = implosion ? '#5fc8d6' : directional ? '#e0a52e' : '#4d5733';
     c.fillRect(-13, -2, 26, 4);
     if (implosion) {
       c.strokeStyle = '#5fc8d6';
@@ -995,6 +1011,8 @@ export class Renderer {
     c.beginPath();
     c.arc(0, -10.5, 2, 0, Math.PI * 2);
     c.fill();
+    // A directional charge shows which half-plane its blast throws into.
+    if (directional) this.directionArrow(direction, time);
     if (index > 0) {
       c.fillStyle = '#e9e3cf';
       c.font = '700 9px Bahnschrift, system-ui, sans-serif';

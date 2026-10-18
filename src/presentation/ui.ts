@@ -538,9 +538,29 @@ export class Ui {
   }
 
   /** Replay mode: no HUD or menus, just a label and a way out. */
-  showReplay(onSkip: () => void): void {
+  /** Replay controls: skip, and the playback speed when the player may choose it. */
+  showReplay(
+    onSkip: () => void,
+    speed?: { readonly options: readonly number[]; readonly current: number; readonly onPick: (value: number) => void },
+  ): void {
     this.hideHud();
-    this.replayEl.replaceChildren(h('span', { class: 'label' }, T.replayLabel), this.button(T.skip, onSkip));
+    const buttons: HTMLElement[] = [];
+    for (const value of speed?.options ?? []) {
+      const b: HTMLElement = h(
+        'button',
+        {
+          class: `btn small${value === speed?.current ? ' primary' : ''}`,
+          click: () =>
+            this.tap(() => {
+              speed?.onPick(value);
+              buttons.forEach((x) => x.classList.toggle('primary', x === b));
+            }),
+        },
+        `×${value}`,
+      );
+      buttons.push(b);
+    }
+    this.replayEl.replaceChildren(h('span', { class: 'label' }, T.replayLabel), ...buttons, this.button(T.skip, onSkip));
     this.replayEl.classList.remove('hidden');
   }
 

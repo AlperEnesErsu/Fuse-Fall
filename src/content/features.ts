@@ -18,6 +18,7 @@ export const FEATURE_IDS = [
   'balls',
   'trams',
   'roller',
+  'directional',
   'loadout',
 ] as const;
 export type FeatureId = (typeof FEATURE_IDS)[number];
@@ -88,6 +89,17 @@ const CARDS: Readonly<Record<FeatureId, Omit<FeatureCard, 'id'>>> = {
     text: { tr: 'Yere konan küçük araba. Ateşlenince okun yönüne sürer, bir şeye çarpınca patlar.', en: 'A little cart on the ground. Fired, it drives the way its arrow points and goes off when it hits something.' },
     tip: { tr: 'Şarja dokun, yönünü çevir. Sarı alanın erişemediği yere bununla ulaşırsın.', en: 'Tap the charge to turn it round. It reaches what the zone cannot.' },
   },
+  directional: {
+    title: { tr: 'Yönlü şarj', en: 'Directional charge' },
+    text: {
+      tr: 'Patlamanın gücü yalnızca okun gösterdiği yarım düzleme gider. Arkasındaki yapılar hafif sarsılır.',
+      en: 'Its blast throws only into the half-plane its arrow points to. Structures behind it barely move.',
+    },
+    tip: {
+      tr: 'Korunan bina arkadaysa ok ondan uzağa baksın; şarja dokunup yönünü çevir.',
+      en: 'If a protected building is behind, aim the arrow away from it; tap the charge to turn it.',
+    },
+  },
   loadout: {
     title: { tr: 'Envanter', en: 'Loadout' },
     text: { tr: 'Bu işte her şarj türünden belli sayıda var. Düğmelerdeki sayılar kalanı gösterir.', en: 'This job hands out a set number of each kind. The counts on the buttons show what is left.' },
@@ -111,6 +123,7 @@ export const featuresOf = (level: LevelDefinition): FeatureId[] => {
     balls: level.balls.length > 0,
     trams: level.cars.some((c) => c.style === 'tram'),
     roller: level.chargeKinds.includes('roller'),
+    directional: level.chargeKinds.includes('directional'),
     loadout: level.charges.stock !== undefined,
   };
   return FEATURE_IDS.filter((id) => has[id]);

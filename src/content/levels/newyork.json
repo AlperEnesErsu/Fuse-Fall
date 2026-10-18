@@ -135,10 +135,11 @@
    ],
    "fireAt": 0
   },
-  "hint": "Dükkân korunuyor. Şarjı buraya patlatma; yürüyen şarjla işe sür.",
+  "hint": "Dükkân korunuyor. Yönlü şarjı oka dükkândan uzağa bakacak şekilde koy; ya da yürüyen şarjla işe sür.",
   "chargeKinds": [
    "standard",
-   "roller"
+   "roller",
+   "directional"
   ]
  },
  {

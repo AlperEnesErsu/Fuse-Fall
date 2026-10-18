@@ -57,6 +57,20 @@ const BLAST_STYLES: readonly WorkshopItem[] = [
     name: { tr: 'Konfeti', en: 'Confetti' },
     description: { tr: 'Her patlamada renkli konfeti yağmuru.', en: 'A shower of coloured confetti with every blast.' },
   },
+  {
+    id: 'lightning',
+    kind: 'blast-style',
+    cost: 500,
+    name: { tr: 'Elektrik Arkı', en: 'Electric Arc' },
+    description: { tr: 'Mavi-beyaz elektrik, lacivert duman.', en: 'Blue-white electric flash, navy smoke.' },
+  },
+  {
+    id: 'gold',
+    kind: 'blast-style',
+    cost: 750,
+    name: { tr: 'Altın Toz', en: 'Gold Dust' },
+    description: { tr: 'Sıcak altın alev ve her patlamada altın toz.', en: 'Warm gold flame and gold dust with every blast.' },
+  },
 ];
 
 /** Block themes: the surface every structure is drawn with. Physics is unchanged. */

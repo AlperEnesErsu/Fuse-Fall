@@ -37,7 +37,9 @@ const HINT_AFTER_FAILURES = 2;
 /** After this many misses the hint also lays out the whole solution as outlines to copy. */
 const SOLUTION_AFTER_FAILURES = 4;
 /** Replays run at this fraction of real time. */
-const REPLAY_SPEED = 0.45;
+const REPLAY_SPEED = 0.5;
+/** Replay speeds the player can pick (not offered while a clip is being recorded). */
+const REPLAY_SPEEDS = [0.25, 0.5, 1] as const;
 /** Shared clips are kept short for Shorts and Reels: closer to real time than the slow-motion replay. */
 const CLIP_REPLAY_SPEED = 0.8;
 
@@ -71,6 +73,8 @@ export class PlayController implements Launcher {
   private session: LevelSession | undefined;
   private attempt: Attempt | undefined;
   private time = 0;
+  /** The playback speed picked for this replay. */
+  private replaySpeed: number = REPLAY_SPEED;
   /** The charge type the next placement uses. */
   private chargeKind: ChargeKind = 'standard';
   private readonly input: PlayInput;
@@ -109,7 +113,7 @@ export class PlayController implements Launcher {
 
   /** How fast simulated time runs against real time: slower during a replay. */
   get speed(): number {
-    return this.attempt?.replaying ? (this.clip ? CLIP_REPLAY_SPEED : REPLAY_SPEED) : 1;
+    return this.attempt?.replaying ? (this.clip ? CLIP_REPLAY_SPEED : this.replaySpeed) : 1;
   }
 
   /** Ends the job (if any) for a menu screen. */
@@ -354,7 +358,12 @@ export class PlayController implements Launcher {
     this.session = session;
     this.attempt = { ...a, replaying: true };
     this.d.ui.hideScreen();
-    this.d.ui.showReplay(() => this.endReplay(false));
+    this.replaySpeed = REPLAY_SPEED;
+    this.d.ui.showReplay(() => this.endReplay(false), this.clip ? undefined : {
+      options: REPLAY_SPEEDS,
+      current: this.replaySpeed,
+      onPick: (v) => (this.replaySpeed = v),
+    });
   }
 
   /** `complete`: the replay ran to the end (rather than being skipped). */

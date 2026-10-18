@@ -94,7 +94,7 @@ const EN_LEVELS: Readonly<Record<string, { readonly name: string; readonly hint:
   'w8-09': { name: 'Night Line', hint: 'Two trams in a row. Set the second delay to the gap between them.' },
   'w8-10': { name: 'Madrid Finale', hint: 'The tram on the upper line and the house on the right are protected. Bring down the lower tram and the tower.' },
   'w9-01': { name: 'First Roll', hint: 'A rolling charge sits on the ground, drives forward on FIRE and goes off where it hits.' },
-  'w9-02': { name: 'Back Door', hint: 'The shop is protected. Do not blow anything up here; drive a rolling charge to the job.' },
+  'w9-02': { name: 'Back Door', hint: 'The shop is protected. Aim a directional charge away from it, or drive a rolling charge to the job.' },
   'w9-03': { name: 'Two Ways', hint: 'A tower on each side. Each rolling charge faces the nearest target; tap one to turn it if needed.' },
   'w9-04': { name: 'Choice', hint: 'This job hands out one standard and one rolling charge. Which goes where?' },
   'w9-05': { name: 'Fuel Line', hint: 'Let the charge drive to the barrels; the chain does the rest.' },

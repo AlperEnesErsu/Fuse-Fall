@@ -53,6 +53,17 @@ export const TUNING = {
     pressure: 1.0,
     damage: 120,
   },
+  /**
+   * A directional charge: a shaped blast that throws its force one way only.
+   * Bodies in front of it (the half-plane its arrow points into) take the full
+   * blast; bodies behind take `behind` of it, so a protected building there is safe.
+   */
+  directional: {
+    radius: 150,
+    pressure: 1.15,
+    damage: 120,
+    behind: 0.2,
+  },
   bomb: {
     radius: 11,
     blastRadius: 140,

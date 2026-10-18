@@ -1288,6 +1288,12 @@ h2,
 .swatch.style-confetti {
   background: conic-gradient(#f2b134 0 20%, #e5484d 0 40%, #3fb6a8 0 60%, #7c6cf0 0 80%, #4cb36a 0);
 }
+.swatch.style-lightning {
+  background: radial-gradient(circle at 40% 40%, #f0faff 0 18%, #5aaaff 36%, #1d2846 70%);
+}
+.swatch.style-gold {
+  background: radial-gradient(circle at 40% 40%, #fff9e0 0 18%, #f2b134 36%, #4a3c1f 70%);
+}
 .payout {
   display: flex;
   align-items: baseline;

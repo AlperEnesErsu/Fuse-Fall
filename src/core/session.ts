@@ -126,6 +126,8 @@ interface Detonation {
   readonly at: number;
   readonly position: Vec2;
   readonly blast: BlastKind;
+  /** Which way a directional blast throws (1 = right). */
+  readonly aim?: 1 | -1;
 }
 
 /** Everything needed to create an entity; roles are explicit, never inferred from each other. */
@@ -155,13 +157,21 @@ const BLASTS: Readonly<Record<BlastKind, { radius: number; pressure: number; dam
   vehicle: { radius: TUNING.vehicle.blastRadius, pressure: TUNING.vehicle.pressure, damage: TUNING.vehicle.damage },
   bomb: { radius: TUNING.bomb.blastRadius, pressure: TUNING.bomb.pressure, damage: TUNING.bomb.damage },
   roller: { radius: TUNING.roller.blastRadius, pressure: TUNING.roller.pressure, damage: TUNING.roller.damage },
+  directional: { radius: TUNING.directional.radius, pressure: TUNING.directional.pressure, damage: TUNING.directional.damage },
 };
 
-const sourceOf = (blast: BlastKind): BlastSource => (blast === 'standard' || blast === 'precision' ? 'charge' : blast);
+const sourceOf = (blast: BlastKind): BlastSource =>
+  blast === 'standard' || blast === 'precision' || blast === 'directional' ? 'charge' : blast;
 
 /** Kinds placed on the structure and fired by the blasting machine (bombs fall instead). */
-const isFixedCharge = (blast: BlastKind): blast is 'standard' | 'precision' | 'implosion' =>
-  blast === 'standard' || blast === 'precision' || blast === 'implosion';
+const isFixedCharge = (blast: BlastKind): blast is 'standard' | 'precision' | 'implosion' | 'directional' =>
+  blast === 'standard' || blast === 'precision' || blast === 'implosion' || blast === 'directional';
+
+/** How much of a blast reaches a body at `offset` from its centre: all of it in front of an aimed blast, a fraction behind. */
+const facingOf = (offset: Vec2, aim: 1 | -1 | undefined): number => {
+  if (aim === undefined) return 1;
+  return offset.x * aim >= 0 ? 1 : TUNING.directional.behind;
+};
 
 /** Blast radius of a charge kind, for the placement preview. */
 export const chargeRadius = (kind: ChargeKind): number => BLASTS[kind].radius;
@@ -312,7 +322,7 @@ export class LevelSession {
   get armedCharges(): { readonly position: Vec2; readonly kind: ChargeKind; readonly direction?: 1 | -1 }[] {
     const armed: { position: Vec2; kind: ChargeKind; direction?: 1 | -1 }[] = [];
     for (const d of this.pending) {
-      if (isFixedCharge(d.blast)) armed.push({ position: d.position, kind: d.blast });
+      if (isFixedCharge(d.blast)) armed.push({ position: d.position, kind: d.blast, ...(d.aim ? { direction: d.aim } : {}) });
     }
     for (const r of this.releases) armed.push({ position: r.position, kind: 'bomb' });
     for (const l of this.launches) armed.push({ position: l.position, kind: 'roller', direction: l.direction });
@@ -402,12 +412,14 @@ export class LevelSession {
   }
 
   /** Protected buildings a charge at `center` would reach — the preview of the contract rule in `explode`. */
-  protectedReachedFrom(center: Vec2, kind: ChargeKind = 'standard'): string[] {
+  protectedReachedFrom(center: Vec2, kind: ChargeKind = 'standard', aim?: 1 | -1): string[] {
     const reached: string[] = [];
     for (const e of this.entities.values()) {
       if (!e.guarded) continue;
       const s = this.physics.state(e.id);
-      if (s && circleTouches(center, contractRadius(kind), e.shape, s.position, s.angle)) reached.push(e.id);
+      if (!s) continue;
+      if (facingOf(sub(s.position, center), aim) !== 1) continue;
+      if (circleTouches(center, contractRadius(kind), e.shape, s.position, s.angle)) reached.push(e.id);
     }
     return reached;
   }
@@ -519,7 +531,13 @@ export class LevelSession {
     for (const c of this.chargeList) {
       if (c.kind === 'bomb') this.releases.push({ at: this.time + c.delay, position: c.position });
       else if (c.kind === 'roller') this.launches.push({ at: this.time + c.delay, position: c.position, direction: c.direction });
-      else this.pending.push({ at: this.time + c.delay, position: c.position, blast: c.kind });
+      else
+        this.pending.push({
+          at: this.time + c.delay,
+          position: c.position,
+          blast: c.kind,
+          ...(c.kind === 'directional' ? { aim: c.direction } : {}),
+        });
     }
     return ok(undefined);
   }
@@ -569,7 +587,7 @@ export class LevelSession {
       const d = this.pending[i];
       if (d && d.at <= this.time) {
         this.pending.splice(i, 1);
-        this.explode(d.position, d.blast);
+        this.explode(d.position, d.blast, d.aim);
       }
     }
   }
@@ -641,7 +659,7 @@ export class LevelSession {
     }
   }
 
-  private explode(center: Vec2, blast: BlastKind): void {
+  private explode(center: Vec2, blast: BlastKind, aim?: 1 | -1): void {
     const spec = BLASTS[blast];
     const source = sourceOf(blast);
     const radius = spec.radius;
@@ -674,10 +692,12 @@ export class LevelSession {
       const offset = sub(state.position, center);
       const reach = blastReach(center, e.shape, state.position);
       // Contract rule, previewed while placing: the blast's core may not touch protected property.
-      if (e.guarded && circleTouches(center, contractReach(radius), e.shape, state.position, state.angle)) this.compromise(e, state.position);
+      if (e.guarded && facingOf(offset, aim) === 1 && circleTouches(center, contractReach(radius), e.shape, state.position, state.angle)) {
+        this.compromise(e, state.position);
+      }
       if (reach >= radius) continue;
       e.blasted = true;
-      const falloff = Math.pow(1 - reach / radius, 1.2);
+      const falloff = Math.pow(1 - reach / radius, 1.2) * facingOf(offset, aim);
       const dist = length(offset);
       const dir = dist > 0.001 ? scale(offset, 1 / dist) : vec(0, -1);
       const lightness = MATERIALS.wood.density / MATERIALS[e.material].density;
