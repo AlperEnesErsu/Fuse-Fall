@@ -119,9 +119,18 @@ describe('One Shot records', () => {
 
 describe('scrap offers', () => {
   it('lets bought scrap be spent without raising the career rank', () => {
-    const p = addBoughtScrap(emptyProgress(), 4000);
+    const p = addBoughtScrap(emptyProgress(), 4000, 'token-a');
     expect(p.wallet).toEqual({ balance: 4000, earned: 0 });
     expect(rankOf(p.wallet.earned).index).toBe(0);
+  });
+
+  it('credits a payment once, even when the store reports it again after a reload', () => {
+    const p = addBoughtScrap(emptyProgress(), 500, 'token-a');
+    const parsed = parseProgress(JSON.parse(JSON.stringify(p)));
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+    expect(addBoughtScrap(parsed.value, 500, 'token-a')).toBe(parsed.value);
+    expect(addBoughtScrap(parsed.value, 500, 'token-b').wallet.balance).toBe(1000);
   });
 
   it('counts rewarded ads per day and starts each day afresh', () => {

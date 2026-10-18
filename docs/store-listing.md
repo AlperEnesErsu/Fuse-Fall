@@ -10,9 +10,10 @@ Play Console'a doğrudan yapıştırılacak metinler. Sınırlar: uygulama adı 
 | Paket adı | com.fuseandfall.game |
 | Kategori | Oyun › Bulmaca |
 | Etiketler | Bulmaca, Fizik, Rahat oyun, Çevrimdışı |
-| Ücret | Ücretsiz (gelir modeli kararı verilene kadar) |
-| Reklam içerir | Hayır |
-| Uygulama içi satın alma | Hayır |
+| Ücret | Ücretsiz |
+| Reklam içerir | Evet (yalnızca isteğe bağlı ödüllü reklam) |
+| Uygulama içi satın alma | Evet (hurda paketleri) |
+| Hedef yaş | 13+ |
 | Gizlilik politikası | `privacy.html` sayfasının herkese açık adresi (bkz. [release.md](release.md)) |
 
 ## Türkçe (tr-TR)
@@ -40,7 +41,7 @@ SERBEST ŞANTİYE
 Kural yok, puan yok. Anında Patlat modunda dokunduğun yer patlar. Tek Atış'ta tek şarjla ne kadarını indirebileceğini dene.
 
 TAMAMEN ÇEVRİMDIŞI
-İnternet izni yok, reklam yok, hesap yok, veri toplama yok. Metroda, uçakta, her yerde. Telefonu ister yatay ister dikey tut.
+İnternetsiz baştan sona oynanır; hesap yok, zorunlu reklam yok. Metroda, uçakta, her yerde. Telefonu ister yatay ister dikey tut.
 
 ## English (en-US)
 
@@ -67,18 +68,27 @@ FREE SITE
 No rules, no score. In Smash, every tap goes off at once. In One Shot, see how much one charge can bring down.
 
 FULLY OFFLINE
-No internet permission, no ads, no accounts, no data collection. On the train, on a plane, anywhere. Hold your phone either way.
+Plays start to finish offline; no accounts, no forced ads. On the train, on a plane, anywhere. Hold your phone either way.
 
 ## Veri güvenliği formu (Data safety)
 
 | Soru | Cevap |
 |---|---|
-| Uygulama gerekli kullanıcı veri türlerinden herhangi birini topluyor veya paylaşıyor mu? | Hayır |
-| Veriler aktarım sırasında şifreleniyor mu? | Uygulanamaz: veri aktarımı yok |
-| Kullanıcılar verilerinin silinmesini isteyebilir mi? | Uygulanamaz: sunucuda veri yok; kayıt cihazdadır, uygulama kaldırılınca silinir |
+Oyunun kendisi veri toplamaz; aşağıdakiler AdMob SDK'sından gelir. Göndermeden önce Google'ın güncel AdMob beyan sayfasıyla karşılaştır (*Play'in Veri güvenliği bölümü için AdMob*).
+
+| Soru | Cevap |
+|---|---|
+| Uygulama gerekli kullanıcı veri türlerinden herhangi birini topluyor veya paylaşıyor mu? | Evet (AdMob SDK) |
+| Toplanan / paylaşılan | Cihaz veya diğer kimlikler (reklam kimliği); Uygulama etkinliği › Uygulama etkileşimleri; Uygulama bilgileri ve performansı › Kilitlenme günlükleri, Teşhis; Konum › Yaklaşık konum (IP'den) |
+| Amaç | Reklam veya pazarlama; Analiz (reklam ölçümü); Sahtekarlık önleme, güvenlik |
+| İsteğe bağlı mı? | Evet: reklam yalnızca oyuncu isteyince oynar |
+| Veriler aktarım sırasında şifreleniyor mu? | Evet |
+| Kullanıcılar verilerinin silinmesini isteyebilir mi? | Oyun verisi cihazdadır, kaldırınca silinir; reklam verisi için Google'ın araçları (reklam kimliğini sıfırlama/silme) |
+| Satın alma geçmişi | Ödemeyi Google Play işler; oyun yalnızca satın alma işaretini cihazda saklar |
 
 ## İçerik derecelendirmesi (IARC) için notlar
 
 - Şiddet: insan, hayvan ya da karakter zarar görmez. Yalnızca boş yapılar ve araçlar yıkılır; kan, yaralanma ya da ölüm yok.
 - Hedef blokların ve güvercinlerin çizgi film tarzı yüzleri ve hareketleri vardır; güvercinler patlamada uçup gider, zarar görmez.
-- Kullanıcılar arası iletişim, konum paylaşımı, satın alma, kumar, alkol veya uyuşturucu içeriği yok.
+- Kullanıcılar arası iletişim, konum paylaşımı, kumar, alkol veya uyuşturucu içeriği yok.
+- Dijital satın alma var (hurda paketleri); rastgele ödül (ganimet kutusu) yok: her paket ne vereceğini açıkça yazar.

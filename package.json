@@ -19,10 +19,12 @@
     "store-shots": "node tools/store-shots.mjs"
   },
   "dependencies": {
+    "@capacitor-community/admob": "8.1.0",
     "@capacitor/android": "8.5.3",
     "@capacitor/core": "8.5.3",
     "@capacitor/filesystem": "8.1.5",
     "@capacitor/share": "8.0.3",
+    "@capgo/native-purchases": "8.8.1",
     "matter-js": "0.20.0"
   },
   "devDependencies": {

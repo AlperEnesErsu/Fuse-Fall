@@ -28,8 +28,12 @@
             android:grantUriPermissions="true">
             <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths" />
         </provider>
+
+        <!-- AdMob app id, from admobAppId in android/gradle.properties. -->
+        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="${admobAppId}" />
     </application>
 
-    <!-- Permissions: none for the network. The game is fully offline and collects no data (NFR-02, NFR-06). -->
+    <!-- The game plays fully offline. The network (merged in by the ad and billing plugins) is only for
+         optional rewarded ads and scrap packs; see public/privacy.html. -->
     <uses-permission android:name="android.permission.VIBRATE" />
 </manifest>

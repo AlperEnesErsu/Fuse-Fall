@@ -85,6 +85,8 @@ export const tr = {
     failed: 'İşlem tamamlanamadı.',
     double: 'Hurdayı ×2 (reklam)',
     demo: 'Deneme modu: gerçek reklam ve ödeme yok.',
+    pending: 'Ödeme onaylanınca hurda eklenecek.',
+    privacyChoices: 'Reklam gizlilik seçenekleri',
   },
   access: {
     title: 'Erişilebilirlik',

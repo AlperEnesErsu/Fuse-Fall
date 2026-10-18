@@ -3,7 +3,9 @@ import { Capacitor } from '@capacitor/core';
 import { Game } from './app/game';
 import { loadCampaign } from './content/levels';
 import { LocalSaveRepository, type KeyValueStore } from './infrastructure/local-save';
-import { demoOffers, noOffers } from './infrastructure/offers';
+import { combineOffers, demoOffers, noOffers } from './infrastructure/offers';
+import { admobRewarded, rewardedAds, TEST_REWARDED_ID } from './infrastructure/rewarded-ads';
+import { playBilling, playPacks } from './infrastructure/play-billing';
 
 const memoryStore = (): KeyValueStore => {
   const data = new Map<string, string>();
@@ -23,8 +25,18 @@ const canvas = document.querySelector<HTMLCanvasElement>('#game');
 const uiRoot = document.querySelector<HTMLElement>('#ui');
 if (!canvas || !uiRoot) throw new Error('Missing #game or #ui element');
 
-// Real ad and billing adapters plug in here once their accounts exist; development builds try the flow with a stand-in.
-const offers = import.meta.env.DEV ? demoOffers() : noOffers;
+/**
+ * Rewarded ads and scrap packs. The browser dev server uses a stand-in. On a
+ * device, ads use VITE_ADMOB_REWARDED_ID when it is set and Google's test ad
+ * otherwise, except in store builds, which show no ads without a real id.
+ */
+const nativeOffers = () => {
+  const adId: string | undefined = import.meta.env.VITE_ADMOB_REWARDED_ID || undefined;
+  const testAds = import.meta.env.MODE !== 'release' && !adId;
+  const ads = adId || testAds ? rewardedAds(admobRewarded(), adId ?? TEST_REWARDED_ID, testAds) : noOffers;
+  return combineOffers(ads, playPacks(playBilling()));
+};
+const offers = Capacitor.isNativePlatform() ? nativeOffers() : import.meta.env.DEV ? demoOffers() : noOffers;
 
 new Game(canvas, uiRoot, loadCampaign(), new LocalSaveRepository(deviceStore()), (ms) => {
   navigator.vibrate?.(ms);

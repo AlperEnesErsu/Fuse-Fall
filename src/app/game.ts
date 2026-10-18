@@ -2,7 +2,7 @@ import { EventBus, type GameEvents } from '../core/events';
 import type { ChargeKind, LevelDefinition } from '../core/level';
 import type { Vec2 } from '../core/math';
 import { TUNING } from '../core/tuning';
-import type { OfferStore, SaveRepository } from '../core/ports';
+import type { OfferStore, PackPurchase, SaveRepository } from '../core/ports';
 import { ADS, adsToday, payout, rankOf } from '../core/economy';
 import {
   addBoughtScrap,
@@ -142,7 +142,9 @@ export class Game {
     private readonly offers: OfferStore,
   ) {
     this.progress = saves.load();
+    // Asking at launch also lets the ad network show its consent form before anything else.
     void offers.adReady().then((ready) => (this.adsAvailable = ready));
+    void this.settlePurchases();
     this.text = this.applyLanguage();
     const settings = (): Settings => this.progress.settings;
     this.renderer = new Renderer(canvas);
@@ -284,6 +286,7 @@ export class Game {
 
   /** What the offer store has now: rewarded ads (with today's count) and packs. */
   private async loadOffers(): Promise<WorkshopOffers> {
+    void this.settlePurchases();
     const [ready, packs] = await Promise.all([this.offers.adReady(), this.offers.packs()]);
     this.adsAvailable = ready;
     const today = dayOf(new Date());
@@ -317,13 +320,35 @@ export class Game {
     if (!pack) return;
     const bought = await this.offers.buy(id);
     if (!bought.ok) {
-      if (bought.error !== 'cancelled') this.ui.toast(T.offers.failed);
+      if (bought.error === 'pending') this.ui.toast(T.offers.pending);
+      else if (bought.error !== 'cancelled') this.ui.toast(T.offers.failed);
+      // A refusal can mean an earlier payment is still waiting to be credited.
+      await this.settlePurchases();
       return;
     }
-    this.progress = addBoughtScrap(this.progress, pack.scrap);
-    this.saves.save(this.progress);
-    this.ui.toast(T.offers.thanks(pack.scrap));
+    this.creditPack(bought.value);
     this.showWorkshop();
+  }
+
+  /** Credits payments the store confirmed but the game never settled. */
+  private async settlePurchases(): Promise<void> {
+    let credited = false;
+    for (const p of await this.offers.unsettled()) credited = this.creditPack(p) || credited;
+    if (credited && this.ui.isShowing('workshop')) this.showWorkshop();
+  }
+
+  /** Saves the scrap first, then settles with the store: a crash in between credits it on the next launch, once. */
+  private creditPack(p: PackPurchase): boolean {
+    const pack = SCRAP_PACKS.find((k) => k.id === p.packId);
+    if (!pack) return false; // not ours to credit: left unsettled
+    const before = this.progress;
+    this.progress = addBoughtScrap(this.progress, pack.scrap, p.token);
+    if (this.progress !== before) {
+      this.saves.save(this.progress);
+      this.ui.toast(T.offers.thanks(pack.scrap));
+    }
+    void this.offers.settle(p);
+    return this.progress !== before;
   }
 
   /** Progression rules, unless the test switch opens everything that has missions. */
@@ -441,6 +466,7 @@ export class Game {
       },
       () => this.sound.test(),
       () => this.showMenu(),
+      this.offers.privacyChoicesRequired() ? () => void this.offers.showPrivacyChoices() : undefined,
     );
   }
 

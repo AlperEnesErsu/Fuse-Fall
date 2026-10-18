@@ -39,6 +39,8 @@ export interface Progress {
   readonly career: CareerStats;
   /** Rewarded ads watched, by day, for the daily cap. */
   readonly ads: { readonly day: string; readonly count: number };
+  /** Store payment tokens already credited (the latest few), so a payment is never credited twice. */
+  readonly purchases: readonly string[];
   /** One Shot: the best collapse (whole percent) per Free Site structure. */
   readonly oneShot: Readonly<Record<string, number>>;
   readonly settings: Settings;
@@ -84,6 +86,7 @@ export const emptyProgress = (): Progress => ({
   oneShot: {},
   career: NO_CAREER,
   ads: { day: '', count: 0 },
+  purchases: [],
   settings: DEFAULT_SETTINGS,
 });
 
@@ -161,6 +164,9 @@ export const parseProgress = (input: unknown): Result<Progress, ProgressError> =
   };
   const a = isRecord(input.ads) ? input.ads : {};
   const ads = { day: typeof a.day === 'string' && DAY.test(a.day) ? a.day : '', count: count(a.count) };
+  const purchases = Array.isArray(input.purchases)
+    ? input.purchases.filter((t): t is string => typeof t === 'string' && t.length > 0 && t.length <= MAX_TOKEN).slice(-KEPT_PURCHASES)
+    : [];
   const s = isRecord(input.settings) ? input.settings : {};
   return ok({
     version: PROGRESS_VERSION,
@@ -173,6 +179,7 @@ export const parseProgress = (input: unknown): Result<Progress, ProgressError> =
     oneShot,
     career,
     ads,
+    purchases,
     settings: {
       language: s.language === 'tr' || s.language === 'en' || s.language === 'auto' ? s.language : DEFAULT_SETTINGS.language,
       sfxVolume: volume(s.sfxVolume, DEFAULT_SETTINGS.sfxVolume),
@@ -256,11 +263,19 @@ export const rewardAd = (progress: Progress, today: string, scrap: number): Prog
   ads: { day: today, count: adsToday(progress.ads, today) + 1 },
 });
 
-/** A scrap pack bought: spendable scrap, not career earnings. */
-export const addBoughtScrap = (progress: Progress, scrap: number): Progress => ({
-  ...progress,
-  wallet: creditPurchase(progress.wallet, scrap),
-});
+/** Credited payment tokens kept: the store settles a payment long before this many more are made. */
+const KEPT_PURCHASES = 20;
+const MAX_TOKEN = 1024;
+
+/** A scrap pack paid for: spendable scrap, not career earnings. A payment already credited changes nothing. */
+export const addBoughtScrap = (progress: Progress, scrap: number, token: string): Progress =>
+  progress.purchases.includes(token)
+    ? progress
+    : {
+        ...progress,
+        wallet: creditPurchase(progress.wallet, scrap),
+        purchases: [...progress.purchases, token].slice(-KEPT_PURCHASES),
+      };
 
 export const buyItem = (progress: Progress, item: ShopItem): Result<Progress, PurchaseError> => {
   const bought = purchase(progress.wallet, progress.workshop.owned, item);

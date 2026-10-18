@@ -82,6 +82,8 @@ export const en: Strings = {
     failed: 'That did not go through.',
     double: 'Double scrap (ad)',
     demo: 'Demo mode: no real ads or payments.',
+    pending: 'The scrap arrives once the payment clears.',
+    privacyChoices: 'Ad privacy choices',
   },
   access: {
     title: 'Accessibility',

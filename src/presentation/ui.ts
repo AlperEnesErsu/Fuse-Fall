@@ -596,7 +596,13 @@ export class Ui {
     );
   }
 
-  settings(s: Settings, onChange: (patch: Partial<Settings>) => void, onTestSound: () => void, onBack: () => void): void {
+  settings(
+    s: Settings,
+    onChange: (patch: Partial<Settings>) => void,
+    onTestSound: () => void,
+    onBack: () => void,
+    onPrivacyChoices?: () => void,
+  ): void {
     const toggle = (label: string, value: boolean, key: 'screenShake' | 'flashes' | 'haptics' | 'leftHanded' | 'reducedMotion' | 'largeText') => {
       const input = h('input', {
         type: 'checkbox',
@@ -646,6 +652,7 @@ export class Ui {
         toggle(T.access.leftHanded, s.leftHanded, 'leftHanded'),
         toggle(T.access.reducedMotion, s.reducedMotion, 'reducedMotion'),
         toggle(T.access.largeText, s.largeText, 'largeText'),
+        onPrivacyChoices ? this.button(T.offers.privacyChoices, onPrivacyChoices) : undefined,
         this.button(T.back, onBack),
       ),
     );

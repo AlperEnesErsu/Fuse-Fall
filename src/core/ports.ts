@@ -69,7 +69,14 @@ export interface ScrapPack {
   readonly price: string;
 }
 
-export type OfferError = 'unavailable' | 'cancelled' | 'failed';
+/** `pending`: the store took the order but the payment has not cleared yet (cash, bank transfer). */
+export type OfferError = 'unavailable' | 'cancelled' | 'pending' | 'failed';
+
+/** A pack the store has confirmed as paid; `token` names that one payment. */
+export interface PackPurchase {
+  readonly packId: string;
+  readonly token: string;
+}
 
 /**
  * Rewarded ads and scrap packs. The game never talks to an ad network or a
@@ -83,8 +90,15 @@ export interface OfferStore {
   showRewardedAd(): Promise<Result<true, OfferError>>;
   /** Packs on sale; empty when purchases are unavailable. */
   packs(): Promise<readonly ScrapPack[]>;
-  /** Buys a pack; ok once the store has confirmed the payment. */
-  buy(id: string): Promise<Result<true, OfferError>>;
+  /** Buys a pack; ok once the store has confirmed the payment. The game credits it, then settles it. */
+  buy(id: string): Promise<Result<PackPurchase, OfferError>>;
+  /** Paid packs never settled: the app closed before crediting, or a pending payment has since cleared. */
+  unsettled(): Promise<readonly PackPurchase[]>;
+  /** Tells the store a pack was credited, so it can be bought again. */
+  settle(purchase: PackPurchase): Promise<void>;
+  /** Whether the player must be able to revisit their ad privacy choices (from the settings). */
+  privacyChoicesRequired(): boolean;
+  showPrivacyChoices(): Promise<void>;
 }
 
 export interface SaveRepository {

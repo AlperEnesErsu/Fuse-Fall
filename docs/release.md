@@ -51,13 +51,28 @@ npm run store-shots
 
 Orta sınıf bir telefonda, uçak modunda: yatay ve dikey oynanış, oyun ortasında döndürme, çöküş anlarında akıcılık (konfeti + buz en ağır görünüm), titreşim, klip paylaşımı. Emülatörde doğrulananlar: ısınmış çöküşte ~59,5 FPS, MP4 klip paylaşım menüsüne ulaşıyor (Ankara 10: 11,8 sn), dikey düzen ve döndürme.
 
-## 7. Reklam ve hurda paketleri (bağlanınca) (sen)
+## 7. Reklam ve hurda paketleri (sen)
 
-Kod hazır: kurallar `src/core/economy.ts`, paketler `src/content/offers.ts`, port `OfferStore` (`src/core/ports.ts`). Canlıya almak için:
+Kod bağlı: ödüllü reklam `src/infrastructure/rewarded-ads.ts` (AdMob + Google onay ekranı/UMP), paketler `src/infrastructure/play-billing.ts` (Play Billing), seçim `src/main.ts`. Ödeme önce kayda yazılır, sonra Play'de tüketilir; arada uygulama kapanırsa bir sonraki açılışta bir kez eklenir.
 
-- AdMob hesabı ve uygulama/ödüllü reklam birimi kimlikleri; Play Console'da `scrap_small`, `scrap_medium`, `scrap_large` adlı tek seferlik (tüketilebilir) ürünler.
-- Bu kimliklerle gerçek bir `OfferStore` adaptörü (`src/infrastructure/offers.ts` yanında) ve `src/main.ts` içinde onun seçilmesi.
-- **Dikkat:** reklam, uygulamaya internet izni ve reklam kimliği ekler. Gizlilik sayfası ("veri toplamaz, ağ izni yok") ve Play'deki *Veri güvenliği* formu buna göre güncellenmeli; reklamlar kişiselleştirilecekse AB/TR için onay ekranı (UMP) gerekir.
+Hangi sürüm ne gösterir:
+
+| Sürüm | Reklam | Paketler |
+|---|---|---|
+| `npm run dev` (tarayıcı) | sahte sağlayıcı | sahte fiyatlar |
+| Test APK (`npm run build`) | Google'ın **test** reklamı | Play'de ürün varsa |
+| Mağaza (`npm run build:release`) | yalnızca `VITE_ADMOB_REWARDED_ID` verilmişse | Play'de ürün varsa |
+
+Canlıya almak için:
+
+1. **AdMob:** uygulamayı ekle, bir *Ödüllü* reklam birimi aç. Uygulama kimliğini (`~` içerir) `android/gradle.properties` içindeki `admobAppId`'ye, birim kimliğini (`/` içerir) `.env.release` içine `VITE_ADMOB_REWARDED_ID=...` olarak yaz. İkisi de gizli değildir.
+2. **AdMob › Gizlilik ve mesajlaşma:** GDPR mesajını oluştur ve yayınla; yoksa AB'de onay ekranı çıkmaz ve reklam istenmez. Gizlilik politikası adresini gir.
+3. **Play Console › Ürünler › Uygulama içi ürünler:** `scrap_small`, `scrap_medium`, `scrap_large` kimlikleriyle üç ürün aç, fiyatlarını ver, etkinleştir. Fiyatı oyun Play'den okur. Ödemeler cihazda doğrulanır (sunucu yok); hurda yalnızca görünüm ve Serbest Saha ekstrası aldığı için bu bilinçli bir sadelik.
+4. **Satın almayı dene:** Play Console › Lisans testi'ne kendi hesabını ekle, imzalı sürümü *Dahili test*e yükle, Play'den indirip satın al (test kartıyla para çekilmez). Yandan yüklenen APK'da Play ürünleri görünmez.
+5. **Hedef kitle:** Play Console'da hedef yaş grubunu **13+** seç. Çocuklara (13 altı) yönelik seçilirse Aileler politikası, sertifikalı reklam ayarları ve AdMob'da çocuk etiketi gerekir; bu sürüm buna göre ayarlı değil.
+6. Mağaza listesindeki *Reklam içerir* ve *Uygulama içi satın alma* cevaplarını **Evet** yap ve *Veri güvenliği* formunu [store-listing.md](store-listing.md)'deki tabloya göre doldur.
+
+Emülatörde (Play Store imajı, Android 17) doğrulananlar: onay bilgisi alınıyor, Google test reklamı yükleniyor, sonuna kadar izlenince +60 hurda ekleniyor ve günlük sayaç düşüyor, ardından sıradaki reklam kendiliğinden yükleniyor. Oturum açılmamış emülatörde Play Billing yok; paket bölümü hatasız gizleniyor. Gerçek satın alma ve AB onay ekranı bu adımda denenmedi (4. madde ve AdMob mesajı gerekir).
 
 ## 8. Yükleme (sen)
 
