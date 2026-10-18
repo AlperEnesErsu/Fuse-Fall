@@ -2,12 +2,10 @@ import { EventBus, type GameEvents } from '../core/events';
 import type { ChargeKind, LevelDefinition } from '../core/level';
 import type { Vec2 } from '../core/math';
 import { TUNING } from '../core/tuning';
-import type { OfferStore, PackPurchase, SaveRepository } from '../core/ports';
-import { ADS, adsToday, payout, rankOf } from '../core/economy';
+import type { OfferStore, SaveRepository } from '../core/ports';
+import { payout, rankOf } from '../core/economy';
 import {
-  addBoughtScrap,
   buyItem,
-  rewardAd,
   equip,
   earnScrap,
   isLevelUnlocked,
@@ -38,10 +36,10 @@ import { JuiceDirector } from '../presentation/juice';
 import { Renderer } from '../presentation/renderer';
 import { T, language, resolveLanguage, setLanguage } from '../presentation/strings';
 import { Ui, type ContractView, type WorkshopOffers } from '../presentation/ui';
+import { OfferDesk } from './offer-desk';
 import { Coach } from '../presentation/coach';
 import { tutorialFor } from '../content/tutorials';
 import { SANDBOX_TEMPLATES, sandboxLevel, type SandboxVariant } from '../content/sandbox';
-import { SCRAP_PACKS } from '../content/offers';
 import { WORKSHOP, activeLook, isOwned, structureItemId, workshopItem } from '../content/workshop';
 import { setBlockTheme } from '../presentation/materials-art';
 import { FULL_VIEW, focusOf } from '../presentation/camera';
@@ -71,6 +69,11 @@ const CLIP_REPLAY_SPEED = 0.8;
  * and mission without touching the save. Remove the line to play the real progression.
  */
 const UNLOCK_ALL = import.meta.env.VITE_UNLOCK_ALL === '1';
+
+/** Elements that handle the keyboard themselves, so the game's shortcuts leave them alone. */
+const isControl = (target: EventTarget | null): boolean =>
+  target instanceof Element &&
+  target.closest('button, a[href], input, select, textarea, [role="button"], [role="radio"], [contenteditable="true"]') !== null;
 
 type Mode =
   | { readonly kind: 'campaign' }
@@ -111,14 +114,14 @@ export class Game {
   private readonly events = new EventBus<GameEvents>();
   private readonly renderer: Renderer;
   private readonly juice: JuiceDirector;
-  /** Whether the offer store can show rewarded ads (checked at start and when the workshop opens). */
-  private adsAvailable = false;
   /** Jobs missed in a row this session (not cleared), for offering hints; and which hint is next. */
   private readonly failures = new Map<string, number>();
   private hintIndex = 0;
   /** The clip being recorded from a replay, if any. */
   private clip: ClipRecorder | undefined;
   private readonly sound: SoundDirector;
+  /** Rewarded ads and scrap packs. */
+  private readonly desk: OfferDesk;
   private readonly ui: Ui;
   private readonly coach: Coach;
   private readonly loop: FixedStepLoop;
@@ -144,9 +147,20 @@ export class Game {
     private readonly offers: OfferStore,
   ) {
     this.progress = saves.load();
-    // Asking at launch also lets the ad network show its consent form before anything else.
-    void offers.adReady().then((ready) => (this.adsAvailable = ready));
-    void this.settlePurchases();
+    this.desk = new OfferDesk(
+      offers,
+      {
+        get: () => this.progress,
+        set: (p) => {
+          this.progress = p;
+          return this.saves.save(p);
+        },
+      },
+      (n) => this.ui.toast(n.kind === 'thanks' ? T.offers.thanks(n.scrap) : T.offers[n.kind]),
+      () => dayOf(new Date()),
+      import.meta.env.DEV,
+    );
+    void this.desk.settle().then((credited) => credited && this.ui.isShowing('workshop') && this.showWorkshop());
     this.text = this.applyLanguage();
     const settings = (): Settings => this.progress.settings;
     this.renderer = new Renderer(canvas);
@@ -239,7 +253,7 @@ export class Game {
   /** The workshop: spend scrap on blast styles and Free Site structures, and pick the blast style. */
   private showWorkshop(offers?: WorkshopOffers): void {
     this.leaveLevel();
-    if (!offers) void this.loadOffers().then((loaded) => this.ui.isShowing('workshop') && this.showWorkshop(loaded));
+    if (!offers) void this.desk.load().then((loaded) => this.ui.isShowing('workshop') && this.showWorkshop(loaded));
     const { owned } = this.progress.workshop;
     const active = [
       activeLook(owned, this.progress.workshop.blastStyle, 'blast-style'),
@@ -284,8 +298,8 @@ export class Game {
           this.showWorkshop();
         },
         onBack: () => this.showMenu(),
-        onWatchAd: () => void this.watchAd(() => this.showWorkshop()),
-        onBuyPack: (id) => void this.buyPack(id),
+        onWatchAd: () => void this.desk.watchAd().then((ok) => ok && this.showWorkshop()),
+        onBuyPack: (id) => void this.desk.buy(id).then(() => this.ui.isShowing('workshop') && this.showWorkshop()),
       },
       offers,
     );
@@ -295,73 +309,6 @@ export class Game {
   private contractViews(): ContractView[] {
     const week = contractsOf(this.progress.contracts, weekOf(new Date()), totalStars(this.progress));
     return defsOf(week.kinds).map((c) => ({ ...c, count: week.counts[c.kind] ?? 0 }));
-  }
-
-  /** What the offer store has now: rewarded ads (with today's count) and packs. */
-  private async loadOffers(): Promise<WorkshopOffers> {
-    void this.settlePurchases();
-    const [ready, packs] = await Promise.all([this.offers.adReady(), this.offers.packs()]);
-    this.adsAvailable = ready;
-    const today = dayOf(new Date());
-    return {
-      ad: ready ? { reward: ADS.reward, watched: adsToday(this.progress.ads, today), cap: ADS.dailyCap } : undefined,
-      packs,
-      demo: import.meta.env.DEV,
-    };
-  }
-
-  /** A rewarded ad: scrap if it was watched to the end and today's cap allows. `amount` defaults to the workshop reward. */
-  private async watchAd(after: () => void, amount: number = ADS.reward): Promise<void> {
-    const today = dayOf(new Date());
-    if (adsToday(this.progress.ads, today) >= ADS.dailyCap) {
-      this.ui.toast(T.offers.capped);
-      return;
-    }
-    const watched = await this.offers.showRewardedAd();
-    if (!watched.ok) {
-      if (watched.error !== 'cancelled') this.ui.toast(T.offers.failed);
-      return;
-    }
-    this.progress = rewardAd(this.progress, today, amount);
-    this.saves.save(this.progress);
-    this.ui.toast(T.offers.thanks(amount));
-    after();
-  }
-
-  private async buyPack(id: string): Promise<void> {
-    const pack = SCRAP_PACKS.find((p) => p.id === id);
-    if (!pack) return;
-    const bought = await this.offers.buy(id);
-    if (!bought.ok) {
-      if (bought.error === 'pending') this.ui.toast(T.offers.pending);
-      else if (bought.error !== 'cancelled') this.ui.toast(T.offers.failed);
-      // A refusal can mean an earlier payment is still waiting to be credited.
-      await this.settlePurchases();
-      return;
-    }
-    this.creditPack(bought.value);
-    this.showWorkshop();
-  }
-
-  /** Credits payments the store confirmed but the game never settled. */
-  private async settlePurchases(): Promise<void> {
-    let credited = false;
-    for (const p of await this.offers.unsettled()) credited = this.creditPack(p) || credited;
-    if (credited && this.ui.isShowing('workshop')) this.showWorkshop();
-  }
-
-  /** Saves the scrap first, then settles with the store: a crash in between credits it on the next launch, once. */
-  private creditPack(p: PackPurchase): boolean {
-    const pack = SCRAP_PACKS.find((k) => k.id === p.packId);
-    if (!pack) return false; // not ours to credit: left unsettled
-    const before = this.progress;
-    this.progress = addBoughtScrap(this.progress, pack.scrap, p.token);
-    if (this.progress !== before) {
-      this.saves.save(this.progress);
-      this.ui.toast(T.offers.thanks(pack.scrap));
-    }
-    void this.offers.settle(p);
-    return this.progress !== before;
   }
 
   /** Progression rules, unless the test switch opens everything that has missions. */
@@ -868,8 +815,8 @@ export class Game {
           promotedTo: rankAfter > rankBefore ? rankAfter : undefined,
           // A rewarded ad can double what the job paid, while today's ads last.
           onDouble:
-            this.adsAvailable && pay.total > 0 && adsToday(this.progress.ads, today) < ADS.dailyCap
-              ? () => void this.watchAd(() => attempt.report?.(), pay.total)
+            this.desk.canDouble(pay.total)
+              ? () => void this.desk.watchAd(pay.total).then((ok) => ok && attempt.report?.())
               : undefined,
         },
         {
@@ -1047,12 +994,15 @@ export class Game {
       this.refreshHud();
     });
     window.addEventListener('keydown', (e) => {
-      if (!this.session) return;
+      const s = this.session;
+      // A focused control keeps its own keys: Enter on a report button presses that button.
+      if (!s || isControl(e.target)) return;
       if (e.key === ' ' || e.key === 'Enter') {
+        if (s.phase !== 'placing' && s.phase !== 'running') return;
         e.preventDefault();
-        if (this.session.phase === 'running') this.detonate();
+        if (s.phase === 'running') this.detonate();
         else this.fire();
-      } else if (e.key === 'r' || e.key === 'R') this.startLevel(this.session.level.id);
+      } else if (e.key === 'r' || e.key === 'R') this.startLevel(s.level.id);
       else if (e.key === 'Escape') this.showLevels();
     });
   }

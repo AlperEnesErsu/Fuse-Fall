@@ -103,6 +103,7 @@ export const tr = {
     failed: 'İşlem tamamlanamadı.',
     double: 'Hurdayı ×2 (reklam)',
     demo: 'Deneme modu: gerçek reklam ve ödeme yok.',
+    unsaved: 'Kayıt yazılamadı. Hurda bu oturumda sende; satın alma bir sonraki açılışta yeniden işlenecek.',
     pending: 'Ödeme onaylanınca hurda eklenecek.',
     privacyChoices: 'Reklam gizlilik seçenekleri',
   },

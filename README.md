@@ -4,13 +4,16 @@
 
 ## Çalıştırma
 
+Gerekenler: Node.js 22+, görev üretimi için Python 3 (`npm run levels`; 3.14 ile denendi), Android derlemesi için JDK 21.
+
 ```bash
 npm ci
 npm run dev        # geliştirme sunucusu
 npm run build      # tip kontrolü + üretim derlemesi (dist/, service worker dahil)
 npm run preview    # derlemeyi yerelde sun (çevrimdışı mod sadece burada çalışır)
 npm run check      # tsc + eslint + testler
-npm run coverage   # core + infrastructure kapsamı (eşik %80)
+npm run coverage   # core, infrastructure ve satın alma masası kapsamı (eşik %80)
+npm run levels     # tools/genlevels.py ile görev JSON'larını yeniden üret (Python)
 ```
 
 ## Android

@@ -1,6 +1,6 @@
 # Gereksinimler — Fuse & Fall
 
-> Tarih: 2026-10-16 · Durum: Taslak v0.1 · Öncelik: **M** = Must (MVP), **S** = Should, **C** = Could
+> Başlangıç: 2026-10-16 · Son güncelleme: 2026-10-18 · Durum: v0.9 (bölüm başlıklarındaki sürümler, eklendikleri sırayı gösterir) · Öncelik: **M** = Must (MVP), **S** = Should, **C** = Could
 
 ## 1. Ürün vizyonu
 
@@ -35,7 +35,7 @@ Yapıyı incele → Patlayıcı yerleştir → Ateşle → Yıkımı izle → Pu
 | FR-06 | Patlayıcı variller ateşlenmeden zincirleme patlama başlatabilir. | S |
 | FR-07 | Seviye hedefleri: (a) hedef blokları zemine indir, (b) yapının %X'ini yık, (c) korunan blokları sağlam bırak. | M (a), S (b, c) |
 | FR-08 | Fizik durulduğunda (tüm cisimler uyuduğunda) veya zaman aşımında (8 sn) seviye değerlendirilir. | M |
-| FR-09 | Yıldız puanlama: 1 = hedef tamamlandı, 2 = patlayıcı limitinin altında kalındı, 3 = bonus hedef (ör. yıkım oranı). | M |
+| FR-09 | Yıldız puanlama: tam başarı 1 yıldız, ardından üç oyun tarzından (*Cerrahi*: par içinde, *Yıkım*: bonus yıkım oranı, *Domino*: patlamanın dokunmadığı bir hedefi devirmek) her biri +1, en fazla 3. Yani herhangi iki tarz 3 yıldız verir; kısmi zafer her zaman 1 yıldızdır (ayrıntı: FR-60, FR-73). Rapor hangi tarzların tuttuğunu tek tek gösterir. | M |
 | FR-10 | Tek dokunuşla yeniden deneme, 300 ms içinde. | M |
 
 ### İlerleme ve içerik

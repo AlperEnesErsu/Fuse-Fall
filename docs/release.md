@@ -14,7 +14,13 @@ keytool -genkeypair -v -keystore fuse-and-fall.jks -alias fuse-and-fall -keyalg 
 
 ## 2. Sürüm numarası
 
-`android/app/build.gradle`: her yüklemede `versionCode` +1; `versionName` görünen sürüm (1.0.0). `package.json` sürümü de aynı tutulur.
+Tek kaynak `package.json` sürümüdür; `android/app/build.gradle` onu okur. `1.4.2`, `versionName 1.4.2` ve `versionCode 10402` olur. Her mağaza yüklemesinden önce:
+
+```bash
+npm version patch --no-git-tag-version
+```
+
+(Yeni özelliklerde `minor`.) Ara ve yama sayıları en fazla 99 olabilir; biçim `MAJOR.MINOR.PATCH` değilse derleme durur.
 
 ## 3. Release derlemesi
 
@@ -31,6 +37,11 @@ cd android && ./gradlew bundleRelease
 ```
 
 Çıktı: `android/app/build/outputs/bundle/release/app-release.aab`. `build:release`, `.env.release` sayesinde test anahtarını (`VITE_UNLOCK_ALL`) her zaman kapatır; `.env.local` dursa bile mağaza sürümünde ilerleme gerçektir. Test APK'sı için normal `npm run build` kullanılır.
+
+İki kilit yanlış paketi engeller:
+
+- `build:release`, `VITE_UNLOCK_ALL=1` görürse (ör. ortam değişkeni olarak) derlemeyi durdurur.
+- Her web derlemesi `build-info.json` yazar. `bundleRelease`/`assembleRelease`, uygulamadaki web derlemesi `release` modunda değilse durur. Yani `npm run build` ile hazırlanmış (tüm şehirler açık, test reklamlı) bir paket mağazaya çıkamaz.
 
 ## 4. Gizlilik politikası adresi (sen)
 

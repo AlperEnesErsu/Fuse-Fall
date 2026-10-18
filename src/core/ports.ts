@@ -103,5 +103,6 @@ export interface OfferStore {
 
 export interface SaveRepository {
   load(): Progress;
-  save(progress: Progress): void;
+  /** Stores progress; true once it is written and reads back the same. */
+  save(progress: Progress): boolean;
 }

@@ -19,13 +19,17 @@ export class LocalSaveRepository implements SaveRepository {
     return this.read(PRIMARY) ?? this.read(BACKUP) ?? emptyProgress();
   }
 
-  save(progress: Progress): void {
+  save(progress: Progress): boolean {
     try {
       const current = this.store.getItem(PRIMARY);
       if (current !== null && this.read(PRIMARY)) this.store.setItem(BACKUP, current);
-      this.store.setItem(PRIMARY, JSON.stringify(progress));
+      const json = JSON.stringify(progress);
+      this.store.setItem(PRIMARY, json);
+      // Some stores drop writes without throwing; only a read-back proves the save holds.
+      return this.store.getItem(PRIMARY) === json;
     } catch {
       // Unavailable storage means progress lasts for this session only.
+      return false;
     }
   }
 

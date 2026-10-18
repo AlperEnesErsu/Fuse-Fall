@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { readdirSync } from 'node:fs';
-import type { Plugin } from 'vite';
+import { loadEnv, type Plugin } from 'vite';
 import { defineConfig } from 'vitest/config';
 
 /**
@@ -49,16 +49,40 @@ self.addEventListener('fetch', (event) => {
   },
 });
 
-export default defineConfig({
+/**
+ * Store builds must follow the real progression: a release build with the
+ * test switch on fails here. Every build records what it is in
+ * build-info.json, which the Android release build checks in turn.
+ */
+const buildInfo = (mode: string): Plugin => {
+  const env = loadEnv(mode, process.cwd(), 'VITE_');
+  const unlockAll = env.VITE_UNLOCK_ALL === '1';
+  return {
+    name: 'build-info',
+    apply: 'build',
+    buildStart() {
+      if (mode === 'release' && unlockAll) this.error('VITE_UNLOCK_ALL=1 in a release build: every city would ship unlocked. Remove it from .env.release.');
+    },
+    generateBundle() {
+      this.emitFile({
+        type: 'asset',
+        fileName: 'build-info.json',
+        source: JSON.stringify({ mode, unlockAll, realAds: Boolean(env.VITE_ADMOB_REWARDED_ID) }),
+      });
+    },
+  };
+};
+
+export default defineConfig(({ mode }) => ({
   base: './',
   build: { target: 'es2022' },
-  plugins: [offlineServiceWorker()],
+  plugins: [buildInfo(mode), offlineServiceWorker()],
   test: {
     environment: 'node',
     coverage: {
-      include: ['src/core/**', 'src/infrastructure/**'],
+      include: ['src/core/**', 'src/infrastructure/**', 'src/app/offer-desk.ts'],
       // NFR-09: game rules stay at or above 80% coverage.
       thresholds: { lines: 80, statements: 80, functions: 80, branches: 75 },
     },
   },
-});
+}));

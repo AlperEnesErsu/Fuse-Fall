@@ -100,6 +100,7 @@ export const en: Strings = {
     failed: 'That did not go through.',
     double: 'Double scrap (ad)',
     demo: 'Demo mode: no real ads or payments.',
+    unsaved: 'The save could not be written. The scrap is yours this session; the purchase is processed again next launch.',
     pending: 'The scrap arrives once the payment clears.',
     privacyChoices: 'Ad privacy choices',
   },

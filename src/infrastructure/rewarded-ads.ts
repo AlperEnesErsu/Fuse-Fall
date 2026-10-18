@@ -7,7 +7,7 @@ import type { AdSource } from './offers';
 export const TEST_REWARDED_ID = 'ca-app-pub-3940256099942544/5224354917';
 
 /** How long a workshop visit waits for an ad to load before showing the offers without it. */
-const LOAD_WAIT_MS = 6000;
+const LOAD_WAIT_MS = 3000;
 
 export type ShowOutcome = 'rewarded' | 'dismissed' | 'failed';
 
