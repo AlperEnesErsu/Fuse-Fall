@@ -109,6 +109,18 @@ describe('saved economy', () => {
     expect(parsed.ok && parsed.value.workshop).toEqual({ owned: [], blastStyle: 'classic', blockTheme: 'theme:standard' });
   });
 
+  it('treats levels won in a save from before the clear records as already cleared and played', () => {
+    const old = { ...emptyProgress(), stars: { 'w1-01': 3, 'w1-02': 0 }, best: { 'w1-03': 500 } } as Record<string, unknown>;
+    delete old.cleared;
+    delete old.played;
+    const parsed = parseProgress(JSON.parse(JSON.stringify(old)));
+    expect(parsed.ok && parsed.value.cleared).toEqual({ 'w1-01': true });
+    expect(parsed.ok && parsed.value.played).toEqual({ 'w1-01': true, 'w1-02': true, 'w1-03': true });
+    // A save that has the records keeps them as they are.
+    const current = parseProgress(JSON.parse(JSON.stringify({ ...emptyProgress(), stars: { 'w1-01': 1 } })));
+    expect(current.ok && current.value.cleared).toEqual({});
+  });
+
   it('round-trips the wallet and workshop and drops malformed values', () => {
     const saved = { ...emptyProgress(), wallet: { balance: 120, earned: 900 }, workshop: { owned: ['neon', 7], blastStyle: 'neon', blockTheme: 'theme:ice' } };
     const parsed = parseProgress(JSON.parse(JSON.stringify(saved)));

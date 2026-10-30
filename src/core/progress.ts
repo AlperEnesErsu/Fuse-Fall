@@ -211,8 +211,10 @@ export const parseProgress = (input: unknown): Result<Progress, ProgressError> =
     version: PROGRESS_VERSION,
     stars,
     best,
-    cleared: flags(input.cleared),
-    played: flags(input.played),
+    // Saves from before these records: every level with a star counts as cleared and played,
+    // so an old win does not pay its first-clear bonus a second time.
+    cleared: isRecord(input.cleared) ? flags(input.cleared) : Object.fromEntries(Object.entries(stars).filter(([, s]) => s > 0).map(([id]) => [id, true as const])),
+    played: isRecord(input.played) ? flags(input.played) : Object.fromEntries([...Object.keys(stars), ...Object.keys(best)].map((id) => [id, true as const])),
     achievements,
     daily,
     wallet,
