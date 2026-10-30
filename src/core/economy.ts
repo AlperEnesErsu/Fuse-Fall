@@ -23,17 +23,21 @@ export const PAYOUT = {
   perStyle: 20,
   /** The first time a job is won. */
   firstClear: 60,
-  /** A job already cleared pays this share: worth replaying for stars, not for farming. */
+  /** A replay that raises the job's stars pays this share; one that raises nothing pays nothing. */
   repeat: 0.5,
-  /** A failed job still pays for the salvage, at this share. */
+  /** A failed job pays for the salvage at this share, on the first attempt only. */
   failed: 0.25,
   /** Daily jobs pay this many times over. */
   daily: 2,
 } as const;
 
 export interface PayoutContext {
-  /** The job had never been won before this attempt. */
+  /** The job had never been won in full before this attempt. */
   readonly firstClear: boolean;
+  /** This win raised the job's stars (or is a daily's first win): replays pay only for this. */
+  readonly improved: boolean;
+  /** The job had never been attempted before: only that first failure pays its salvage. */
+  readonly firstAttempt: boolean;
   readonly daily: boolean;
 }
 
@@ -52,9 +56,21 @@ export const salvageOf = (demolished: LevelResult['demolished']): number => {
   return sum;
 };
 
+/**
+ * What a job pays. A replay that raises no stars pays nothing, so the same
+ * level cannot be farmed; a failure pays its salvage only on the first attempt.
+ */
 export const payout = (result: LevelResult, context: PayoutContext): Payout => {
   const raw = salvageOf(result.demolished);
-  const share = !result.success ? PAYOUT.failed : context.firstClear ? 1 : PAYOUT.repeat;
+  const share = result.success
+    ? context.firstClear
+      ? 1
+      : context.improved
+        ? PAYOUT.repeat
+        : 0
+    : context.firstAttempt
+      ? PAYOUT.failed
+      : 0;
   const multiplier = context.daily ? PAYOUT.daily : 1;
   const styleCount = Number(result.styles.surgical) + Number(result.styles.demolition) + Number(result.styles.domino);
   const salvage = Math.round(raw * share * multiplier);

@@ -7,6 +7,7 @@ import type { Vec2 } from '../core/math';
 import {
   currentStreak,
   earnScrap,
+  recordCampaignRun,
   recordCareer,
   recordContracts,
   recordDailyWin,
@@ -108,9 +109,14 @@ export const settleJob = (
   const today = dayOf(now);
   const daily = mode.kind === 'daily';
   const previousBest = progress.best[level.id] ?? 0;
-  // The company is paid for what came down; the first win of a job (or of the day's daily) pays in full.
-  const firstClear = mode.kind === 'daily' ? progress.daily.lastWon !== mode.day : (progress.stars[level.id] ?? 0) === 0;
-  const pay = payout(result, { firstClear, daily });
+  // The company is paid for what came down; the first full win of a job (or of the day's daily) pays in full.
+  const firstClear = daily ? progress.daily.lastWon !== mode.day : !progress.cleared[level.id];
+  // A replay pays only when it raises the job's stars, so the same job cannot be farmed.
+  const improved = daily ? firstClear : result.stars > (progress.stars[level.id] ?? 0);
+  const firstAttempt = daily ? firstClear : !progress.played[level.id];
+  // Only fresh results move the contracts: a replay that gains nothing is not new work.
+  const counts = daily ? firstClear : firstClear || improved;
+  const pay = payout(result, { firstClear, improved, firstAttempt, daily });
   const rankBefore = rankOf(progress.wallet.earned).index;
   let p = recordCareer(progress, {
     cleared: result.cleared,
@@ -125,7 +131,7 @@ export const settleJob = (
     p = recordScore(p, level.id, result.score);
     if (result.success) p = recordDailyWin(p, mode.day);
   } else {
-    p = recordScore(recordStars(p, level.id, result.stars), level.id, result.score);
+    p = recordCampaignRun(recordScore(recordStars(p, level.id, result.stars), level.id, result.score), level.id, result.cleared);
   }
   const stats: AttemptStats = {
     ...attempt.stats,
@@ -138,6 +144,7 @@ export const settleJob = (
     underPar: result.underPar,
     // A daily counts once a day: its first win, not replays of it.
     daily: daily && firstClear,
+    counts,
     barrels: attempt.stats.barrelsBlown,
     cars: attempt.stats.carsWrecked,
     implosions: stats.implosions,

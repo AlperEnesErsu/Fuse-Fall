@@ -2,8 +2,9 @@ import { hashString } from './math';
 
 /**
  * Weekly contracts: three goals a week, the same for everyone that week and
- * drawn offline from the week's number. Finishing one pays scrap. Only
- * campaign and daily jobs count; the Free Site and replays do not.
+ * drawn offline from the week's number. Finishing one pays scrap. Only fresh
+ * results count (a first full win, a stars gain, a daily's first win), so
+ * replaying a finished job cannot fill a contract. The Free Site never counts.
  */
 
 export const CONTRACT_KINDS = ['clear', 'three-stars', 'surgical', 'daily', 'barrels', 'cars', 'implosion', 'domino'] as const;
@@ -58,6 +59,8 @@ export const weeklyContracts = (week: string, stars: number): ContractDef[] => {
 
 /** What a finished job did, for the contracts. */
 export interface JobFacts {
+  /** A fresh result: a first full win, or one that raised the job's stars. Replays that gain nothing do not count. */
+  readonly counts: boolean;
   readonly cleared: boolean;
   readonly stars: number;
   readonly underPar: boolean;
@@ -124,7 +127,7 @@ export const advanceContracts = (
   for (const c of defsOf(current.kinds)) {
     const before = counts[c.kind] ?? 0;
     if (before >= c.goal) continue;
-    const after = Math.min(c.goal, before + contribution(c.kind, job));
+    const after = Math.min(c.goal, before + (job.counts ? contribution(c.kind, job) : 0));
     counts[c.kind] = after;
     if (after >= c.goal) finished.push(c);
   }

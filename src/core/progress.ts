@@ -39,6 +39,10 @@ export interface Progress {
   readonly stars: Readonly<Record<string, Stars>>;
   /** Best score per level. Added after v0.2; older saves simply start empty. */
   readonly best: Readonly<Record<string, number>>;
+  /** Campaign levels won in full: only the first full win pays the clear bonus. */
+  readonly cleared: Readonly<Record<string, true>>;
+  /** Campaign levels attempted at least once: only the first failure pays its salvage. */
+  readonly played: Readonly<Record<string, true>>;
   /** Unlocked achievement ids. */
   readonly achievements: readonly string[];
   /** Daily mission streak: the last day (YYYY-MM-DD) a daily was won, and how many days in a row. */
@@ -96,6 +100,8 @@ export const emptyProgress = (): Progress => ({
   version: PROGRESS_VERSION,
   stars: {},
   best: {},
+  cleared: {},
+  played: {},
   achievements: [],
   daily: { lastWon: undefined, streak: 0 },
   wallet: { balance: 0, earned: 0 },
@@ -148,6 +154,11 @@ export const parseProgress = (input: unknown): Result<Progress, ProgressError> =
     }
   }
   // Fields added after the first release are optional: older saves start them empty.
+  const flags = (v: unknown): Record<string, true> => {
+    const out: Record<string, true> = {};
+    if (isRecord(v)) for (const [id, on] of Object.entries(v)) if (on === true) out[id] = true;
+    return out;
+  };
   const achievements = Array.isArray(input.achievements)
     ? input.achievements.filter((a): a is string => typeof a === 'string')
     : [];
@@ -200,6 +211,8 @@ export const parseProgress = (input: unknown): Result<Progress, ProgressError> =
     version: PROGRESS_VERSION,
     stars,
     best,
+    cleared: flags(input.cleared),
+    played: flags(input.played),
     achievements,
     daily,
     wallet,
@@ -232,6 +245,13 @@ export const recordStars = (progress: Progress, levelId: string, stars: Stars): 
   if (stars <= previous) return progress;
   return { ...progress, stars: { ...progress.stars, [levelId]: stars } };
 };
+
+/** Records a campaign run: attempted, and won in full when it was cleared. */
+export const recordCampaignRun = (progress: Progress, levelId: string, cleared: boolean): Progress => ({
+  ...progress,
+  played: { ...progress.played, [levelId]: true },
+  cleared: cleared ? { ...progress.cleared, [levelId]: true } : progress.cleared,
+});
 
 /** Keeps the highest score; never lowers it. */
 export const recordScore = (progress: Progress, levelId: string, score: number): Progress => {
