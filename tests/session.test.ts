@@ -476,6 +476,29 @@ describe('protected trains', () => {
   });
 });
 
+describe('protected parked vehicles', () => {
+  // A third party's car parked by the site: it never drives, so a stopped engine is not damage.
+  const parked = { x: 860, y: 470, w: 60, h: 20, from: 860, to: 860, speed: 0, target: false, mode: 'patrol', protected: true, style: 'car' } as const;
+
+  it('is not counted as damaged just for standing still', () => {
+    const { session, run } = setup({ cars: [parked] });
+    session.placeCharge({ x: 100, y: 450 });
+    session.fire();
+    run(TUNING.settle.timeout);
+    expect(session.result).toMatchObject({ protectedTotal: 1, protectedDamaged: 0 });
+  });
+
+  it('voids the contract when it is pushed out of its spot', () => {
+    const { session, physics, run } = setup({ cars: [parked] });
+    session.placeCharge({ x: 100, y: 450 });
+    session.fire();
+    run(1 / 60);
+    physics.setPose('car-3', { x: 860 + TUNING.protection.displacement + 1, y: 470 }, { x: 0, y: 0 });
+    run(TUNING.settle.timeout);
+    expect(session.result?.failure).toBe('collateral-damage');
+  });
+});
+
 describe('blast contact', () => {
   const beam = { kind: 'rect', w: 220, h: 30 } as const;
   it('uses the real outline, so the end of a long body counts', () => {

@@ -890,9 +890,11 @@ export class LevelSession {
       const s = this.physics.state(e.id);
       if (!s) continue;
       // A moving vehicle travels by design: judge it by leaving its track, tilting, stalling or damage.
-      const moved = e.driver
-        ? Math.abs(s.position.y - e.driver.def.y) >= p.displacement || !e.driver.engine
-        : distance(s.position, e.origin.position) >= p.displacement;
+      // A parked one (no speed) never had a running engine: judge it like a building, by being pushed.
+      const moved =
+        e.driver && e.driver.def.speed > 0
+          ? Math.abs(s.position.y - e.driver.def.y) >= p.displacement || !e.driver.engine
+          : distance(s.position, e.origin.position) >= p.displacement;
       if (
         moved ||
         Math.abs(s.angle - e.origin.angle) >= p.rotation ||
