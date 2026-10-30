@@ -10,6 +10,7 @@ import {
   recordCampaignRun,
   recordCareer,
   recordContracts,
+  recordDailyPlayed,
   recordDailyWin,
   recordOneShot,
   recordScore,
@@ -113,7 +114,7 @@ export const settleJob = (
   const firstClear = daily ? progress.daily.lastWon !== mode.day : !progress.cleared[level.id];
   // A replay pays only when it raises the job's stars, so the same job cannot be farmed.
   const improved = daily ? firstClear : result.stars > (progress.stars[level.id] ?? 0);
-  const firstAttempt = daily ? firstClear : !progress.played[level.id];
+  const firstAttempt = daily ? progress.daily.lastPlayed !== mode.day : !progress.played[level.id];
   // Only fresh results move the contracts: a replay that gains nothing is not new work.
   const counts = daily ? firstClear : firstClear || improved;
   const pay = payout(result, { firstClear, improved, firstAttempt, daily });
@@ -128,7 +129,7 @@ export const settleJob = (
   p = earnScrap(p, pay.total);
   const rankAfter = rankOf(p.wallet.earned).index;
   if (mode.kind === 'daily') {
-    p = recordScore(p, level.id, result.score);
+    p = recordDailyPlayed(recordScore(p, level.id, result.score), mode.day);
     if (result.cleared) p = recordDailyWin(p, mode.day);
   } else {
     p = recordCampaignRun(recordScore(recordStars(p, level.id, result.stars), level.id, result.score), level.id, result.cleared);
