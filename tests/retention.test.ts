@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { ACHIEVEMENTS, FOREMAN_RANK, newAchievements } from '../src/core/achievements';
 import { RANK_THRESHOLDS } from '../src/core/economy';
-import { dailyChallenge, dayOf } from '../src/core/daily';
+import { dailyChallenge, dailyPool, dayOf } from '../src/core/daily';
+import { difficultyOf } from '../src/core/difficulty';
 import {
   currentStreak,
   earnScrap,
@@ -18,22 +19,31 @@ import { loadCampaign } from '../src/content/levels';
 const campaign = loadCampaign();
 
 describe('daily mission', () => {
-  it('is the same mission all day, and drawn only from open cities', () => {
-    const a = dailyChallenge(campaign, emptyProgress(), '2026-10-17');
-    const b = dailyChallenge(campaign, emptyProgress(), '2026-10-17');
+  it('is the same mission for everyone all day: it depends on the date alone', () => {
+    const a = dailyChallenge(campaign, '2026-10-17');
+    const b = dailyChallenge(campaign, '2026-10-17');
     expect(a?.base.id).toBe(b?.base.id);
-    expect(a?.base.world).toBe(1); // only Ankara is open on a fresh save
+    // No progress goes in, so opening a city mid-day cannot change it.
+    expect(dailyChallenge.length).toBe(2);
+  });
+
+  it('is drawn from every easy and medium job, across the cities', () => {
+    const pool = dailyPool(campaign);
+    expect(pool.every((l) => ['easy', 'medium'].includes(difficultyOf(l)))).toBe(true);
+    expect(new Set(pool.map((l) => l.world)).size).toBe(campaign.worlds.length);
+    const days = Array.from({ length: 120 }, (_, i) => dayOf(new Date(2026, 0, 1 + i)));
+    expect(new Set(days.map((day) => dailyChallenge(campaign, day)?.base.world)).size).toBeGreaterThan(3);
   });
 
   it('allows exactly par charges and has its own id', () => {
-    const d = dailyChallenge(campaign, emptyProgress(), '2026-10-18');
+    const d = dailyChallenge(campaign, '2026-10-18');
     expect(d?.level.id).toBe('daily-2026-10-18');
     expect(d?.level.charges.max).toBe(d?.base.charges.par);
   });
 
   it('varies from day to day', () => {
     const days = Array.from({ length: 14 }, (_, i) => `2026-11-${String(i + 1).padStart(2, '0')}`);
-    const ids = new Set(days.map((day) => dailyChallenge(campaign, emptyProgress(), day)?.base.id));
+    const ids = new Set(days.map((day) => dailyChallenge(campaign, day)?.base.id));
     expect(ids.size).toBeGreaterThan(3);
   });
 

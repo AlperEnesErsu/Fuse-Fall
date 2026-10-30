@@ -82,7 +82,7 @@ export class ScreenFlow implements Navigator {
     const progress = ledger.get();
     const text = this.d.text();
     const today = dayOf(this.d.now());
-    const daily = dailyChallenge(campaign, progress, today);
+    const daily = dailyChallenge(campaign, today);
     const next = access.nextMission();
     const nextWorld = next && campaign.worlds.find((w) => w.world === next.world);
     const contracts = contractViews(progress, this.d.now());
@@ -305,7 +305,7 @@ export class ScreenFlow implements Navigator {
 
   private startDaily(): void {
     const today = dayOf(this.d.now());
-    const daily = dailyChallenge(this.d.campaign, this.d.ledger.get(), today);
+    const daily = dailyChallenge(this.d.campaign, today);
     if (daily) this.d.play.play(daily.level, { kind: 'daily', day: today, baseId: daily.base.id });
   }
 }
