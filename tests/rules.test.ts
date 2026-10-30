@@ -216,6 +216,23 @@ describe('local save', () => {
     expect(repo.load().stars.a).toBe(1);
   });
 
+  it('sets an unreadable save aside instead of overwriting it', () => {
+    const store = memory();
+    // Written by a newer version of the game, say, after a downgrade: neither copy can be read.
+    const newer = JSON.stringify({ ...recordStars(emptyProgress(), 'a', 3), version: 2 });
+    store.data.set('fuse-and-fall/progress', newer);
+    store.data.set('fuse-and-fall/progress.bak', newer);
+    const repo = new LocalSaveRepository(store);
+    expect(repo.load()).toEqual(emptyProgress());
+    repo.save(recordStars(emptyProgress(), 'b', 1));
+    expect(store.data.get('fuse-and-fall/progress.unreadable')).toBe(newer);
+    // The first unreadable save is the one kept; later saves do not replace it.
+    store.data.set('fuse-and-fall/progress', '{broken');
+    repo.save(emptyProgress());
+    expect(store.data.get('fuse-and-fall/progress.unreadable')).toBe(newer);
+    expect(repo.load()).toEqual(emptyProgress());
+  });
+
   it('survives storage that throws', () => {
     const repo = new LocalSaveRepository({
       getItem: () => {
