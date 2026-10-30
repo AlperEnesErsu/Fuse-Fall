@@ -213,7 +213,7 @@ export class PlayController implements Launcher {
     ui.setChargeKind(this.chargeKind);
     this.refreshHud();
     // Anything new in this job gets its card first; the coaching starts once the cards are read.
-    const fresh = mode.kind === 'campaign' ? newFeatures(level, progress.seenFeatures) : [];
+    const fresh = mode.kind === 'campaign' || mode.kind === 'daily' ? newFeatures(level, progress.seenFeatures) : [];
     if (fresh.length > 0) {
       this.d.ledger.set(markFeaturesSeen(progress, fresh));
       this.showFeatureCards(fresh, true, () => this.begin(level, mode, base.id));
