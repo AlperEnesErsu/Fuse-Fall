@@ -46,7 +46,12 @@ export interface Progress {
   /** Unlocked achievement ids. */
   readonly achievements: readonly string[];
   /** Daily mission streak: the last day (YYYY-MM-DD) a daily was won, and how many days in a row. */
-  readonly daily: { readonly lastWon: string | undefined; readonly streak: number };
+  readonly daily: {
+    readonly lastWon: string | undefined;
+    readonly streak: number;
+    /** The last day a daily was attempted: only that day's first failure pays its salvage. */
+    readonly lastPlayed: string | undefined;
+  };
   /** Scrap: spendable balance and lifetime earnings (the career rank). */
   readonly wallet: Wallet;
   /** Workshop items bought, and the blast style in use. */
@@ -103,7 +108,7 @@ export const emptyProgress = (): Progress => ({
   cleared: {},
   played: {},
   achievements: [],
-  daily: { lastWon: undefined, streak: 0 },
+  daily: { lastWon: undefined, streak: 0, lastPlayed: undefined },
   wallet: { balance: 0, earned: 0 },
   workshop: { owned: [], blastStyle: DEFAULT_BLAST_STYLE, blockTheme: DEFAULT_BLOCK_THEME },
   oneShot: {},
@@ -166,6 +171,7 @@ export const parseProgress = (input: unknown): Result<Progress, ProgressError> =
   const daily = {
     lastWon: typeof d.lastWon === 'string' && DAY.test(d.lastWon) ? d.lastWon : undefined,
     streak: typeof d.streak === 'number' && Number.isInteger(d.streak) && d.streak >= 0 ? d.streak : 0,
+    lastPlayed: typeof d.lastPlayed === 'string' && DAY.test(d.lastPlayed) ? d.lastPlayed : undefined,
   };
   const w = isRecord(input.wallet) ? input.wallet : {};
   const wallet = { balance: count(w.balance), earned: count(w.earned) };
@@ -279,8 +285,12 @@ export const previousDay = (day: string): string => {
 export const recordDailyWin = (progress: Progress, day: string): Progress => {
   const { lastWon, streak } = progress.daily;
   if (lastWon === day) return progress;
-  return { ...progress, daily: { lastWon: day, streak: lastWon === previousDay(day) ? streak + 1 : 1 } };
+  return { ...progress, daily: { ...progress.daily, lastWon: day, streak: lastWon === previousDay(day) ? streak + 1 : 1 } };
 };
+
+/** Records that the day's daily was attempted. */
+export const recordDailyPlayed = (progress: Progress, day: string): Progress =>
+  progress.daily.lastPlayed === day ? progress : { ...progress, daily: { ...progress.daily, lastPlayed: day } };
 
 /** A streak only counts while it is unbroken: yesterday or today must have been won. */
 export const currentStreak = (progress: Progress, today: string): number => {

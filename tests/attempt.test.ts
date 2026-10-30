@@ -95,6 +95,19 @@ describe('settling a campaign job', () => {
     expect(again.payout.total).toBe(0);
     expect(again.progress.contracts.counts).toEqual(once.progress.contracts.counts);
   });
+
+  it('pays a failed daily its salvage once a day, and still pays the first win of the day in full', () => {
+    const attempt = newAttempt(first, { kind: 'daily', day: '2026-10-18', baseId: first.id });
+    const failed = settleJob(emptyProgress(), campaign, attempt, lost, NOW);
+    expect(failed.payout.salvage).toBeGreaterThan(0);
+    const failedAgain = settleJob(failed.progress, campaign, attempt, lost, NOW);
+    expect(failedAgain.payout.total).toBe(0);
+    const won1 = settleJob(failedAgain.progress, campaign, attempt, won, NOW);
+    expect(won1.payout).toEqual(payout(won, { firstClear: true, improved: true, firstAttempt: false, daily: true }));
+    // The next day's daily is a new attempt.
+    const tomorrow = newAttempt(first, { kind: 'daily', day: '2026-10-19', baseId: first.id });
+    expect(settleJob(won1.progress, campaign, tomorrow, lost, NOW).payout.salvage).toBeGreaterThan(0);
+  });
 });
 
 describe('One Shot record', () => {
