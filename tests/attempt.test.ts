@@ -59,14 +59,17 @@ describe('settling a campaign job', () => {
 
   it('pays a replay that raises the stars, and does not pay the clear bonus twice', () => {
     const attempt = newAttempt(first, { kind: 'campaign' });
-    const partial = scoreLevel({ ...outcome, targetsDown: 0 }, { par: 1, bonusCollapse: 0.5 });
-    const afterPartial = settleJob(emptyProgress(), campaign, attempt, partial, NOW);
-    // The first full win after a partial one is still the first clear: the clear bonus is not lost.
-    const cleared = settleJob(afterPartial.progress, campaign, attempt, won, NOW);
+    // The first win after a failure is still the first clear.
+    const failed = settleJob(emptyProgress(), campaign, attempt, lost, NOW);
+    const oneStar = scoreLevel({ ...outcome, chargesUsed: 2, blocksCollapsed: 1 }, { par: 1, bonusCollapse: 0.5 });
+    expect(oneStar.stars).toBe(1);
+    const cleared = settleJob(failed.progress, campaign, attempt, oneStar, NOW);
     expect(cleared.payout.firstClear).toBe(PAYOUT.firstClear);
-    const replay = settleJob(cleared.progress, campaign, attempt, won, NOW);
-    expect(replay.payout.firstClear).toBe(0);
-    expect(replay.payout.total).toBe(0);
+    // Three stars on a replay: the gain pays at the repeat share, without the clear bonus.
+    const better = settleJob(cleared.progress, campaign, attempt, won, NOW);
+    expect(better.payout).toEqual(payout(won, { firstClear: false, improved: true, firstAttempt: false, daily: false }));
+    expect(better.payout.total).toBeGreaterThan(0);
+    expect(settleJob(better.progress, campaign, attempt, won, NOW).payout.total).toBe(0);
   });
 
   it('does not let a failed level be farmed for its salvage', () => {
@@ -78,7 +81,7 @@ describe('settling a campaign job', () => {
 
   it('records no stars for a failed job', () => {
     const job = settleJob(emptyProgress(), campaign, newAttempt(first, { kind: 'campaign' }), lost, NOW);
-    expect(lost.success).toBe(false);
+    expect(lost.cleared).toBe(false);
     expect(job.progress.stars[first.id] ?? 0).toBe(0);
   });
 

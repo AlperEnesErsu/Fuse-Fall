@@ -14,7 +14,7 @@ import {
   worldStatus,
 } from '../src/core/progress';
 import { parseWorlds } from '../src/core/world';
-import { SCORE, scoreLevel } from '../src/core/scoring';
+import { scoreLevel } from '../src/core/scoring';
 import { difficultyOf } from '../src/core/difficulty';
 import { loadCampaign } from '../src/content/levels';
 import { shatter } from '../src/core/shatter';
@@ -113,22 +113,26 @@ describe('scoring', () => {
     expect(scoreLevel({ ...base, dominoes: 2 }, rules).stars).toBe(3);
   });
 
-  it('gives a partial win one star when most of the structure came down', () => {
-    const r = scoreLevel({ ...base, targetsDown: 0, dominoes: 1 }, { par: 1, bonusCollapse: 0.5 });
-    expect(r).toMatchObject({ success: true, cleared: false, partial: true, stars: 1, failure: 'target-standing' });
-    expect(r.score).toBe(SCORE.base / 2 + Math.round(SCORE.collapse * 0.6));
-    const harmed = scoreLevel({ ...base, targetsDown: 0, protectedDamaged: 1 }, { par: 1, bonusCollapse: 0.5 });
-    expect(harmed).toMatchObject({ success: false, partial: false, stars: 0 });
+  it('fails the job while a target stands, however much of the structure came down', () => {
+    const most = scoreLevel({ ...base, targetsDown: 0, dominoes: 1 }, { par: 1, bonusCollapse: 0.5 });
+    expect(most).toMatchObject({ cleared: false, stars: 0, score: 0, failure: 'target-standing' });
+    const all = scoreLevel({ ...base, targetsDown: 0, blocksCollapsed: base.blocksTotal }, { par: 1, bonusCollapse: 0.5 });
+    expect(all).toMatchObject({ cleared: false, stars: 0, score: 0, collapseRatio: 1 });
+  });
+
+  it('fails the job when debris spills off the site, even with every target down', () => {
+    const r = scoreLevel({ ...base, footprint: { achieved: 0.5, required: 0.8 } }, { par: 1, bonusCollapse: 0.5 });
+    expect(r).toMatchObject({ cleared: false, failure: 'debris-outside', stars: 0, score: 0 });
   });
 
   it('gives no stars when too little came down', () => {
     const r = scoreLevel({ ...base, targetsDown: 0, blocksCollapsed: 2 }, { par: 1, bonusCollapse: 0.5 });
-    expect(r).toMatchObject({ success: false, failure: 'target-standing', stars: 0, score: 0, underPar: true });
+    expect(r).toMatchObject({ cleared: false, failure: 'target-standing', stars: 0, score: 0, underPar: true });
   });
 
   it('fails the job when a protected building is damaged, even with every target down', () => {
     const r = scoreLevel({ ...base, protectedDamaged: 1 }, { par: 1, bonusCollapse: 0.5 });
-    expect(r).toMatchObject({ success: false, failure: 'collateral-damage', stars: 0, score: 0 });
+    expect(r).toMatchObject({ cleared: false, failure: 'collateral-damage', stars: 0, score: 0 });
   });
 
   it('scores spare charges and collapse', () => {

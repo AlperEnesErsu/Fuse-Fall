@@ -167,7 +167,7 @@ describe('outcome', () => {
     run(TUNING.settle.hold + 0.2);
     expect(log.some((e) => e.type === 'targetDown')).toBe(true);
     expect(session.phase).toBe('finished');
-    expect(session.result).toMatchObject({ success: true, chargesUsed: 1, blocksCollapsed: 1, stars: 3 });
+    expect(session.result).toMatchObject({ cleared: true, chargesUsed: 1, blocksCollapsed: 1, stars: 3 });
   });
 
   it('counts a target that falls without any blast reaching it as a domino', () => {
@@ -194,7 +194,7 @@ describe('outcome', () => {
     session.placeCharge({ x: 100, y: 450 });
     session.fire();
     run(TUNING.settle.hold + 0.2);
-    expect(session.result).toMatchObject({ success: false, stars: 0 });
+    expect(session.result).toMatchObject({ cleared: false, stars: 0 });
   });
 
   it('waits for motion to stop, but not past the timeout', () => {
@@ -274,7 +274,7 @@ describe('cars', () => {
     session.fire();
     run(TUNING.settle.hold + 0.3);
     expect(session.phase).toBe('finished');
-    expect(session.result?.success).toBe(false);
+    expect(session.result?.cleared).toBe(false);
   });
 });
 
@@ -287,7 +287,7 @@ describe('protected buildings', () => {
     session.fire();
     physics.place('block-1', { position: { x: 520, y: WORLD.groundY - 20 } });
     run(TUNING.settle.hold + 0.2);
-    expect(session.result).toMatchObject({ success: true, blocksTotal: 2, protectedTotal: 1, protectedDamaged: 0 });
+    expect(session.result).toMatchObject({ cleared: true, blocksTotal: 2, protectedTotal: 1, protectedDamaged: 0 });
   });
 
   it('fail the job when knocked over, and report it once', () => {
@@ -301,7 +301,7 @@ describe('protected buildings', () => {
     run(TUNING.settle.hold + 0.2);
     expect(seen).toHaveLength(1);
     expect(log.some((e) => e.type === 'levelFinished')).toBe(true);
-    expect(session.result).toMatchObject({ success: false, failure: 'collateral-damage', protectedDamaged: 1 });
+    expect(session.result).toMatchObject({ cleared: false, failure: 'collateral-damage', protectedDamaged: 1 });
     expect([...session.view()].find((e) => e.protected)?.compromised).toBe(true);
   });
 
@@ -313,7 +313,7 @@ describe('protected buildings', () => {
     session.placeCharge({ x: 200, y: 450 });
     session.fire();
     run(TUNING.settle.hold + 0.2);
-    expect(session.result).toMatchObject({ success: false, failure: 'collateral-damage' });
+    expect(session.result).toMatchObject({ cleared: false, failure: 'collateral-damage' });
   });
 });
 
@@ -411,7 +411,7 @@ describe('debris footprint', () => {
     session.fire();
     physics.place('block-1', { position: { x: 520, y: WORLD.groundY - 20 } });
     run(TUNING.settle.hold + 0.2);
-    expect(session.result).toMatchObject({ success: true, footprint: { achieved: 1, required: 0.8 * TUNING.footprintSlack } });
+    expect(session.result).toMatchObject({ cleared: true, footprint: { achieved: 1, required: 0.8 * TUNING.footprintSlack } });
   });
 
   it('fails when material spills outside', () => {

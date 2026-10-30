@@ -954,14 +954,8 @@ export class Ui {
     const protectedValue =
       r.protectedTotal === 0 ? R.none : r.protectedDamaged === 0 ? R.intact : R.damaged(r.protectedDamaged);
     const perfect = r.cleared && r.stars === 3;
-    const tier = perfect ? 'perfect' : r.cleared ? 'win' : r.partial ? 'partial' : 'lose';
-    const reason = r.partial
-      ? R.partialReason
-      : r.failure
-        ? R.reasons[r.failure]
-        : info.cityComplete
-          ? R.cityComplete(info.city)
-          : '';
+    const tier = perfect ? 'perfect' : r.cleared ? 'win' : 'lose';
+    const reason = r.failure ? R.reasons[r.failure] : info.cityComplete ? R.cityComplete(info.city) : '';
     this.show(
       h(
         'div',
@@ -973,7 +967,7 @@ export class Ui {
           h(
             'div',
             { class: 'verdict' },
-            h('div', { class: 'stamp' }, perfect ? R.perfect : r.cleared ? R.success : r.partial ? R.partialWin : R.failure),
+            h('div', { class: 'stamp' }, perfect ? R.perfect : r.cleared ? R.success : R.failure),
             reason ? h('p', { class: 'reason' }, reason) : undefined,
             starRow(r.stars, 'lg'),
             h(
