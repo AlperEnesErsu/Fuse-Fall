@@ -129,7 +129,7 @@ export const settleJob = (
   const rankAfter = rankOf(p.wallet.earned).index;
   if (mode.kind === 'daily') {
     p = recordScore(p, level.id, result.score);
-    if (result.success) p = recordDailyWin(p, mode.day);
+    if (result.cleared) p = recordDailyWin(p, mode.day);
   } else {
     p = recordCampaignRun(recordScore(recordStars(p, level.id, result.stars), level.id, result.score), level.id, result.cleared);
   }

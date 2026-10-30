@@ -52,7 +52,7 @@ const cityPerfect = (c: AchievementContext): boolean =>
   });
 
 export const ACHIEVEMENTS: readonly AchievementDef[] = [
-  { id: 'first-job', earned: (c) => c.result.success },
+  { id: 'first-job', earned: (c) => c.result.cleared },
   {
     id: 'lean',
     earned: (c) => c.result.cleared && c.result.chargesMax > 1 && c.result.chargesUsed === 1,

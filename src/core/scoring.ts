@@ -43,12 +43,8 @@ export interface PlayStyles {
 export type FailureReason = 'target-standing' | 'collateral-damage' | 'debris-outside';
 
 export interface LevelResult extends LevelOutcome {
-  /** The job counts: cleared, or a partial win. Progress opens on either. */
-  readonly success: boolean;
-  /** Every target down, nothing protected harmed, debris on site: the full contract. */
+  /** The job is won: every target down, nothing protected harmed, debris on site. The only way to earn stars and open the next job. */
   readonly cleared: boolean;
-  /** Not cleared, but most of the structure came down and nothing protected was harmed: one star. */
-  readonly partial: boolean;
   readonly failure: FailureReason | undefined;
   readonly stars: Stars;
   readonly score: number;
@@ -58,9 +54,6 @@ export interface LevelResult extends LevelOutcome {
   readonly styles: PlayStyles;
 }
 
-/** Share of the structure that must come down for a partial win. */
-export const PARTIAL_COLLAPSE = 0.5;
-
 export const SCORE = {
   base: 1000,
   perSpareCharge: 300,
@@ -68,14 +61,14 @@ export const SCORE = {
 } as const;
 
 /**
- * A job is cleared when every target is down and no protected building is
- * damaged; harming a neighbour breaks the contract, whatever else happened.
- * A job that is not cleared still counts as a partial win when most of the
- * structure came down and nothing protected was harmed: nobody should be stuck.
+ * A job is cleared when every target is down, no protected building is
+ * damaged and the debris stays on site; harming a neighbour breaks the
+ * contract, whatever else happened. Anything less is a failure: bringing most
+ * of the structure down while a target still stands does not win the job.
  *
- * Stars: a partial win earns 1. A cleared job earns 1, +1 for each play style
- * met (surgical, demolition, domino), at most 3.
- * Score: base + a bonus for each unused charge + the collapse ratio; half the base for a partial win.
+ * Stars: a cleared job earns 1, +1 for each play style met (surgical,
+ * demolition, domino), at most 3. A failure earns none.
+ * Score: base + a bonus for each unused charge + the collapse ratio; 0 for a failure.
  */
 export const scoreLevel = (outcome: LevelOutcome, rules: ScoringRules): LevelResult => {
   const targetsMet = outcome.targetsTotal > 0 && outcome.targetsDown >= outcome.targetsTotal;
@@ -91,8 +84,6 @@ export const scoreLevel = (outcome: LevelOutcome, rules: ScoringRules): LevelRes
           : undefined;
   const cleared = failure === undefined;
   const collapseRatio = outcome.blocksTotal === 0 ? 0 : outcome.blocksCollapsed / outcome.blocksTotal;
-  const partial = !cleared && failure !== 'collateral-damage' && outcome.blocksTotal > 0 && collapseRatio >= PARTIAL_COLLAPSE;
-  const success = cleared || partial;
   const underPar = outcome.chargesUsed <= rules.par;
   const bonusMet = collapseRatio >= rules.bonusCollapse;
   const styles: PlayStyles = {
@@ -101,13 +92,11 @@ export const scoreLevel = (outcome: LevelOutcome, rules: ScoringRules): LevelRes
     domino: outcome.dominoes > 0,
   };
   const met = Number(styles.surgical) + Number(styles.demolition) + Number(styles.domino);
-  const stars = (cleared ? 1 + Math.min(2, met) : partial ? 1 : 0) as Stars;
+  const stars = (cleared ? 1 + Math.min(2, met) : 0) as Stars;
   const score = cleared
     ? SCORE.base +
       SCORE.perSpareCharge * Math.max(0, outcome.chargesMax - outcome.chargesUsed) +
       Math.round(SCORE.collapse * collapseRatio)
-    : partial
-      ? SCORE.base / 2 + Math.round(SCORE.collapse * collapseRatio)
-      : 0;
-  return { ...outcome, success, cleared, partial, failure, stars, score, collapseRatio, underPar, bonusMet, styles };
+    : 0;
+  return { ...outcome, cleared, failure, stars, score, collapseRatio, underPar, bonusMet, styles };
 };

@@ -10,11 +10,11 @@ export interface ClipCaption {
   readonly title: string;
   /** The verdict stamp, e.g. "CLEAN DEMOLITION · 100%". */
   readonly stamp: string;
-  /** Stamp colour: green for a win, amber for a partial win, red for a void contract. */
-  readonly tone: 'win' | 'partial' | 'fail';
+  /** Stamp colour: green for a win, red for a failed job. */
+  readonly tone: 'win' | 'fail';
 }
 
-const STAMP_COLOURS = { win: '#4cb36a', partial: '#f2b134', fail: '#e5484d' } as const;
+const STAMP_COLOURS = { win: '#4cb36a', fail: '#e5484d' } as const;
 
 const WIDTH = 720;
 const HEIGHT = 1280;

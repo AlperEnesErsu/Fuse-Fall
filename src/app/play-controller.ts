@@ -427,10 +427,8 @@ export class PlayController implements Launcher {
         ? T.clip.sandbox(pct)
         : a.result.cleared
           ? T.clip.win(pct)
-          : a.result.partial
-            ? T.clip.partial(pct)
-            : T.clip.fail,
-      tone: sandbox || a.result.cleared ? 'win' : a.result.partial ? 'partial' : 'fail',
+          : T.clip.fail,
+      tone: sandbox || a.result.cleared ? 'win' : 'fail',
     }, () => this.d.renderer.visibleWorld());
     this.replay();
     this.clip.start(this.d.sound.captureStream());
@@ -466,7 +464,7 @@ export class PlayController implements Launcher {
     if (attempt.mode.kind === 'editor') {
       // A test run of a mission being built: a win makes its charges the solution and its code is ready to share.
       const draft = attempt.mode.draft;
-      if (result.success && attempt.plan) {
+      if (result.cleared && attempt.plan) {
         const solution = attempt.plan.charges.map((c) => ({
           x: c.position.x,
           y: c.position.y,
@@ -584,7 +582,7 @@ export class PlayController implements Launcher {
           onShare: () => this.recordClip(),
           onNext: daily
             ? () => nav.menu()
-            : !result.success
+            : !result.cleared
               ? undefined
               : next && this.d.access.levelUnlocked(next.id)
                 ? () => this.startLevel(next.id)

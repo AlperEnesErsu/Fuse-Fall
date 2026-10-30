@@ -54,7 +54,7 @@ export class SoundDirector {
     events.on('bombReleased', (e) => this.synth?.whistle(panOf(e.position)));
     events.on('chargePlaced', () => this.synth?.arm());
     events.on('chargeRemoved', () => this.synth?.disarm());
-    events.on('levelFinished', (e) => (e.result.success ? this.synth?.success(e.result.stars) : this.synth?.failure()));
+    events.on('levelFinished', (e) => (e.result.cleared ? this.synth?.success(e.result.stars) : this.synth?.failure()));
   }
 
   /** Browsers only allow audio after a user gesture; call from the first tap. */

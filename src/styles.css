@@ -360,9 +360,6 @@ h2,
 .report.lose .stamp {
   color: var(--danger);
 }
-.report.partial .stamp {
-  color: var(--accent);
-}
 .report.perfect .stamp {
   color: var(--accent);
   text-shadow: 0 0 12px rgba(242, 177, 52, 0.55);

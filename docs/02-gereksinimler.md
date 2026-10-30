@@ -35,7 +35,7 @@ Yapıyı incele → Patlayıcı yerleştir → Ateşle → Yıkımı izle → Pu
 | FR-06 | Patlayıcı variller ateşlenmeden zincirleme patlama başlatabilir. | S |
 | FR-07 | Seviye hedefleri: (a) hedef blokları zemine indir, (b) yapının %X'ini yık, (c) korunan blokları sağlam bırak. | M (a), S (b, c) |
 | FR-08 | Fizik durulduğunda (tüm cisimler uyuduğunda) veya zaman aşımında (8 sn) seviye değerlendirilir. | M |
-| FR-09 | Yıldız puanlama: tam başarı 1 yıldız, ardından üç oyun tarzından (*Cerrahi*: par içinde, *Yıkım*: bonus yıkım oranı, *Domino*: patlamanın dokunmadığı bir hedefi devirmek) her biri +1, en fazla 3. Yani herhangi iki tarz 3 yıldız verir; kısmi zafer her zaman 1 yıldızdır (ayrıntı: FR-60, FR-73). Rapor hangi tarzların tuttuğunu tek tek gösterir. | M |
+| FR-09 | Yıldız puanlama: tam başarı 1 yıldız, ardından üç oyun tarzından (*Cerrahi*: par içinde, *Yıkım*: bonus yıkım oranı, *Domino*: patlamanın dokunmadığı bir hedefi devirmek) her biri +1, en fazla 3. Yani herhangi iki tarz 3 yıldız verir. Hedef ayakta kalırsa görev başarısızdır ve yıldız vermez (ayrıntı: FR-60, FR-73). Rapor hangi tarzların tuttuğunu tek tek gösterir. | M |
 | FR-10 | Tek dokunuşla yeniden deneme, 300 ms içinde. | M |
 
 ### İlerleme ve içerik
@@ -222,12 +222,12 @@ Yapıyı incele → Patlayıcı yerleştir → Ateşle → Yıkımı izle → Pu
 | FR-71 | Cisimlerin zemine yumuşak temas gölgesi düşer; yükseldikçe solar ve genişler. | S |
 | FR-72 | İstanbul'da 5 görev (02, 04, 05, 08, 10) PATLAT gerektirir: fitile bırakılan bomba korunan yapıya zarar verir ya da hedefi indiremez (testle doğrulanır). | M |
 
-### Herkes için: kısmi zafer, kutlama, canlılık ve hızlı modlar (v1.1)
+### Herkes için: kazanma kuralı, kutlama, canlılık ve hızlı modlar (v1.1)
 
 | ID | Gereksinim | Öncelik |
 |---|---|---|
-| FR-73 | **Kısmi zafer:** hedef ayakta kalsa ya da enkaz taşsa bile, korunan yapıya zarar verilmeden yapının en az %50'si çöktüyse görev 1 yıldızla geçilir ("KISMİ BAŞARI"); ilerleme açılır. Tarz yıldızları, tarz/ilk iş hurda bonusları ve başarımlar tam galibiyet ister. Bulmaca testleri tam galibiyeti (`cleared`) ölçer. | M |
-| FR-74 | **Kutlama:** kademeli damga (MÜKEMMEL ÇÖKÜŞ / BAŞARILI / KISMİ BAŞARI / BAŞARISIZ), tek tek beliren yıldızlar ve her yıldızla çan sesi; 3 yıldızda konfeti ve parlayan rapor (azaltılmış harekette konfeti yok). Her hedef düştüğünde yükselen bir "ding". | M |
+| FR-73 | **Hedef şart:** görev yalnızca her hedef yere inince, korunan yapı zarar görmeden ve enkaz sahada kalınca kazanılır (`cleared`). Yapının ne kadarı çökerse çöksün hedef ayakta kalırsa görev başarısızdır: yıldız ve ilerleme yoktur. (v1.1'deki %50 "kısmi zafer" kaldırıldı, çünkü hedefi ilerleme için gereksiz kılıyordu.) Takılan oyuncuya birkaç başarısızlıktan sonra ipucu, daha sonra çözüm gösterilir. | M |
+| FR-74 | **Kutlama:** kademeli damga (MÜKEMMEL ÇÖKÜŞ / BAŞARILI / BAŞARISIZ), tek tek beliren yıldızlar ve her yıldızla çan sesi; 3 yıldızda konfeti ve parlayan rapor (azaltılmış harekette konfeti yok). Her hedef düştüğünde yükselen bir "ding". | M |
 | FR-75 | **Canlılık:** hedef blokların yüzü vardır: gözler yerleştirilen şarja ya da son patlamaya bakar, sarsılınca büyür, devrilince çarpı olur. Yapıların tepesindeki güvercinler ilk patlamada havalanır. Fiziği etkilemez. | S |
 | FR-76 | **Serbest Şantiye modları:** *Anında Patlat* (dokunulan yer hemen patlar, bitiş yok, şarj sınırı yok) ve *Tek Atış* (tek şarj; yapı başına en iyi çöküş yüzdesi kaydedilir). | M |
 | FR-77 | **Blok temaları (atölye):** Karton Şehir ve Buz Kuleleri, yapıların yüzeyini değiştirir; araçlar ve cam olduğu gibi kalır, fizik değişmez. | S |
