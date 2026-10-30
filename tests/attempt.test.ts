@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { newAttempt, settleJob, settleOneShot } from '../src/app/attempt';
-import { payout } from '../src/core/economy';
+import { PAYOUT, payout } from '../src/core/economy';
 import { emptyProgress, levelsOf } from '../src/core/progress';
 import { scoreLevel, type LevelOutcome } from '../src/core/scoring';
 import { loadCampaign } from '../src/content/levels';
@@ -37,7 +37,7 @@ describe('settling a campaign job', () => {
     const attempt = { ...newAttempt(first, { kind: 'campaign' }), stats: { blasts: 2, barrelsBlown: 1, carsWrecked: 0 } };
     const job = settleJob(emptyProgress(), campaign, attempt, won, NOW);
     expect(job.previousBest).toBe(0);
-    expect(job.payout).toEqual(payout(won, { firstClear: true, daily: false }));
+    expect(job.payout).toEqual(payout(won, { firstClear: true, improved: true, firstAttempt: true, daily: false }));
     expect(job.progress.stars[first.id]).toBe(won.stars);
     expect(job.progress.best[first.id]).toBe(won.score);
     expect(job.progress.career.blasts).toBe(2);
@@ -47,13 +47,33 @@ describe('settling a campaign job', () => {
     expect(job.progress.achievements).toEqual(expect.arrayContaining(job.earned.map((a) => a.id)));
   });
 
-  it('pays a repeat win less and remembers the earlier best', () => {
+  it('pays nothing and moves no contract for a replay that gains no stars, and remembers the earlier best', () => {
     const attempt = newAttempt(first, { kind: 'campaign' });
     const once = settleJob(emptyProgress(), campaign, attempt, won, NOW);
     const again = settleJob(once.progress, campaign, attempt, won, NOW);
     expect(again.previousBest).toBe(won.score);
-    expect(again.payout).toEqual(payout(won, { firstClear: false, daily: false }));
+    expect(again.payout.total).toBe(0);
+    expect(again.progress.contracts.counts).toEqual(once.progress.contracts.counts);
     expect(again.earned).toEqual([]);
+  });
+
+  it('pays a replay that raises the stars, and does not pay the clear bonus twice', () => {
+    const attempt = newAttempt(first, { kind: 'campaign' });
+    const partial = scoreLevel({ ...outcome, targetsDown: 0 }, { par: 1, bonusCollapse: 0.5 });
+    const afterPartial = settleJob(emptyProgress(), campaign, attempt, partial, NOW);
+    // The first full win after a partial one is still the first clear: the clear bonus is not lost.
+    const cleared = settleJob(afterPartial.progress, campaign, attempt, won, NOW);
+    expect(cleared.payout.firstClear).toBe(PAYOUT.firstClear);
+    const replay = settleJob(cleared.progress, campaign, attempt, won, NOW);
+    expect(replay.payout.firstClear).toBe(0);
+    expect(replay.payout.total).toBe(0);
+  });
+
+  it('does not let a failed level be farmed for its salvage', () => {
+    const attempt = newAttempt(first, { kind: 'campaign' });
+    const once = settleJob(emptyProgress(), campaign, attempt, lost, NOW);
+    expect(once.payout.salvage).toBeGreaterThan(0);
+    expect(settleJob(once.progress, campaign, attempt, lost, NOW).payout.total).toBe(0);
   });
 
   it('records no stars for a failed job', () => {
@@ -67,9 +87,10 @@ describe('settling a campaign job', () => {
     const once = settleJob(emptyProgress(), campaign, attempt, won, NOW);
     expect(once.progress.daily.lastWon).toBe('2026-10-18');
     expect(once.progress.stars[first.id]).toBeUndefined();
-    expect(once.payout).toEqual(payout(won, { firstClear: true, daily: true }));
+    expect(once.payout).toEqual(payout(won, { firstClear: true, improved: true, firstAttempt: true, daily: true }));
     const again = settleJob(once.progress, campaign, attempt, won, NOW);
-    expect(again.payout).toEqual(payout(won, { firstClear: false, daily: true }));
+    expect(again.payout.total).toBe(0);
+    expect(again.progress.contracts.counts).toEqual(once.progress.contracts.counts);
   });
 });
 

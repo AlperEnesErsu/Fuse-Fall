@@ -27,10 +27,12 @@ const won = scoreLevel(outcome, rules);
 const lost = scoreLevel({ ...outcome, targetsDown: 0, blocksCollapsed: 2 }, rules);
 
 describe('payout', () => {
+  const fresh = { firstClear: true, improved: true, firstAttempt: true, daily: false };
+
   it('pays salvage by material, a bonus per play style and one for the first clear', () => {
     expect(salvageOf(outcome.demolished)).toBe(50);
     // Surgical and demolition held: two styles.
-    expect(payout(won, { firstClear: true, daily: false })).toEqual({
+    expect(payout(won, fresh)).toEqual({
       salvage: 50,
       styles: 2 * PAYOUT.perStyle,
       firstClear: PAYOUT.firstClear,
@@ -38,10 +40,20 @@ describe('payout', () => {
     });
   });
 
-  it('pays less for repeats and failures, and double for the daily', () => {
-    expect(payout(won, { firstClear: false, daily: false }).total).toBe(Math.round(50 * PAYOUT.repeat) + PAYOUT.perStyle);
-    expect(payout(lost, { firstClear: true, daily: false })).toMatchObject({ salvage: Math.round(50 * PAYOUT.failed), styles: 0, firstClear: 0 });
-    expect(payout(won, { firstClear: true, daily: true })).toMatchObject({ salvage: 100, firstClear: 0 });
+  it('pays a replay only when it raises the stars, and a replay that gains nothing pays nothing', () => {
+    const replay = { ...fresh, firstClear: false, firstAttempt: false };
+    expect(payout(won, { ...replay, improved: true }).total).toBe(Math.round(50 * PAYOUT.repeat) + PAYOUT.perStyle);
+    expect(payout(won, { ...replay, improved: false })).toEqual({ salvage: 0, styles: 0, firstClear: 0, total: 0 });
+  });
+
+  it('pays a failure its salvage on the first attempt only', () => {
+    expect(payout(lost, fresh)).toMatchObject({ salvage: Math.round(50 * PAYOUT.failed), styles: 0, firstClear: 0 });
+    expect(payout(lost, { ...fresh, firstAttempt: false })).toEqual({ salvage: 0, styles: 0, firstClear: 0, total: 0 });
+  });
+
+  it('pays the daily double on its first win, and nothing for replaying it', () => {
+    expect(payout(won, { ...fresh, daily: true })).toMatchObject({ salvage: 100, firstClear: 0 });
+    expect(payout(won, { ...fresh, firstClear: false, improved: false, daily: true }).total).toBe(0);
   });
 
   it('measures what a real job brought down', () => {
@@ -50,7 +62,7 @@ describe('payout', () => {
     const result = playSolution(level).result;
     if (!result) throw new Error('no result');
     expect(salvageOf(result.demolished)).toBeGreaterThan(0);
-    expect(payout(result, { firstClear: true, daily: false }).total).toBeGreaterThan(PAYOUT.firstClear);
+    expect(payout(result, fresh).total).toBeGreaterThan(PAYOUT.firstClear);
   });
 });
 
@@ -95,6 +107,18 @@ describe('saved economy', () => {
     const parsed = parseProgress(JSON.parse(JSON.stringify(old)));
     expect(parsed.ok && parsed.value.wallet).toEqual({ balance: 0, earned: 0 });
     expect(parsed.ok && parsed.value.workshop).toEqual({ owned: [], blastStyle: 'classic', blockTheme: 'theme:standard' });
+  });
+
+  it('treats levels won in a save from before the clear records as already cleared and played', () => {
+    const old = { ...emptyProgress(), stars: { 'w1-01': 3, 'w1-02': 0 }, best: { 'w1-03': 500 } } as Record<string, unknown>;
+    delete old.cleared;
+    delete old.played;
+    const parsed = parseProgress(JSON.parse(JSON.stringify(old)));
+    expect(parsed.ok && parsed.value.cleared).toEqual({ 'w1-01': true });
+    expect(parsed.ok && parsed.value.played).toEqual({ 'w1-01': true, 'w1-02': true, 'w1-03': true });
+    // A save that has the records keeps them as they are.
+    const current = parseProgress(JSON.parse(JSON.stringify({ ...emptyProgress(), stars: { 'w1-01': 1 } })));
+    expect(current.ok && current.value.cleared).toEqual({});
   });
 
   it('round-trips the wallet and workshop and drops malformed values', () => {

@@ -12,6 +12,7 @@ import {
 import { emptyProgress, parseProgress, recordContracts } from '../src/core/progress';
 
 const job = (o: Partial<JobFacts> = {}): JobFacts => ({
+  counts: true,
   cleared: true,
   stars: 1,
   underPar: false,
@@ -69,6 +70,13 @@ describe('weekly contracts', () => {
     for (const c of goals) expect(p.contracts.counts[c.kind]).toBe(c.goal);
     expect(p.contracts.kinds).toEqual(kinds);
     expect(advanceContracts(p.contracts, '2026-W43', 0, job()).progress.week).toBe('2026-W43');
+  });
+
+  it('does not move a contract for a job that is not fresh, however often it is replayed', () => {
+    let p = emptyProgress();
+    for (let i = 0; i < 12; i++) p = recordContracts(p, '2026-W42', job({ counts: false, stars: 3, underPar: true })).progress;
+    expect(Object.values(p.contracts.counts).every((n) => n === 0)).toBe(true);
+    expect(p.wallet.balance).toBe(0);
   });
 
   it('does not count failed jobs', () => {
