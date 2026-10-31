@@ -3,7 +3,8 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  { ignores: ['dist', 'node_modules', 'coverage', 'android'] },
+  // `.claude` holds agent worktrees: other checkouts of this repo, linted from their own folders.
+  { ignores: ['dist', 'node_modules', 'coverage', 'android', '.claude'] },
   js.configs.recommended,
   ...tseslint.configs.strict,
   {

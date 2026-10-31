@@ -53,6 +53,8 @@ describe('settling a campaign job', () => {
     const again = settleJob(once.progress, campaign, attempt, won, NOW);
     expect(again.previousBest).toBe(won.score);
     expect(again.payout.total).toBe(0);
+    expect(once.unpaid).toBeUndefined();
+    expect(again.unpaid).toBe('replay');
     expect(again.progress.contracts.counts).toEqual(once.progress.contracts.counts);
     expect(again.earned).toEqual([]);
   });
@@ -69,6 +71,7 @@ describe('settling a campaign job', () => {
     const better = settleJob(cleared.progress, campaign, attempt, won, NOW);
     expect(better.payout).toEqual(payout(won, { firstClear: false, improved: true, firstAttempt: false, daily: false }));
     expect(better.payout.total).toBeGreaterThan(0);
+    expect(better.unpaid).toBeUndefined();
     expect(settleJob(better.progress, campaign, attempt, won, NOW).payout.total).toBe(0);
   });
 
@@ -76,7 +79,10 @@ describe('settling a campaign job', () => {
     const attempt = newAttempt(first, { kind: 'campaign' });
     const once = settleJob(emptyProgress(), campaign, attempt, lost, NOW);
     expect(once.payout.salvage).toBeGreaterThan(0);
-    expect(settleJob(once.progress, campaign, attempt, lost, NOW).payout.total).toBe(0);
+    expect(once.unpaid).toBeUndefined();
+    const again = settleJob(once.progress, campaign, attempt, lost, NOW);
+    expect(again.payout.total).toBe(0);
+    expect(again.unpaid).toBe('retry');
   });
 
   it('records no stars for a failed job', () => {
@@ -93,6 +99,7 @@ describe('settling a campaign job', () => {
     expect(once.payout).toEqual(payout(won, { firstClear: true, improved: true, firstAttempt: true, daily: true }));
     const again = settleJob(once.progress, campaign, attempt, won, NOW);
     expect(again.payout.total).toBe(0);
+    expect(again.unpaid).toBe('daily');
     expect(again.progress.contracts.counts).toEqual(once.progress.contracts.counts);
   });
 

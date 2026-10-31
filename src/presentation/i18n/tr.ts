@@ -182,7 +182,11 @@ export const tr = {
     saved: 'Klip indirildi.',
     shareTitle: 'Fuse & Fall yıkımım',
     win: (pct: number) => `TERTEMİZ YIKIM · %${pct}`,
-    fail: 'SÖZLEŞME İPTAL',
+    fails: {
+      'target-standing': 'HEDEF AYAKTA',
+      'collateral-damage': 'SÖZLEŞME İPTAL',
+      'debris-outside': 'ENKAZ TAŞTI',
+    },
     sandbox: (pct: number) => `YIKIM · %${pct}`,
   },
   undo: 'Son şarjı geri al',
@@ -262,6 +266,12 @@ export const tr = {
       domino: { name: 'Domino', how: 'patlamanın değmediği hedefi düşen yapı devirdi' },
     },
     stylesNote: 'Her tarz bir yıldız. Herhangi ikisi üç yıldız.',
+    stylesOnWin: 'Tarzlar yalnızca görev kazanılınca yıldız verir.',
+    unpaid: {
+      replay: 'Tekrar, yalnızca yıldızı artırırsa hurda öder.',
+      retry: 'Başarısız tekrarlar hurda ödemez.',
+      daily: 'Günlük görev günde bir kez öder.',
+    },
   },
   placement: {
     'outside-zone': 'Sadece işaretli alana',
