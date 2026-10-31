@@ -39,6 +39,8 @@ export interface PayoutContext {
   /** The job had never been attempted before: only that first failure pays its salvage. */
   readonly firstAttempt: boolean;
   readonly daily: boolean;
+  /** Won by following the hints: the first-clear bonus is for working it out. */
+  readonly assisted?: boolean;
 }
 
 /** Why a job paid nothing by rule: a replay that raised no stars, a repeated failure, or a daily already paid today. */
@@ -79,7 +81,7 @@ export const payout = (result: LevelResult, context: PayoutContext): Payout => {
   const salvage = Math.round(raw * share * multiplier);
   // Style and first-clear bonuses reward a won job; a failure pays its salvage only.
   const styles = result.cleared ? Math.round(styleCount * PAYOUT.perStyle * share * multiplier) : 0;
-  const firstClear = result.cleared && context.firstClear && !context.daily ? PAYOUT.firstClear : 0;
+  const firstClear = result.cleared && context.firstClear && !context.daily && !context.assisted ? PAYOUT.firstClear : 0;
   return { salvage, styles, firstClear, total: salvage + styles + firstClear };
 };
 

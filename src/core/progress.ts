@@ -43,6 +43,8 @@ export interface Progress {
   readonly cleared: Readonly<Record<string, true>>;
   /** Campaign levels attempted at least once: only the first failure pays its salvage. */
   readonly played: Readonly<Record<string, true>>;
+  /** Failures in a row per campaign level, kept across launches: hints open after a few. */
+  readonly stuck: Readonly<Record<string, number>>;
   /** Unlocked achievement ids. */
   readonly achievements: readonly string[];
   /** Daily mission streak: the last day (YYYY-MM-DD) a daily was won, and how many days in a row. */
@@ -107,6 +109,7 @@ export const emptyProgress = (): Progress => ({
   best: {},
   cleared: {},
   played: {},
+  stuck: {},
   achievements: [],
   daily: { lastWon: undefined, streak: 0, lastPlayed: undefined },
   wallet: { balance: 0, earned: 0 },
@@ -221,6 +224,9 @@ export const parseProgress = (input: unknown): Result<Progress, ProgressError> =
     // so an old win does not pay its first-clear bonus a second time.
     cleared: isRecord(input.cleared) ? flags(input.cleared) : Object.fromEntries(Object.entries(stars).filter(([, s]) => s > 0).map(([id]) => [id, true as const])),
     played: isRecord(input.played) ? flags(input.played) : Object.fromEntries([...Object.keys(stars), ...Object.keys(best)].map((id) => [id, true as const])),
+    stuck: isRecord(input.stuck)
+      ? Object.fromEntries(Object.entries(input.stuck).flatMap(([id, n]) => (count(n) > 0 ? [[id, Math.min(99, count(n))]] : [])))
+      : {},
     achievements,
     daily,
     wallet,
@@ -255,11 +261,19 @@ export const recordStars = (progress: Progress, levelId: string, stars: Stars): 
 };
 
 /** Records a campaign run: attempted, and won in full when it was cleared. */
-export const recordCampaignRun = (progress: Progress, levelId: string, cleared: boolean): Progress => ({
-  ...progress,
-  played: { ...progress.played, [levelId]: true },
-  cleared: cleared ? { ...progress.cleared, [levelId]: true } : progress.cleared,
-});
+export const recordCampaignRun = (progress: Progress, levelId: string, cleared: boolean): Progress => {
+  // A win ends the run of failures; a failure adds to it.
+  const { [levelId]: failures = 0, ...others } = progress.stuck;
+  return {
+    ...progress,
+    played: { ...progress.played, [levelId]: true },
+    cleared: cleared ? { ...progress.cleared, [levelId]: true } : progress.cleared,
+    stuck: cleared ? others : { ...progress.stuck, [levelId]: Math.min(MAX_STUCK, failures + 1) },
+  };
+};
+
+/** Enough failures to open every hint; counting further adds nothing. */
+const MAX_STUCK = 99;
 
 /** Keeps the highest score; never lowers it. */
 export const recordScore = (progress: Progress, levelId: string, score: number): Progress => {

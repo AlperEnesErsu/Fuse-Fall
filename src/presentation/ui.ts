@@ -101,6 +101,8 @@ export interface ReportInfo {
   readonly promotedTo: number | undefined;
   /** Why the job paid nothing by rule, if it did. */
   readonly unpaid: UnpaidReason | undefined;
+  /** Won with the hints: capped at one star, said in the verdict. */
+  readonly assisted: boolean;
   /** Doubles the scrap with a rewarded ad, when one can be shown. */
   readonly onDouble: (() => void) | undefined;
 }
@@ -958,7 +960,7 @@ export class Ui {
       r.protectedTotal === 0 ? R.none : r.protectedDamaged === 0 ? R.intact : R.damaged(r.protectedDamaged);
     const perfect = r.cleared && r.stars === 3;
     const tier = perfect ? 'perfect' : r.cleared ? 'win' : 'lose';
-    const reason = r.failure ? R.reasons[r.failure] : info.cityComplete ? R.cityComplete(info.city) : '';
+    const reason = r.failure ? R.reasons[r.failure] : info.assisted ? R.assisted : info.cityComplete ? R.cityComplete(info.city) : '';
     this.show(
       h(
         'div',

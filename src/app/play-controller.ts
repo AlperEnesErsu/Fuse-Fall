@@ -81,7 +81,6 @@ export interface PlayDeps {
 /** A job in play: placing, firing, the detonator, the result and payout, the replay and its shared clip. */
 export class PlayController implements Launcher {
   /** Jobs missed in a row this session (not cleared), for offering hints; and which hint is next. */
-  private readonly failures = new Map<string, number>();
   private hintIndex = 0;
   /** The hint shows the whole solution as outlines (after enough misses, or once every step was shown). */
   private showSolution = false;
@@ -312,6 +311,8 @@ export class PlayController implements Launcher {
   private showHint(): void {
     const s = this.session;
     if (!s || s.phase !== 'placing') return;
+    // A win from here on is the hints' as much as the player's.
+    if (this.attempt && !this.attempt.replaying) this.attempt.assisted = true;
     const sol = s.level.solution;
     const timing = (sol.fireAt > 0 ? T.hint.fireAt(sol.fireAt.toFixed(1)) : '') +
       (sol.detonateAt[0] !== undefined ? T.hint.detonateAt(sol.detonateAt[0].toFixed(1)) : '');
@@ -322,7 +323,7 @@ export class PlayController implements Launcher {
     const n = this.hintIndex % sol.charges.length;
     this.hintIndex++;
     // Still stuck: lay the whole solution out as outlines to copy.
-    if (this.hintIndex > sol.charges.length || (this.failures.get(s.level.id) ?? 0) >= SOLUTION_AFTER_FAILURES) {
+    if (this.hintIndex > sol.charges.length || this.failuresOn(s.level.id) >= SOLUTION_AFTER_FAILURES) {
       if (!this.showSolution) this.d.ui.toast(T.hint.solution, 2600);
       this.showSolution = true;
     }
@@ -330,9 +331,14 @@ export class PlayController implements Launcher {
     if (!c) return;
     const delay = c.delay !== undefined && c.delay > 0 ? T.hint.delay(Math.round(c.delay * 1000)) : '';
     this.d.coach.start(
-      [{ text: T.hint.place(n + 1, sol.charges.length, T.chargeKinds[c.kind].toLowerCase(), delay) + (n === sol.charges.length - 1 ? timing : ''), highlight: { world: { x: c.x, y: c.y }, radius: 26 }, until: 'tap' }],
+      [{ text: T.hint.place(n + 1, sol.charges.length, T.chargeKinds[c.kind].toLowerCase(), delay) + (n === sol.charges.length - 1 ? timing : ''), highlight: { world: { x: c.x, y: c.y }, radius: 26 }, until: 'placed', count: s.charges.length + 1 }],
       s.level.balls.length > 0,
     );
+  }
+
+  /** Failures in a row on a campaign level, from the save, so they count across launches. */
+  private failuresOn(levelId: string): number {
+    return this.d.ledger.get().stuck[levelId] ?? 0;
   }
 
   /** Takes back the most recently placed charge. */
@@ -458,9 +464,8 @@ export class PlayController implements Launcher {
       return;
     }
     attempt.result = result;
-    if (attempt.mode.kind === 'campaign') {
-      this.failures.set(attempt.level.id, result.cleared ? 0 : (this.failures.get(attempt.level.id) ?? 0) + 1);
-    }
+    // Nothing left to coach once the job is over; a card left up would cover the report.
+    this.d.coach.stop();
     if (attempt.mode.kind === 'editor') {
       // A test run of a mission being built: a win makes its charges the solution and its code is ready to share.
       const draft = attempt.mode.draft;
@@ -549,6 +554,8 @@ export class PlayController implements Launcher {
     const level = attempt.level;
     const job = settleJob(ledger.get(), this.d.campaign, attempt, result, new Date());
     ledger.set(job.progress);
+    // The booked result: a hint-assisted win shows the stars it earned.
+    const booked = job.result;
 
     const daily = attempt.mode.kind === 'daily';
     const next = daily ? undefined : this.d.access.nextLevel(level);
@@ -559,17 +566,18 @@ export class PlayController implements Launcher {
     const nav = this.d.nav();
     attempt.report = () =>
       ui.report(
-        result,
+        booked,
         {
           city: daily ? T.dailyTitle : city,
           order: level.order,
           par: level.charges.par,
           bonusCollapse: level.bonusCollapse,
-          best: Math.max(job.previousBest, result.score),
-          newBest: result.score > job.previousBest,
+          best: Math.max(job.previousBest, booked.score),
+          newBest: booked.score > job.previousBest,
           cityComplete: lastInCity && cityDone,
           payout: job.payout,
           unpaid: job.unpaid,
+          assisted: attempt.assisted && booked.cleared,
           promotedTo: job.promotedTo,
           // A rewarded ad can double what the job paid, while today's ads last.
           onDouble: this.d.desk.canDouble(job.payout.total)
@@ -747,7 +755,7 @@ export class PlayController implements Launcher {
       // With a wrecking ball on site, Fire also releases the crane, so it needs no charge.
       canFire: s.phase === 'placing' && (s.charges.length > 0 || s.level.balls.length > 0),
       canUndo: s.phase === 'placing' && s.charges.length > 0 && !this.attempt?.replaying,
-      hintAvailable: s.phase === 'placing' && this.attempt?.mode.kind === 'campaign' && (this.failures.get(s.level.id) ?? 0) >= HINT_AFTER_FAILURES,
+      hintAvailable: s.phase === 'placing' && this.attempt?.mode.kind === 'campaign' && this.failuresOn(s.level.id) >= HINT_AFTER_FAILURES,
     });
     ui.setDetonateVisible(s.phase === 'running' && s.liveBombs > 0 && !this.attempt?.replaying);
     const stock = s.level.charges.stock;

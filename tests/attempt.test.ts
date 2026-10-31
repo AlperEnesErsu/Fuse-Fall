@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { newAttempt, settleJob, settleOneShot } from '../src/app/attempt';
 import { PAYOUT, payout } from '../src/core/economy';
-import { emptyProgress, levelsOf } from '../src/core/progress';
+import { emptyProgress, levelsOf, parseProgress } from '../src/core/progress';
 import { scoreLevel, type LevelOutcome } from '../src/core/scoring';
 import { loadCampaign } from '../src/content/levels';
 
@@ -123,5 +123,44 @@ describe('One Shot record', () => {
     expect(a).toMatchObject({ best: Math.round(won.collapseRatio * 100), isNew: true });
     const b = settleOneShot(a.progress, 'apartment', lost);
     expect(b).toMatchObject({ best: a.best, isNew: false });
+  });
+});
+
+describe('hint-assisted wins', () => {
+  it('count as cleared but earn one star, no styles, no clear bonus and no contracts', () => {
+    const attempt = { ...newAttempt(first, { kind: 'campaign' }), assisted: true };
+    expect(won.stars).toBe(3);
+    const job = settleJob(emptyProgress(), campaign, attempt, won, NOW);
+    expect(job.result).toMatchObject({ cleared: true, stars: 1, styles: { surgical: false, demolition: false, domino: false } });
+    expect(job.progress.stars[first.id]).toBe(1);
+    expect(job.progress.cleared[first.id]).toBe(true);
+    expect(job.payout).toMatchObject({ styles: 0, firstClear: 0 });
+    expect(job.payout.salvage).toBeGreaterThan(0);
+    expect(Object.values(job.progress.contracts.counts).every((n) => n === 0)).toBe(true);
+    // Working it out alone later still raises the stars and pays for the gain.
+    const own = settleJob(job.progress, campaign, newAttempt(first, { kind: 'campaign' }), won, NOW);
+    expect(own.progress.stars[first.id]).toBe(3);
+    expect(own.payout.total).toBeGreaterThan(0);
+  });
+
+  it('leave a failure as it was', () => {
+    const attempt = { ...newAttempt(first, { kind: 'campaign' }), assisted: true };
+    expect(settleJob(emptyProgress(), campaign, attempt, lost, NOW).result).toEqual(lost);
+  });
+});
+
+describe('failures in a row', () => {
+  it('are kept in the save per level, and a win clears them', () => {
+    const attempt = newAttempt(first, { kind: 'campaign' });
+    let p = emptyProgress();
+    for (let i = 0; i < 3; i++) p = settleJob(p, campaign, attempt, lost, NOW).progress;
+    expect(p.stuck[first.id]).toBe(3);
+    const reloaded = parseProgress(JSON.parse(JSON.stringify(p)));
+    expect(reloaded.ok && reloaded.value.stuck).toEqual({ [first.id]: 3 });
+    p = settleJob(p, campaign, attempt, won, NOW).progress;
+    expect(p.stuck[first.id]).toBeUndefined();
+    // A daily does not count toward a campaign level's hints.
+    const daily = newAttempt(first, { kind: 'daily', day: '2026-10-18', baseId: first.id });
+    expect(settleJob(emptyProgress(), campaign, daily, lost, NOW).progress.stuck).toEqual({});
   });
 });
