@@ -124,11 +124,17 @@ export const en: Strings = {
     counts: (blocks: number, zones: number) => `${blocks} blocks · ${zones} zones`,
     test: 'Test',
     back: 'Menu',
-    problems: { zone: 'Draw a charge zone first.', target: 'Place a target block first.' },
+    problems: {
+      zone: 'Draw a charge zone first.',
+      target: 'Place a target block first.',
+      'low-target': 'Put the target higher: it must start clear of the ground.',
+      invalid: 'This mission breaks a rule; change something and try again.',
+    },
     errors: {
       full: 'No room for more.',
       size: 'That size will not work.',
       outside: 'That is outside the world.',
+      'low-target': 'A target must start clear of the ground: put it on top of something.',
       overlap: 'Blocks cannot overlap.',
     },
     done: {

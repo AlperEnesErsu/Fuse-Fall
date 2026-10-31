@@ -475,7 +475,7 @@ export class PlayController implements Launcher {
         const built = draftToLevel(draft, solution, { id: SHARED_ID, name: T.editor.name, world: attempt.level.world, budget: solution.length });
         attempt.report = () => {
           if (!built.ok) {
-            this.d.ui.toast(built.error);
+            this.d.ui.toast(T.editor.problems.invalid);
             return;
           }
           void encodeLevel(built.value).then((code) =>
@@ -694,7 +694,7 @@ export class PlayController implements Launcher {
       { id: SHARED_ID, name: T.editor.name, world: world.world, budget: 3 },
     );
     if (!built.ok) {
-      this.d.ui.toast(built.error);
+      this.d.ui.toast(T.editor.problems.invalid);
       return;
     }
     this.editing = undefined;

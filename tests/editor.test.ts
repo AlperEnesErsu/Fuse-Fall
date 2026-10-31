@@ -105,6 +105,18 @@ describe('draft to mission', () => {
     expect(draftProblem(playable())).toBeUndefined();
   });
 
+  it('refuses a target too close to the ground when it is placed, not after a test run', () => {
+    // A crate sitting on the ground, or on a low step: the first thing many players build.
+    expect(addBlock(emptyDraft(), block(500, 440, 'target'))).toEqual({ ok: false, error: 'low-target' });
+    expect(addBlock(emptyDraft(), block(500, 420, 'target'))).toEqual({ ok: false, error: 'low-target' });
+    // The same crate as a plain block is fine, and a target high enough is too.
+    expect(addBlock(emptyDraft(), block(500, 440)).ok).toBe(true);
+    expect(addBlock(emptyDraft(), block(500, 390, 'target')).ok).toBe(true);
+    // A draft from elsewhere is checked before its test run, in words the player reads.
+    const low: Draft = { blocks: [block(500, 440, 'target')], zones: [{ x: 300, y: 430, w: 120, h: 50 }] };
+    expect(draftProblem(low)).toBe('low-target');
+  });
+
   it('refuses a draft the level rules reject, with the rule as the reason', () => {
     // A target inside the ground strip cannot start clear of the ground.
     const bad: Draft = { blocks: [{ ...block(500, 470, 'target') }], zones: [{ x: 300, y: 430, w: 120, h: 50 }] };
