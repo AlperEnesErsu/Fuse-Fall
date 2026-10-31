@@ -10,6 +10,7 @@ import {
   currentStreak,
   equip,
   levelsOf,
+  markWorkshopSeen,
   totalStars,
   updateSettings,
   worldStars,
@@ -18,7 +19,7 @@ import {
 } from '../core/progress';
 import { SANDBOX_TEMPLATES, sandboxLevel, type SandboxVariant } from '../content/sandbox';
 import type { ContentText } from '../content/text';
-import { WORKSHOP, activeLook, isOwned, onSale, structureItemId, workshopItem } from '../content/workshop';
+import { WORKSHOP, activeLook, isOwned, newlyAffordable, onSale, structureItemId, workshopItem } from '../content/workshop';
 import type { SoundDirector } from '../presentation/audio';
 import type { Renderer } from '../presentation/renderer';
 import { T, language } from '../presentation/strings';
@@ -44,6 +45,7 @@ export interface Navigator {
   freeSite(world?: number, template?: string, variant?: SandboxVariant, traffic?: boolean): void;
   /** Play remembers the job's city, so "back" returns to it. */
   enterWorld(world: number): void;
+  workshop(): void;
 }
 
 export interface ScreenDeps {
@@ -69,6 +71,8 @@ export interface ScreenDeps {
 export class ScreenFlow implements Navigator {
   /** The city the player last browsed, so "back" returns to it. */
   private currentWorld = 1;
+  /** Items marked new on this workshop visit, kept new while the player stays there. */
+  private readonly freshShown = new Set<string>();
 
   constructor(private readonly d: ScreenDeps) {}
 
@@ -100,6 +104,7 @@ export class ScreenFlow implements Navigator {
       onDaily: () => this.startDaily(),
       onFreeSite: () => this.freeSite(),
       onWorkshop: () => this.workshop(),
+      workshopNew: newlyAffordable(progress.workshop.owned, progress.workshop.seen, progress.wallet.balance, (w) => access.worldStatus(w).kind === 'open').length,
       scrap: progress.wallet.balance,
       rank: rankOf(progress.wallet.earned),
       contracts: { done: contracts.filter((c) => c.count >= c.goal).length, total: contracts.length },
@@ -150,6 +155,7 @@ export class ScreenFlow implements Navigator {
 
   /** The workshop: spend scrap on blast styles and Free Site structures, and pick the blast style. */
   workshop(offers?: WorkshopOffers): void {
+    if (!this.d.ui.isShowing('workshop')) this.freshShown.clear();
     const { ui, ledger, desk, access, campaign } = this.d;
     this.d.play.leave();
     const cityOpen = (world: number): boolean => access.worldStatus(world).kind === 'open';
@@ -160,6 +166,10 @@ export class ScreenFlow implements Navigator {
     if (!offers) void desk.load().then((loaded) => ui.isShowing('workshop') && this.workshop(loaded));
     const progress = ledger.get();
     const { owned } = progress.workshop;
+    // What is new here is shown once: the menu badge and the report nudge stop pointing at it.
+    const fresh = new Set(newlyAffordable(owned, progress.workshop.seen, progress.wallet.balance, cityOpen).map((i) => i.id));
+    if (fresh.size > 0) ledger.set(markWorkshopSeen(progress, [...fresh]));
+    for (const id of fresh) this.freshShown.add(id);
     const active = [
       activeLook(owned, progress.workshop.blastStyle, 'blast-style'),
       activeLook(owned, progress.workshop.blockTheme, 'block-theme'),
@@ -178,6 +188,7 @@ export class ScreenFlow implements Navigator {
           owned: isOwned(owned, item),
           active: active.includes(item.id),
           lockedUntil: !onSale(item, cityOpen) && item.city !== undefined ? cityName(item.city) : undefined,
+          fresh: this.freshShown.has(item.id),
         })),
       },
       {

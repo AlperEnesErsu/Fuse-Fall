@@ -28,7 +28,7 @@ import type { ContentText } from '../content/text';
 import { tutorialFor } from '../content/tutorials';
 import { featureCard, featuresOf, newFeatures, type FeatureId } from '../content/features';
 import { markFeaturesSeen } from '../core/progress';
-import { activeLook } from '../content/workshop';
+import { activeLook, newlyAffordable } from '../content/workshop';
 import type { SoundDirector } from '../presentation/audio';
 import { FULL_VIEW, focusOf } from '../presentation/camera';
 import { ClipRecorder } from '../presentation/clip-recorder';
@@ -564,6 +564,13 @@ export class PlayController implements Launcher {
     const world = this.d.campaign.worlds.find((w) => w.world === level.world);
     const city = world ? this.d.text().city(world) : '';
     const nav = this.d.nav();
+    // Scrap just earned may have bought something new: the report points the way to the workshop.
+    const pick = newlyAffordable(
+      job.progress.workshop.owned,
+      job.progress.workshop.seen,
+      job.progress.wallet.balance,
+      (w) => this.d.access.worldStatus(w).kind === 'open',
+    )[0];
     attempt.report = () =>
       ui.report(
         booked,
@@ -583,6 +590,7 @@ export class PlayController implements Launcher {
           onDouble: this.d.desk.canDouble(job.payout.total)
             ? () => void this.d.desk.watchAd(job.payout.total).then((ok) => ok && attempt.report?.())
             : undefined,
+          workshopPick: pick && { name: pick.name[language], cost: pick.cost, onOpen: () => nav.workshop() },
         },
         {
           onCopy: () => void this.copyCode(level),
