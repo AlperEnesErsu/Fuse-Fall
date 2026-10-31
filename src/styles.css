@@ -472,6 +472,10 @@ h2,
 .criteria li.met svg {
   color: var(--ok);
 }
+/* Held on a failed job: true, but it earns no star until the job is won. */
+.criteria li.held svg {
+  color: var(--muted);
+}
 .criteria li svg {
   flex: none;
 }
@@ -1309,6 +1313,10 @@ h2,
 .payout small {
   color: var(--muted);
   font-size: 0.72rem;
+}
+/* Why nothing was paid: its own line, under the amount. */
+.payout small.unpaid {
+  flex-basis: 100%;
 }
 .badge.promoted {
   align-self: flex-start;

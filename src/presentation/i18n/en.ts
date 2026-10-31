@@ -179,7 +179,11 @@ export const en: Strings = {
     saved: 'Clip downloaded.',
     shareTitle: 'My Fuse & Fall demolition',
     win: (pct: number) => `CLEAN DEMOLITION · ${pct}%`,
-    fail: 'CONTRACT VOID',
+    fails: {
+      'target-standing': 'TARGET STILL STANDING',
+      'collateral-damage': 'CONTRACT VOID',
+      'debris-outside': 'DEBRIS OFF SITE',
+    },
     sandbox: (pct: number) => `DEMOLITION · ${pct}%`,
   },
   undo: 'Undo last charge',
@@ -259,6 +263,12 @@ export const en: Strings = {
       domino: { name: 'Domino', how: 'falling structure brought down a target no blast touched' },
     },
     stylesNote: 'Each style is a star. Any two make three stars.',
+    stylesOnWin: 'Styles earn stars only when the job is won.',
+    unpaid: {
+      replay: 'A replay pays scrap only when it raises your stars.',
+      retry: 'Failed retries pay no scrap.',
+      daily: 'The daily job pays once a day.',
+    },
   },
   placement: {
     'outside-zone': 'Marked area only',

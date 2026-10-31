@@ -3,7 +3,7 @@ import { difficultyOf } from '../core/difficulty';
 import type { ContractKind } from '../core/contracts';
 import type { ShareError } from '../core/share-code';
 import type { DraftMaterial, EditorTool } from '../core/editor';
-import type { Payout, Rank } from '../core/economy';
+import type { Payout, Rank, UnpaidReason } from '../core/economy';
 import type { ScrapPack } from '../core/ports';
 import { SANDBOX_VARIANTS, type SandboxVariant } from '../content/sandbox';
 import type { CareerStats, Settings, WorldStatus } from '../core/progress';
@@ -99,6 +99,8 @@ export interface ReportInfo {
   readonly payout: Payout;
   /** Career rank index reached with this job, if it was a promotion. */
   readonly promotedTo: number | undefined;
+  /** Why the job paid nothing by rule, if it did. */
+  readonly unpaid: UnpaidReason | undefined;
   /** Doubles the scrap with a rewarded ad, when one can be shown. */
   readonly onDouble: (() => void) | undefined;
 }
@@ -949,8 +951,9 @@ export class Ui {
         h('strong', {}, value, note ? h('small', {}, ` ${note}`) : undefined),
       );
     const styleKeys = ['surgical', 'demolition', 'domino'] as const;
-    const criterion = (met: boolean, ...label: (string | HTMLElement)[]) =>
-      h('li', { class: met ? 'met' : '' }, met ? ICONS.check(14) : ICONS.cross(14), h('span', {}, ...label));
+    // A style that held on a failed job shows as held, not met: it earns no star until the job is won.
+    const criterion = (state: 'met' | 'held' | 'missed', ...label: (string | HTMLElement)[]) =>
+      h('li', { class: state === 'missed' ? '' : state }, state === 'missed' ? ICONS.cross(14) : ICONS.check(14), h('span', {}, ...label));
     const protectedValue =
       r.protectedTotal === 0 ? R.none : r.protectedDamaged === 0 ? R.intact : R.damaged(r.protectedDamaged);
     const perfect = r.cleared && r.stars === 3;
@@ -976,6 +979,7 @@ export class Ui {
               h('span', { class: 'label' }, T.scrapLabel),
               h('span', { class: 'value' }, `+${info.payout.total}`),
               h('small', {}, R.scrapParts(info.payout.salvage, info.payout.styles, info.payout.firstClear)),
+              info.unpaid ? h('small', { class: 'unpaid' }, R.unpaid[info.unpaid]) : undefined,
               info.onDouble ? h('button', { class: 'btn small primary', click: () => this.tap(info.onDouble ?? (() => undefined)) }, T.offers.double) : undefined,
             ),
             info.promotedTo !== undefined ? h('span', { class: 'badge promoted' }, R.promoted(T.ranks[info.promotedTo] ?? '')) : undefined,
@@ -1007,12 +1011,12 @@ export class Ui {
             h(
               'ul',
               { class: 'criteria' },
-              criterion(r.cleared, R.goal),
+              criterion(r.cleared ? 'met' : 'missed', R.goal),
               ...styleKeys.map((k) =>
-                criterion(r.cleared && r.styles[k], h('strong', {}, R.styles[k].name), ` · ${R.styles[k].how}`),
+                criterion(!r.styles[k] ? 'missed' : r.cleared ? 'met' : 'held', h('strong', {}, R.styles[k].name), ` · ${R.styles[k].how}`),
               ),
             ),
-            h('p', { class: 'styles-note' }, R.stylesNote),
+            h('p', { class: 'styles-note' }, r.cleared ? R.stylesNote : R.stylesOnWin),
           ),
         ),
         h(

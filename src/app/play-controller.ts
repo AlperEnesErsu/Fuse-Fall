@@ -427,7 +427,7 @@ export class PlayController implements Launcher {
         ? T.clip.sandbox(pct)
         : a.result.cleared
           ? T.clip.win(pct)
-          : T.clip.fail,
+          : T.clip.fails[a.result.failure ?? 'target-standing'],
       tone: sandbox || a.result.cleared ? 'win' : 'fail',
     }, () => this.d.renderer.visibleWorld());
     this.replay();
@@ -569,6 +569,7 @@ export class PlayController implements Launcher {
           newBest: result.score > job.previousBest,
           cityComplete: lastInCity && cityDone,
           payout: job.payout,
+          unpaid: job.unpaid,
           promotedTo: job.promotedTo,
           // A rewarded ad can double what the job paid, while today's ads last.
           onDouble: this.d.desk.canDouble(job.payout.total)

@@ -41,6 +41,9 @@ export interface PayoutContext {
   readonly daily: boolean;
 }
 
+/** Why a job paid nothing by rule: a replay that raised no stars, a repeated failure, or a daily already paid today. */
+export type UnpaidReason = 'replay' | 'retry' | 'daily';
+
 export interface Payout {
   readonly salvage: number;
   readonly styles: number;

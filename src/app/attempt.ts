@@ -1,7 +1,7 @@
 import { newAchievements, type AchievementDef, type AttemptStats } from '../core/achievements';
 import { weekOf, type ContractDef } from '../core/contracts';
 import { dayOf } from '../core/daily';
-import { payout, rankOf, type Payout } from '../core/economy';
+import { payout, rankOf, type Payout, type UnpaidReason } from '../core/economy';
 import type { ChargeKind, LevelDefinition } from '../core/level';
 import type { Vec2 } from '../core/math';
 import {
@@ -87,6 +87,8 @@ export const settleOneShot = (
 export interface JobSettlement {
   readonly progress: Progress;
   readonly payout: Payout;
+  /** Why the job paid nothing by rule (not for lack of salvage), so the report can say so. */
+  readonly unpaid: UnpaidReason | undefined;
   /** Best score before this attempt. */
   readonly previousBest: number;
   /** The new rank index, when the job's pay brought a promotion. */
@@ -118,6 +120,8 @@ export const settleJob = (
   // Only fresh results move the contracts: a replay that gains nothing is not new work.
   const counts = daily ? firstClear : firstClear || improved;
   const pay = payout(result, { firstClear, improved, firstAttempt, daily });
+  const paysNothing = result.cleared ? !firstClear && !improved : !firstAttempt;
+  const unpaid: UnpaidReason | undefined = !paysNothing ? undefined : daily ? 'daily' : result.cleared ? 'replay' : 'retry';
   const rankBefore = rankOf(progress.wallet.earned).index;
   let p = recordCareer(progress, {
     cleared: result.cleared,
@@ -160,6 +164,7 @@ export const settleJob = (
   return {
     progress: p,
     payout: pay,
+    unpaid,
     previousBest,
     promotedTo: rankAfter > rankBefore ? rankAfter : undefined,
     earned,
