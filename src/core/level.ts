@@ -12,6 +12,12 @@ export const WORLD = { width: 960, height: 540, groundY: 480 } as const;
 /** Distance above the ground a target's centre must start, so it is not "down" at spawn. */
 export const TARGET_MIN_CLEARANCE = 24;
 
+/**
+ * Most of each thing a mission may hold. Shipped missions stay far below these;
+ * they bound a pasted code (untrusted) to what a phone simulates smoothly (NFR-01).
+ */
+export const LEVEL_LIMITS = { blocks: 80, barrels: 16, cars: 8, balls: 4, zones: 8 } as const;
+
 export interface BlockDef {
   /** Centre position. */
   readonly x: number;
@@ -202,8 +208,11 @@ const block = (v: unknown, path: string): BlockDef => {
   return def;
 };
 
-const startsClear = (y: number, w: number, h: number): boolean =>
+/** Whether a target centred at `y` starts clear of the ground, as every target must. */
+export const startsClear = (y: number, w: number, h: number): boolean =>
   y <= WORLD.groundY - Math.max(w, h) / 2 - TARGET_MIN_CLEARANCE;
+
+const bounded = <T>(items: T[], path: string, max: number): T[] => (items.length <= max ? items : fail(path, `at most ${max}`));
 
 const car = (v: unknown, path: string): CarDef => {
   const o = obj(v, path);
@@ -298,8 +307,8 @@ export const parseLevel = (input: unknown): Result<LevelDefinition, LevelError> 
     const chargesObj = obj(o.charges, `${p}.charges`);
     const max = int(chargesObj.max, `${p}.charges.max`, 1, 6);
     const par = int(chargesObj.par, `${p}.charges.par`, 1, max);
-    const blocks = arr(o.blocks, `${p}.blocks`).map((b, i) => block(b, `${p}.blocks[${i}]`));
-    const cars = o.cars === undefined ? [] : arr(o.cars, `${p}.cars`).map((c, i) => car(c, `${p}.cars[${i}]`));
+    const blocks = bounded(arr(o.blocks, `${p}.blocks`), `${p}.blocks`, LEVEL_LIMITS.blocks).map((b, i) => block(b, `${p}.blocks[${i}]`));
+    const cars = o.cars === undefined ? [] : bounded(arr(o.cars, `${p}.cars`), `${p}.cars`, LEVEL_LIMITS.cars).map((c, i) => car(c, `${p}.cars[${i}]`));
     const chargeKinds =
       o.chargeKinds === undefined
         ? (['standard'] as const)
@@ -309,8 +318,8 @@ export const parseLevel = (input: unknown): Result<LevelDefinition, LevelError> 
     if (chargeKinds.length === 0) fail(`${p}.chargeKinds`, 'at least one charge kind');
     const stock = chargesObj.stock === undefined ? undefined : chargeStock(chargesObj.stock, `${p}.charges.stock`, chargeKinds, max);
     if (!blocks.some((b) => b.target) && !cars.some((c) => c.target)) fail(`${p}.blocks`, 'level needs at least one target');
-    const zones = arr(o.zones, `${p}.zones`).map((z, i) => rect(z, `${p}.zones[${i}]`));
-    const balls = o.balls === undefined ? [] : arr(o.balls, `${p}.balls`).map((b, i) => wreckingBall(b, `${p}.balls[${i}]`));
+    const zones = bounded(arr(o.zones, `${p}.zones`), `${p}.zones`, LEVEL_LIMITS.zones).map((z, i) => rect(z, `${p}.zones[${i}]`));
+    const balls = o.balls === undefined ? [] : bounded(arr(o.balls, `${p}.balls`), `${p}.balls`, LEVEL_LIMITS.balls).map((b, i) => wreckingBall(b, `${p}.balls[${i}]`));
     if (zones.length === 0) fail(`${p}.zones`, 'level needs at least one placement zone');
     return ok({
       id,
@@ -323,7 +332,7 @@ export const parseLevel = (input: unknown): Result<LevelDefinition, LevelError> 
       zones,
       dropZones: o.dropZones === undefined ? [] : arr(o.dropZones, `${p}.dropZones`).map((z, i) => rect(z, `${p}.dropZones[${i}]`)),
       blocks,
-      barrels: o.barrels === undefined ? [] : arr(o.barrels, `${p}.barrels`).map((b, i) => point(b, `${p}.barrels[${i}]`)),
+      barrels: o.barrels === undefined ? [] : bounded(arr(o.barrels, `${p}.barrels`), `${p}.barrels`, LEVEL_LIMITS.barrels).map((b, i) => point(b, `${p}.barrels[${i}]`)),
       cars,
       balls,
       chargeKinds,

@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { readdirSync } from 'node:fs';
 import { loadEnv, type Plugin } from 'vite';
-import { defineConfig } from 'vitest/config';
+import { configDefaults, defineConfig } from 'vitest/config';
 
 /**
  * Emits sw.js after bundling with the exact list of built files, so the whole
@@ -79,6 +79,8 @@ export default defineConfig(({ mode }) => ({
   plugins: [buildInfo(mode), offlineServiceWorker()],
   test: {
     environment: 'node',
+    // `.claude` holds agent worktrees: other checkouts of this repo, tested from their own folders.
+    exclude: [...configDefaults.exclude, '.claude/**'],
     coverage: {
       include: ['src/core/**', 'src/infrastructure/**', 'src/app/offer-desk.ts', 'src/app/attempt.ts', 'src/app/progression.ts', 'src/app/screen-flow.ts'],
       // NFR-09: game rules stay at or above 80% coverage.

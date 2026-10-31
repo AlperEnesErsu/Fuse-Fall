@@ -127,11 +127,17 @@ export const tr = {
     counts: (blocks: number, zones: number) => `${blocks} blok · ${zones} alan`,
     test: 'Test et',
     back: 'Menü',
-    problems: { zone: 'Önce bir şarj alanı çiz.', target: 'Önce bir hedef blok koy.' },
+    problems: {
+      zone: 'Önce bir şarj alanı çiz.',
+      target: 'Önce bir hedef blok koy.',
+      'low-target': 'Hedefi daha yükseğe koy: yerden uzakta başlamalı.',
+      invalid: 'Bu görev kurallara uymuyor; bir şeyi değiştirip tekrar dene.',
+    },
     errors: {
       full: 'Daha fazla yer yok.',
       size: 'Bu boyut olmaz.',
       outside: 'Dünyanın dışına koyulamaz.',
+      'low-target': 'Hedef yerden uzakta başlamalı: bir şeyin üstüne koy.',
       overlap: 'Bloklar üst üste binemez.',
     },
     done: {

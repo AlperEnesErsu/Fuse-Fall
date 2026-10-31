@@ -1,4 +1,4 @@
-import { WORLD, parseLevel, type LevelDefinition, type SolutionCharge } from './level';
+import { WORLD, parseLevel, startsClear, type LevelDefinition, type SolutionCharge } from './level';
 import type { Rect, Vec2 } from './math';
 import { err, ok, type Result } from './result';
 
@@ -54,10 +54,14 @@ export const snap = (v: number): number => Math.round(v / 10) * 10;
 
 const inWorld = (r: Rect): boolean => r.x >= 0 && r.y >= 0 && r.x + r.w <= WORLD.width && r.y + r.h <= WORLD.groundY;
 
-export const addBlock = (draft: Draft, block: DraftBlock): Result<Draft, 'full' | 'size' | 'outside' | 'overlap'> => {
+/** A target must start clear of the ground, or it would count as down before Fire. */
+const targetTooLow = (b: DraftBlock): boolean => b.kind === 'target' && !startsClear(b.y + b.h / 2, b.w, b.h);
+
+export const addBlock = (draft: Draft, block: DraftBlock): Result<Draft, 'full' | 'size' | 'outside' | 'overlap' | 'low-target'> => {
   if (draft.blocks.length >= DRAFT_LIMITS.blocks) return err('full');
   if (block.w < DRAFT_LIMITS.minSize || block.h < DRAFT_LIMITS.minSize || block.w > DRAFT_LIMITS.maxSize || block.h > DRAFT_LIMITS.maxSize) return err('size');
   if (!inWorld(block)) return err('outside');
+  if (targetTooLow(block)) return err('low-target');
   // Blocks may touch, not overlap: an overlap would push them apart on the first step.
   const overlaps = draft.blocks.some(
     (b) => block.x < b.x + b.w && b.x < block.x + block.w && block.y < b.y + b.h && b.y < block.y + block.h,
@@ -120,9 +124,10 @@ export const draftToLevel = (
 };
 
 /** Why a draft is not a mission yet, in plain words, for the editor to show before a test run. */
-export const draftProblem = (draft: Draft): 'zone' | 'target' | undefined => {
+export const draftProblem = (draft: Draft): 'zone' | 'target' | 'low-target' | undefined => {
   if (draft.zones.length === 0) return 'zone';
   if (!draft.blocks.some((b) => b.kind === 'target')) return 'target';
+  if (draft.blocks.some(targetTooLow)) return 'low-target';
   return undefined;
 };
 

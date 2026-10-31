@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { EventBus } from '../src/core/events';
-import { parseLevel, parseLevelPack } from '../src/core/level';
+import { LEVEL_LIMITS, parseLevel, parseLevelPack } from '../src/core/level';
 import { createRng } from '../src/core/math';
 import {
   emptyProgress,
@@ -59,6 +59,27 @@ describe('level parsing', () => {
     const r = parseLevel({ ...validLevel, ...patch });
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.error.path).toContain(path);
+  });
+
+  it('bounds how much a mission may hold, so a pasted code cannot swamp the physics', () => {
+    const many = (n: number) =>
+      Array.from({ length: n }, (_, i) => ({ x: 20 + (i % 40) * 22, y: 100 + Math.floor(i / 40) * 30, w: 20, h: 20, material: 'wood', target: i === 0 }));
+    const level = (blocks: unknown[]) => ({
+      id: 'big',
+      name: 'Big',
+      world: 1,
+      order: 1,
+      charges: { max: 1, par: 1 },
+      bonusCollapse: 0.5,
+      zones: [{ x: 0, y: 400, w: 200, h: 80 }],
+      blocks,
+      solution: { charges: [{ x: 100, y: 450 }] },
+    });
+    expect(parseLevel(level(many(LEVEL_LIMITS.blocks))).ok).toBe(true);
+    const tooMany = parseLevel(level(many(LEVEL_LIMITS.blocks + 1)));
+    expect(tooMany.ok).toBe(false);
+    // Every shipped mission stays well inside the limits.
+    for (const l of loadCampaign().levels) expect(l.blocks.length).toBeLessThanOrEqual(LEVEL_LIMITS.blocks);
   });
 
   it('rejects duplicate ids in a pack and sorts by world and order', () => {
