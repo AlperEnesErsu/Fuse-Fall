@@ -45,7 +45,7 @@ export const tr = {
   career: (next: number | undefined) => (next === undefined ? 'En yüksek rütbe' : `Sonraki rütbe: toplam ${next} hurda`),
   workshop: {
     title: 'Atölye',
-    tagline: 'Hurdanı patlama stillerine ve yeni yapılara harca. Görevlerin zorluğu değişmez.',
+    tagline: 'Hurdanı patlama stillerine, blok temalarına ve yeni yapılara harca. Her şehir kendi setini getirir. Görevlerin zorluğu değişmez.',
     styles: 'Patlama stilleri',
     themes: 'Blok temaları',
     structures: 'Serbest Şantiye yapıları',
@@ -54,6 +54,7 @@ export const tr = {
     owned: 'Sende',
     buy: (n: number) => `${n} hurda`,
     errors: { owned: 'Bu zaten sende.', insufficient: 'Yeterli hurda yok.' },
+    opensWith: (city: string) => `${city} açılınca`,
   },
   freeSiteMore: 'Daha fazla yapı Atölye’de.',
   modeLabel: 'Mod',
@@ -84,7 +85,7 @@ export const tr = {
   },
   contracts: {
     title: 'Haftalık sözleşmeler',
-    renews: 'Her pazartesi yenilenir. Seferler ve günlük görev sayılır.',
+    renews: 'Her pazartesi yenilenir. Yeni galibiyetler, artan yıldızlar ve günün görevi sayılır; tekrarlar ve ipucuyla kazanılanlar sayılmaz.',
     footer: (done: number, total: number) => `Sözleşmeler ${done}/${total}`,
     reward: (n: number, count: number, goal: number) => `+${n} hurda · ${count}/${goal}`,
     done: 'Tamam',

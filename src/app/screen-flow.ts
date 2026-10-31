@@ -18,7 +18,7 @@ import {
 } from '../core/progress';
 import { SANDBOX_TEMPLATES, sandboxLevel, type SandboxVariant } from '../content/sandbox';
 import type { ContentText } from '../content/text';
-import { WORKSHOP, activeLook, isOwned, structureItemId, workshopItem } from '../content/workshop';
+import { WORKSHOP, activeLook, isOwned, onSale, structureItemId, workshopItem } from '../content/workshop';
 import type { SoundDirector } from '../presentation/audio';
 import type { Renderer } from '../presentation/renderer';
 import { T, language } from '../presentation/strings';
@@ -150,8 +150,13 @@ export class ScreenFlow implements Navigator {
 
   /** The workshop: spend scrap on blast styles and Free Site structures, and pick the blast style. */
   workshop(offers?: WorkshopOffers): void {
-    const { ui, ledger, desk } = this.d;
+    const { ui, ledger, desk, access, campaign } = this.d;
     this.d.play.leave();
+    const cityOpen = (world: number): boolean => access.worldStatus(world).kind === 'open';
+    const cityName = (world: number): string => {
+      const w = campaign.worlds.find((c) => c.world === world);
+      return w ? this.d.text().city(w) : '';
+    };
     if (!offers) void desk.load().then((loaded) => ui.isShowing('workshop') && this.workshop(loaded));
     const progress = ledger.get();
     const { owned } = progress.workshop;
@@ -172,12 +177,18 @@ export class ScreenFlow implements Navigator {
           cost: item.cost,
           owned: isOwned(owned, item),
           active: active.includes(item.id),
+          lockedUntil: !onSale(item, cityOpen) && item.city !== undefined ? cityName(item.city) : undefined,
         })),
       },
       {
         onBuy: (id) => {
           const item = workshopItem(id);
           if (!item) return;
+          if (!onSale(item, cityOpen)) {
+            this.d.sound.denied();
+            ui.toast(T.workshop.opensWith(item.city === undefined ? '' : cityName(item.city)));
+            return;
+          }
           const bought = buyItem(ledger.get(), item);
           if (!bought.ok) {
             this.d.sound.denied();

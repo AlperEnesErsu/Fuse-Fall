@@ -18,6 +18,8 @@ export interface WorkshopItem extends ShopItem {
   readonly kind: WorkshopKind;
   readonly name: Text;
   readonly description: Text;
+  /** A city's own look: on sale once that city (its world number) is open. */
+  readonly city?: number;
 }
 
 /** Blast styles: the look of fire, smoke and sparks. Their colours live with the effects. */
@@ -98,6 +100,81 @@ const BLOCK_THEMES: readonly WorkshopItem[] = [
   },
 ];
 
+/**
+ * Each city brings its own set: a blast style and a block theme, on sale once
+ * the city opens. Prices rise city by city, so scrap keeps a use to the end of
+ * the campaign (and past it) instead of running out of things to buy halfway.
+ */
+const CITY_SETS: readonly { readonly world: number; readonly key: string; readonly style: Omit<WorkshopItem, 'id' | 'kind' | 'cost'>; readonly theme: Omit<WorkshopItem, 'id' | 'kind' | 'cost'> }[] = [
+  {
+    world: 1,
+    key: 'ankara',
+    style: { name: { tr: 'Al Bayrak', en: 'Red Banner' }, description: { tr: 'Kırmızı alev, beyaz kıvılcım.', en: 'Red flame, white sparks.' } },
+    theme: { name: { tr: 'Ankara Taşı', en: 'Ankara Stone' }, description: { tr: 'Pembe andezit bloklar.', en: 'Rose andesite blocks.' } },
+  },
+  {
+    world: 2,
+    key: 'paris',
+    style: { name: { tr: 'Üç Renk', en: 'Tricolour' }, description: { tr: 'Mavi, beyaz, kırmızı konfeti.', en: 'Blue, white and red confetti.' } },
+    theme: { name: { tr: 'Haussmann', en: 'Haussmann' }, description: { tr: 'Krem kireçtaşı cepheler.', en: 'Cream limestone fronts.' } },
+  },
+  {
+    world: 3,
+    key: 'london',
+    style: { name: { tr: 'Londra Sisi', en: 'London Fog' }, description: { tr: 'Fener sarısı ışık, gri sis.', en: 'Lamp-yellow glow, grey fog.' } },
+    theme: { name: { tr: 'Sarı Tuğla', en: 'London Stock' }, description: { tr: 'Londra’nın sarı tuğlaları.', en: 'Yellow London stock brick.' } },
+  },
+  {
+    world: 4,
+    key: 'rome',
+    style: { name: { tr: 'Vezüv', en: 'Vesuvius' }, description: { tr: 'Koyu kırmızı lav, kara kül.', en: 'Deep red lava, black ash.' } },
+    theme: { name: { tr: 'Mermer', en: 'Marble' }, description: { tr: 'Damarlı beyaz mermer.', en: 'Veined white marble.' } },
+  },
+  {
+    world: 5,
+    key: 'tokyo',
+    style: { name: { tr: 'Sakura', en: 'Sakura' }, description: { tr: 'Pembe çiçek yaprağı yağmuru.', en: 'A shower of pink petals.' } },
+    theme: { name: { tr: 'Lake', en: 'Lacquer' }, description: { tr: 'Parlak kırmızı ve siyah lake.', en: 'Glossy red and black lacquer.' } },
+  },
+  {
+    world: 6,
+    key: 'istanbul',
+    style: { name: { tr: 'Lale', en: 'Tulip' }, description: { tr: 'Kırmızı ve sarı lale ateşi.', en: 'Red and yellow tulip fire.' } },
+    theme: { name: { tr: 'Çini', en: 'Iznik Tile' }, description: { tr: 'Turkuaz İznik çinileri.', en: 'Turquoise Iznik tiles.' } },
+  },
+  {
+    world: 7,
+    key: 'berlin',
+    style: { name: { tr: 'Tekno', en: 'Techno' }, description: { tr: 'Macenta ışık, kara duman.', en: 'Magenta light, black smoke.' } },
+    theme: { name: { tr: 'Grafiti', en: 'Graffiti' }, description: { tr: 'Spreyle boyanmış beton.', en: 'Concrete in spray paint.' } },
+  },
+  {
+    world: 8,
+    key: 'madrid',
+    style: { name: { tr: 'Flamenko', en: 'Flamenco' }, description: { tr: 'Kırmızı ve altın alev.', en: 'Red and gold flame.' } },
+    theme: { name: { tr: 'Pişmiş Toprak', en: 'Terracotta' }, description: { tr: 'Sıcak terrakota.', en: 'Warm terracotta.' } },
+  },
+  {
+    world: 9,
+    key: 'newyork',
+    style: { name: { tr: 'Times Meydanı', en: 'Times Square' }, description: { tr: 'Neon sarı, pembe ve mavi.', en: 'Neon yellow, pink and blue.' } },
+    theme: { name: { tr: 'Kahverengi Taş', en: 'Brownstone' }, description: { tr: 'New York’un brownstone cepheleri.', en: 'New York brownstone fronts.' } },
+  },
+];
+
+/** A city set's blast style id, e.g. `city-paris`. */
+export const cityStyleId = (key: string): string => `city-${key}`;
+/** A city set's block theme id, e.g. `theme:paris`. */
+export const cityThemeId = (key: string): string => `theme:${key}`;
+
+const CITY_ITEMS: readonly WorkshopItem[] = CITY_SETS.flatMap((s) => [
+  { id: cityStyleId(s.key), kind: 'blast-style' as const, cost: 300 + 75 * (s.world - 1), city: s.world, ...s.style },
+  { id: cityThemeId(s.key), kind: 'block-theme' as const, cost: 500 + 100 * (s.world - 1), city: s.world, ...s.theme },
+]);
+
+/** Whether an item is on sale: a city's set waits for that city to open. */
+export const onSale = (item: WorkshopItem, cityOpen: (world: number) => boolean): boolean => item.city === undefined || cityOpen(item.city);
+
 /** The first Free Site structures are open to everyone; the rest are bought. */
 const STRUCTURE_COST: Readonly<Record<string, number>> = {
   bridge: 200,
@@ -117,7 +194,13 @@ const STRUCTURES: readonly WorkshopItem[] = SANDBOX_TEMPLATES.map((t) => ({
   description: { tr: 'Serbest Şantiye yapısı', en: 'Free Site structure' },
 }));
 
-export const WORKSHOP: readonly WorkshopItem[] = [...BLAST_STYLES, ...BLOCK_THEMES, ...STRUCTURES];
+export const WORKSHOP: readonly WorkshopItem[] = [
+  ...BLAST_STYLES,
+  ...CITY_ITEMS.filter((i) => i.kind === 'blast-style'),
+  ...BLOCK_THEMES,
+  ...CITY_ITEMS.filter((i) => i.kind === 'block-theme'),
+  ...STRUCTURES,
+];
 
 /** Free items are everyone's from the start. */
 export const isOwned = (owned: readonly string[], item: WorkshopItem): boolean => item.cost === 0 || owned.includes(item.id);

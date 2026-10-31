@@ -134,6 +134,8 @@ export interface WorkshopView {
     readonly cost: number;
     readonly owned: boolean;
     readonly active: boolean;
+    /** A city's set before that city opens: its name. */
+    readonly lockedUntil: string | undefined;
   }[];
 }
 
@@ -301,7 +303,9 @@ export class Ui {
     this.hideHud();
     const W = T.workshop;
     const card = (item: WorkshopView['items'][number]) => {
-      const action = !item.owned
+      const action = item.lockedUntil !== undefined
+        ? h('span', { class: 'tag locked' }, ICONS.lock(12), ` ${W.opensWith(item.lockedUntil)}`)
+        : !item.owned
         ? h(
             'button',
             { class: `btn small${v.scrap >= item.cost ? ' primary' : ' short'}`, click: () => this.tap(() => a.onBuy(item.id)) },
@@ -314,7 +318,7 @@ export class Ui {
           : h('span', { class: 'tag' }, W.owned);
       return h(
         'li',
-        { class: `shop-item${item.owned ? ' owned' : ''}${item.active ? ' active' : ''}` },
+        { class: `shop-item${item.owned ? ' owned' : ''}${item.active ? ' active' : ''}${item.lockedUntil !== undefined ? ' locked' : ''}` },
         item.kind !== 'structure' ? h('span', { class: `swatch style-${item.id.replace(':', '-')}` }) : undefined,
         h('div', { class: 'shop-text' }, h('strong', {}, item.name), h('small', {}, item.description)),
         action,
