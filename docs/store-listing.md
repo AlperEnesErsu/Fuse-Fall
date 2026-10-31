@@ -107,6 +107,6 @@ Oyunun kendisi veri toplamaz; aşağıdakiler AdMob SDK'sından gelir. Gönderme
 ## İçerik derecelendirmesi (IARC) için notlar
 
 - Şiddet: insan, hayvan ya da karakter zarar görmez. Yalnızca boş yapılar ve araçlar yıkılır; kan, yaralanma ya da ölüm yok.
-- Hedef blokların ve güvercinlerin çizgi film tarzı yüzleri ve hareketleri vardır; güvercinler patlamada uçup gider, zarar görmez.
+- Yıkılacak binalar ikaz bandıyla işaretlidir. Güvercinlerin çizgi film tarzı hareketleri vardır; patlamada uçup giderler, zarar görmezler.
 - Kullanıcılar arası iletişim, konum paylaşımı, kumar, alkol veya uyuşturucu içeriği yok.
 - Dijital satın alma var (hurda paketleri); rastgele ödül (ganimet kutusu) yok: her paket ne vereceğini açıkça yazar.

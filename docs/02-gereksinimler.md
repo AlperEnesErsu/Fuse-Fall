@@ -134,7 +134,7 @@ Yapıyı incele → Patlayıcı yerleştir → Ateşle → Yıkımı izle → Pu
 
 ### Yıkım mühendisi yönü (v0.3)
 
-**Hedef kitle:** geniş, casual kitle; kısa oturumda tatmin edici kaos arayan oyuncular, ustalığı da bulmaca severler için. Arayüz dili sade ve endüstriyel kalır (yıkım raporu, şantiye), ama oyun cezalandırmaz: yapının çoğunu indiren her zaman bir yıldızla geçer, mükemmel iş kutlanır (konfeti, damga), hedeflerin ve kuşların küçük yaşam belirtileri vardır. Emoji yok.
+**Hedef kitle:** geniş, casual kitle; kısa oturumda tatmin edici kaos arayan oyuncular, ustalığı da bulmaca severler için. Arayüz dili sade ve endüstriyel kalır (yıkım raporu, şantiye), ama oyun cezalandırmaz: yapının çoğunu indiren her zaman bir yıldızla geçer, mükemmel iş kutlanır (konfeti, damga), yıkılacak bina ikaz bandıyla sarılıdır, kuşların küçük yaşam belirtileri vardır. Emoji yok.
 
 | ID | Gereksinim | Öncelik |
 |---|---|---|
@@ -228,7 +228,7 @@ Yapıyı incele → Patlayıcı yerleştir → Ateşle → Yıkımı izle → Pu
 |---|---|---|
 | FR-73 | **Hedef şart:** görev yalnızca her hedef yere inince, korunan yapı zarar görmeden ve enkaz sahada kalınca kazanılır (`cleared`). Yapının ne kadarı çökerse çöksün hedef ayakta kalırsa görev başarısızdır: yıldız ve ilerleme yoktur. (v1.1'deki %50 "kısmi zafer" kaldırıldı, çünkü hedefi ilerleme için gereksiz kılıyordu.) Takılan oyuncuya birkaç başarısızlıktan sonra ipucu, daha sonra çözüm gösterilir. | M |
 | FR-74 | **Kutlama:** kademeli damga (MÜKEMMEL ÇÖKÜŞ / BAŞARILI / BAŞARISIZ), tek tek beliren yıldızlar ve her yıldızla çan sesi; 3 yıldızda konfeti ve parlayan rapor (azaltılmış harekette konfeti yok). Her hedef düştüğünde yükselen bir "ding". | M |
-| FR-75 | **Canlılık:** hedef blokların yüzü vardır: gözler yerleştirilen şarja ya da son patlamaya bakar, sarsılınca büyür, devrilince çarpı olur. Yapıların tepesindeki güvercinler ilk patlamada havalanır. Fiziği etkilemez. | S |
+| FR-75 | **Bina görünümü:** birbirine değen bloklar tek bir bina sayılır; her blok şekline göre kolon, döşeme ya da pencereli kat olarak çizilir. Hedef tutan bina yıkılacak binadır: kirli, pencereleri tahtayla kapalı, katlarında sarı-siyah ikaz bandı. Bloğa ayrı işaret konmaz. Yapıların tepesindeki güvercinler ilk patlamada havalanır. Fiziği etkilemez. | S |
 | FR-76 | **Serbest Şantiye modları:** *Anında Patlat* (dokunulan yer hemen patlar, bitiş yok, şarj sınırı yok) ve *Tek Atış* (tek şarj; yapı başına en iyi çöküş yüzdesi kaydedilir). | M |
 | FR-77 | **Blok temaları (atölye):** Karton Şehir ve Buz Kuleleri, yapıların yüzeyini değiştirir; araçlar ve cam olduğu gibi kalır, fizik değişmez. | S |
 
