@@ -57,7 +57,8 @@ export interface Progress {
   /** Scrap: spendable balance and lifetime earnings (the career rank). */
   readonly wallet: Wallet;
   /** Workshop items bought, and the blast style in use. */
-  readonly workshop: { readonly owned: readonly string[]; readonly blastStyle: string; readonly blockTheme: string };
+  /** `seen`: items already shown as affordable in the workshop, so the nudge to go there is about something new. */
+  readonly workshop: { readonly owned: readonly string[]; readonly blastStyle: string; readonly blockTheme: string; readonly seen: readonly string[] };
   /** Lifetime totals for the career statistics. */
   readonly career: CareerStats;
   /** Rewarded ads watched, by day, for the daily cap. */
@@ -113,7 +114,7 @@ export const emptyProgress = (): Progress => ({
   achievements: [],
   daily: { lastWon: undefined, streak: 0, lastPlayed: undefined },
   wallet: { balance: 0, earned: 0 },
-  workshop: { owned: [], blastStyle: DEFAULT_BLAST_STYLE, blockTheme: DEFAULT_BLOCK_THEME },
+  workshop: { owned: [], blastStyle: DEFAULT_BLAST_STYLE, blockTheme: DEFAULT_BLOCK_THEME, seen: [] },
   oneShot: {},
   career: NO_CAREER,
   ads: { day: '', count: 0 },
@@ -185,6 +186,7 @@ export const parseProgress = (input: unknown): Result<Progress, ProgressError> =
     owned,
     blastStyle: typeof ws.blastStyle === 'string' ? ws.blastStyle : DEFAULT_BLAST_STYLE,
     blockTheme: typeof ws.blockTheme === 'string' ? ws.blockTheme : DEFAULT_BLOCK_THEME,
+    seen: Array.isArray(ws.seen) ? ws.seen.filter((id): id is string => typeof id === 'string') : [],
   };
   const oneShot: Record<string, number> = {};
   if (isRecord(input.oneShot)) {
@@ -380,6 +382,12 @@ export const recordOneShot = (progress: Progress, structure: string, percent: nu
   const pct = Math.max(0, Math.min(100, Math.round(percent)));
   if (pct <= (progress.oneShot[structure] ?? -1)) return progress;
   return { ...progress, oneShot: { ...progress.oneShot, [structure]: pct } };
+};
+
+/** The player has seen these items in the workshop. */
+export const markWorkshopSeen = (progress: Progress, ids: readonly string[]): Progress => {
+  const fresh = ids.filter((id) => !progress.workshop.seen.includes(id));
+  return fresh.length === 0 ? progress : { ...progress, workshop: { ...progress.workshop, seen: [...progress.workshop.seen, ...fresh] } };
 };
 
 /** Puts a workshop look into use: a blast style or a block theme. */

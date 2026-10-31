@@ -55,6 +55,8 @@ export const tr = {
     buy: (n: number) => `${n} hurda`,
     errors: { owned: 'Bu zaten sende.', insufficient: 'Yeterli hurda yok.' },
     opensWith: (city: string) => `${city} açılınca`,
+    fresh: 'Yeni',
+    menuNew: (n: number) => `${n} yeni`,
   },
   freeSiteMore: 'Daha fazla yapı Atölye’de.',
   modeLabel: 'Mod',
@@ -240,6 +242,8 @@ export const tr = {
   },
   report: {
     title: 'YIKIM RAPORU',
+    shopPick: (name: string, cost: number) => `Atölyede alınabilir: ${name} · ${cost} hurda`,
+    toWorkshop: 'Atölyeye git',
     heading: (city: string, order: number) => `${city.toUpperCase()} · GÖREV ${String(order).padStart(2, '0')}`,
     success: 'BAŞARILI',
     perfect: 'MÜKEMMEL ÇÖKÜŞ!',

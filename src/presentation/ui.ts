@@ -105,6 +105,8 @@ export interface ReportInfo {
   readonly assisted: boolean;
   /** Doubles the scrap with a rewarded ad, when one can be shown. */
   readonly onDouble: (() => void) | undefined;
+  /** Something new the player can now afford, with the way to the workshop. */
+  readonly workshopPick: { readonly name: string; readonly cost: number; readonly onOpen: () => void } | undefined;
 }
 
 /** What the offer store has: rewarded ads (with today's count) and packs; `demo` marks the development stand-in. */
@@ -136,6 +138,8 @@ export interface WorkshopView {
     readonly active: boolean;
     /** A city's set before that city opens: its name. */
     readonly lockedUntil: string | undefined;
+    /** Affordable and shown here for the first time. */
+    readonly fresh: boolean;
   }[];
 }
 
@@ -150,6 +154,8 @@ export interface MenuState {
   readonly onDaily: () => void;
   readonly onFreeSite: () => void;
   readonly onWorkshop: () => void;
+  /** Items the player can now buy and has not seen in the workshop. */
+  readonly workshopNew: number;
   readonly scrap: number;
   readonly rank: Rank;
   readonly contracts: { readonly done: number; readonly total: number };
@@ -188,6 +194,8 @@ export interface ResultActions {
 export class Ui {
   /** The HUD state last drawn, so unchanged frames skip the DOM. */
   private lastHud: HudState | undefined;
+  /** The workshop on screen already shows the offers. */
+  private workshopOffers = false;
   private readonly hud: HTMLElement;
   private readonly screen: HTMLElement;
   private readonly toastEl: HTMLElement;
@@ -263,7 +271,14 @@ export class Ui {
         h(
           'div',
           { class: 'menu-row' },
-          this.button(T.workshop.title, m.onWorkshop),
+          m.workshopNew > 0
+            ? h(
+                'button',
+                { class: 'btn has-news', click: () => this.tap(m.onWorkshop) },
+                T.workshop.title,
+                h('span', { class: 'badge news' }, T.workshop.menuNew(m.workshopNew)),
+              )
+            : this.button(T.workshop.title, m.onWorkshop),
           this.button(`${T.achievementsTitle} ${T.achievementsCount(m.achievements.unlocked, m.achievements.total)}`, m.onAchievements),
           this.button(T.settings, m.onSettings),
           this.button(T.shareCode.menu, m.onShareCode),
@@ -320,7 +335,12 @@ export class Ui {
         'li',
         { class: `shop-item${item.owned ? ' owned' : ''}${item.active ? ' active' : ''}${item.lockedUntil !== undefined ? ' locked' : ''}` },
         item.kind !== 'structure' ? h('span', { class: `swatch style-${item.id.replace(':', '-')}` }) : undefined,
-        h('div', { class: 'shop-text' }, h('strong', {}, item.name), h('small', {}, item.description)),
+        h(
+          'div',
+          { class: 'shop-text' },
+          h('strong', {}, item.name, item.fresh ? h('span', { class: 'badge news' }, W.fresh) : undefined),
+          h('small', {}, item.description),
+        ),
         action,
       );
     };
@@ -331,6 +351,11 @@ export class Ui {
         h('span', { class: 'label section' }, title),
         h('ul', { class: 'shop-list' }, ...v.items.filter((i) => i.kind === kind).map(card)),
       );
+    // Redrawn after a purchase: keep the scroll. Entering: bring the first new item into view.
+    // The offers load a moment later and push the list down, so that redraw brings the new item back into view too.
+    const focus = !this.isShowing('workshop') || (offers !== undefined && !this.workshopOffers);
+    this.workshopOffers = offers !== undefined;
+    const kept = this.screen.querySelector('.panel.workshop')?.scrollTop ?? 0;
     this.show(
       h(
         'div',
@@ -345,6 +370,12 @@ export class Ui {
         section(W.structures, 'structure'),
       ),
     );
+    const panel = this.screen.querySelector('.panel.workshop');
+    if (!focus) {
+      if (panel) panel.scrollTop = kept;
+    } else {
+      panel?.querySelector('.shop-item .badge.news')?.closest('li')?.scrollIntoView({ block: 'center' });
+    }
   }
 
   /** This week's contracts, each with a progress bar. */
@@ -988,6 +1019,14 @@ export class Ui {
               info.unpaid ? h('small', { class: 'unpaid' }, R.unpaid[info.unpaid]) : undefined,
               info.onDouble ? h('button', { class: 'btn small primary', click: () => this.tap(info.onDouble ?? (() => undefined)) }, T.offers.double) : undefined,
             ),
+            info.workshopPick
+              ? h(
+                  'button',
+                  { class: 'shop-pick', click: () => this.tap(info.workshopPick?.onOpen ?? (() => undefined)) },
+                  h('span', {}, R.shopPick(info.workshopPick.name, info.workshopPick.cost)),
+                  h('strong', {}, `${R.toWorkshop} →`),
+                )
+              : undefined,
             info.promotedTo !== undefined ? h('span', { class: 'badge promoted' }, R.promoted(T.ranks[info.promotedTo] ?? '')) : undefined,
             h(
               'div',

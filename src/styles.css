@@ -1680,3 +1680,49 @@ h2,
   gap: 6px;
   justify-content: center;
 }
+/* Workshop nudge: something new is affordable. */
+.btn.has-news {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.badge.news {
+  margin-left: 6px;
+  font-size: 0.62rem;
+  padding: 1px 5px;
+  vertical-align: middle;
+  animation: news-pulse 1.6s ease-in-out infinite;
+}
+@keyframes news-pulse {
+  50% {
+    transform: scale(1.08);
+  }
+}
+.shop-pick {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px 10px;
+  margin-top: 8px;
+  padding: 6px 12px;
+  border: 1px dashed var(--accent);
+  border-radius: 4px;
+  background: rgba(242, 177, 52, 0.08);
+  color: var(--text, inherit);
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.shop-pick strong {
+  color: var(--accent);
+  font-family: var(--font-display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+@media (prefers-reduced-motion: reduce) {
+  .badge.news {
+    animation: none;
+  }
+}

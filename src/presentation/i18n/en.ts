@@ -52,6 +52,8 @@ export const en: Strings = {
     buy: (n: number) => `${n} scrap`,
     errors: { owned: 'You already own this.', insufficient: 'Not enough scrap.' },
     opensWith: (city: string) => `Opens with ${city}`,
+    fresh: 'New',
+    menuNew: (n: number) => `${n} new`,
   },
   freeSiteMore: 'More structures in the Workshop.',
   modeLabel: 'Mode',
@@ -237,6 +239,8 @@ export const en: Strings = {
   },
   report: {
     title: 'DEMOLITION REPORT',
+    shopPick: (name: string, cost: number) => `In the workshop now: ${name} · ${cost} scrap`,
+    toWorkshop: 'Go to workshop',
     heading: (city: string, order: number) => `${city.toUpperCase()} · JOB ${String(order).padStart(2, '0')}`,
     success: 'SUCCESS',
     perfect: 'PERFECT COLLAPSE!',

@@ -205,6 +205,20 @@ export const WORKSHOP: readonly WorkshopItem[] = [
 /** Free items are everyone's from the start. */
 export const isOwned = (owned: readonly string[], item: WorkshopItem): boolean => item.cost === 0 || owned.includes(item.id);
 
+/**
+ * What the workshop nudge points at: items on sale, not owned, within the
+ * balance and not yet shown to the player in the workshop. Cheapest first.
+ */
+export const newlyAffordable = (
+  owned: readonly string[],
+  seen: readonly string[],
+  balance: number,
+  cityOpen: (world: number) => boolean,
+): WorkshopItem[] =>
+  WORKSHOP.filter((i) => !isOwned(owned, i) && onSale(i, cityOpen) && i.cost <= balance && !seen.includes(i.id)).sort(
+    (a, b) => a.cost - b.cost,
+  );
+
 export const workshopItem = (id: string): WorkshopItem | undefined => WORKSHOP.find((i) => i.id === id);
 
 /** The look to show for a kind: the chosen one if it exists, is of that kind and is owned; otherwise the default. */

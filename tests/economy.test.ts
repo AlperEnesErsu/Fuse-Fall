@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { ADS, PAYOUT, RANK_THRESHOLDS, adsToday, payout, rankOf, salvageOf } from '../src/core/economy';
-import { addBoughtScrap, buyItem, earnScrap, emptyProgress, parseProgress, recordCareer, recordOneShot, rewardAd } from '../src/core/progress';
+import { addBoughtScrap, buyItem, earnScrap, emptyProgress, markWorkshopSeen, parseProgress, recordCareer, recordOneShot, rewardAd } from '../src/core/progress';
 import { scoreLevel } from '../src/core/scoring';
 import { loadCampaign } from '../src/content/levels';
-import { WORKSHOP, activeLook, cityStyleId, cityThemeId, isOwned, onSale, structureItemId, workshopItem } from '../src/content/workshop';
+import { WORKSHOP, activeLook, cityStyleId, cityThemeId, isOwned, newlyAffordable, onSale, structureItemId, workshopItem } from '../src/content/workshop';
 import { BLAST_STYLE_IDS } from '../src/presentation/blast-styles';
 import { BLOCK_THEME_IDS } from '../src/presentation/materials-art';
 import { DEFAULT_BLOCK_THEME } from '../src/core/progress';
@@ -148,7 +148,7 @@ describe('saved economy', () => {
     delete old.workshop;
     const parsed = parseProgress(JSON.parse(JSON.stringify(old)));
     expect(parsed.ok && parsed.value.wallet).toEqual({ balance: 0, earned: 0 });
-    expect(parsed.ok && parsed.value.workshop).toEqual({ owned: [], blastStyle: 'classic', blockTheme: 'theme:standard' });
+    expect(parsed.ok && parsed.value.workshop).toEqual({ owned: [], blastStyle: 'classic', blockTheme: 'theme:standard', seen: [] });
   });
 
   it('treats levels won in a save from before the clear records as already cleared and played', () => {
@@ -167,7 +167,7 @@ describe('saved economy', () => {
     const saved = { ...emptyProgress(), wallet: { balance: 120, earned: 900 }, workshop: { owned: ['neon', 7], blastStyle: 'neon', blockTheme: 'theme:ice' } };
     const parsed = parseProgress(JSON.parse(JSON.stringify(saved)));
     expect(parsed.ok && parsed.value.wallet).toEqual({ balance: 120, earned: 900 });
-    expect(parsed.ok && parsed.value.workshop).toEqual({ owned: ['neon'], blastStyle: 'neon', blockTheme: 'theme:ice' });
+    expect(parsed.ok && parsed.value.workshop).toEqual({ owned: ['neon'], blastStyle: 'neon', blockTheme: 'theme:ice', seen: [] });
     const bad = parseProgress({ ...saved, wallet: { balance: -5, earned: 'lots' } });
     expect(bad.ok && bad.value.wallet).toEqual({ balance: 0, earned: 0 });
   });
@@ -226,5 +226,36 @@ describe('career statistics', () => {
     expect(parsed.ok && parsed.value.career).toEqual(p.career);
     const legacy = parseProgress({ version: 1, stars: {}, best: {}, settings: {} });
     expect(legacy.ok && legacy.value.career).toEqual({ jobs: 0, cleared: 0, blasts: 0, area: 0, barrels: 0, cars: 0 });
+  });
+});
+
+describe('workshop nudge', () => {
+  const allOpen = () => true;
+  const onlyAnkara = (w: number) => w === 1;
+
+  it('points at what is on sale, not owned and affordable, cheapest first', () => {
+    const picks = newlyAffordable([], [], 400, allOpen);
+    expect(picks.length).toBeGreaterThan(0);
+    expect(picks.every((i) => i.cost > 0 && i.cost <= 400)).toBe(true);
+    expect(picks.map((i) => i.cost)).toEqual([...picks.map((i) => i.cost)].sort((a, b) => a - b));
+    expect(newlyAffordable([], [], 0, allOpen)).toEqual([]);
+  });
+
+  it('skips owned and seen items, and city sets before their city opens', () => {
+    const first = newlyAffordable([], [], 100000, allOpen);
+    const [a, b] = first;
+    if (!a || !b) throw new Error('catalogue too small');
+    const rest = newlyAffordable([a.id], [b.id], 100000, allOpen).map((i) => i.id);
+    expect(rest).not.toContain(a.id);
+    expect(rest).not.toContain(b.id);
+    expect(newlyAffordable([], [], 100000, onlyAnkara).some((i) => i.city !== undefined && i.city !== 1)).toBe(false);
+  });
+
+  it('remembers what was seen, once, through a save', () => {
+    let p = markWorkshopSeen(emptyProgress(), ['neon', 'confetti']);
+    p = markWorkshopSeen(p, ['neon']);
+    expect(p.workshop.seen).toEqual(['neon', 'confetti']);
+    const parsed = parseProgress(JSON.parse(JSON.stringify(p)));
+    expect(parsed.ok && parsed.value.workshop.seen).toEqual(['neon', 'confetti']);
   });
 });
