@@ -64,4 +64,67 @@ export const BLAST_PALETTES: Readonly<Record<string, BlastPalette>> = {
   },
 };
 
-export const blastPalette = (style: string): BlastPalette => BLAST_PALETTES[style] ?? CLASSIC;
+/** City sets (content/workshop.ts): each city's own blast. */
+const CITY_PALETTES: Readonly<Record<string, BlastPalette>> = {
+  'city-ankara': {
+    flame: { core: [255, 255, 255], mid: [235, 50, 45], rim: [120, 10, 15] },
+    light: [255, 110, 100],
+    smoke: '#3a1d1f',
+    embers: ['#ffffff', '#ff4a45'],
+  },
+  'city-paris': {
+    ...CLASSIC,
+    confetti: ['#2b4fb5', '#ffffff', '#e5484d'],
+  },
+  'city-london': {
+    flame: { core: [255, 250, 225], mid: [245, 200, 90], rim: [120, 100, 60] },
+    light: [255, 220, 140],
+    smoke: '#7d8189',
+    embers: ['#ffe08a', '#fff6dc'],
+  },
+  'city-rome': {
+    flame: { core: [255, 210, 150], mid: [200, 40, 20], rim: [70, 10, 5] },
+    light: [230, 80, 40],
+    smoke: '#141212',
+    embers: ['#ff6a2a', '#ffb070'],
+  },
+  'city-tokyo': {
+    flame: { core: [255, 245, 250], mid: [255, 170, 200], rim: [170, 70, 110] },
+    light: [255, 190, 215],
+    smoke: '#5d3a4b',
+    embers: ['#ffc4dd', '#ffffff'],
+    confetti: ['#ffc4dd', '#ffe3ee', '#ff9cc2', '#ffffff'],
+  },
+  'city-istanbul': {
+    flame: { core: [255, 250, 210], mid: [240, 70, 50], rim: [150, 30, 30] },
+    light: [255, 160, 80],
+    smoke: '#3b2a24',
+    embers: ['#ffd23f', '#e5484d'],
+    confetti: ['#e5484d', '#ffd23f', '#3fb6a8'],
+  },
+  'city-berlin': {
+    flame: { core: [255, 235, 255], mid: [240, 60, 200], rim: [70, 20, 110] },
+    light: [230, 90, 255],
+    smoke: '#0d0d10',
+    embers: ['#36e3f0', '#f05bd8'],
+  },
+  'city-madrid': {
+    flame: { core: [255, 245, 200], mid: [230, 60, 30], rim: [130, 30, 10] },
+    light: [255, 170, 60],
+    smoke: '#3e2414',
+    embers: ['#ffd36b', '#e5484d'],
+    confetti: ['#c8102e', '#ffd36b'],
+  },
+  'city-newyork': {
+    flame: { core: [255, 255, 230], mid: [255, 220, 40], rim: [200, 40, 160] },
+    light: [255, 230, 120],
+    smoke: '#1b1d2e',
+    embers: ['#ffe600', '#ff3fa4'],
+    confetti: ['#ffe600', '#ff3fa4', '#3fd0ff', '#ffffff'],
+  },
+};
+
+export const blastPalette = (style: string): BlastPalette => BLAST_PALETTES[style] ?? CITY_PALETTES[style] ?? CLASSIC;
+
+/** Every blast style that has its own look, for checking the catalogue against. */
+export const BLAST_STYLE_IDS: readonly string[] = [...Object.keys(BLAST_PALETTES), ...Object.keys(CITY_PALETTES)];

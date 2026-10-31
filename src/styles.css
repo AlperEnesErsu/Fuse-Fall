@@ -1295,6 +1295,71 @@ h2,
 .swatch.style-gold {
   background: radial-gradient(circle at 40% 40%, #fff9e0 0 18%, #f2b134 36%, #4a3c1f 70%);
 }
+/* City sets: each city's blast style and block theme. */
+.swatch.style-city-ankara {
+  background: radial-gradient(circle at 40% 40%, #ffffff 0 18%, #eb322d 36%, #3a1d1f 70%);
+}
+.swatch.style-city-paris {
+  background: linear-gradient(90deg, #2b4fb5 0 33%, #ffffff 33% 66%, #e5484d 66%);
+}
+.swatch.style-city-london {
+  background: radial-gradient(circle at 40% 40%, #fffae1 0 18%, #f5c85a 36%, #7d8189 70%);
+}
+.swatch.style-city-rome {
+  background: radial-gradient(circle at 40% 40%, #ffd296 0 18%, #c82814 36%, #141212 70%);
+}
+.swatch.style-city-tokyo {
+  background: radial-gradient(circle at 40% 40%, #fff5fa 0 18%, #ffaac8 36%, #5d3a4b 70%);
+}
+.swatch.style-city-istanbul {
+  background: radial-gradient(circle at 40% 40%, #fffad2 0 18%, #f04632 36%, #3b2a24 70%);
+}
+.swatch.style-city-berlin {
+  background: radial-gradient(circle at 40% 40%, #ffebff 0 18%, #f03cc8 36%, #0d0d10 70%);
+}
+.swatch.style-city-madrid {
+  background: radial-gradient(circle at 40% 40%, #fff5c8 0 18%, #e63c1e 36%, #3e2414 70%);
+}
+.swatch.style-city-newyork {
+  background: conic-gradient(#ffe600 0 33%, #ff3fa4 0 66%, #3fd0ff 0);
+}
+.swatch.style-theme-ankara {
+  background: linear-gradient(135deg, #c9a19a 0 50%, #a88a85 50%);
+}
+.swatch.style-theme-paris {
+  background: linear-gradient(135deg, #e8dcc2 0 50%, #d4c6a6 50%);
+}
+.swatch.style-theme-london {
+  background: repeating-linear-gradient(0deg, #c8a864 0 6px, #cfc8b6 6px 8px);
+}
+.swatch.style-theme-rome {
+  background: linear-gradient(120deg, #f2efe8 0 45%, #8a8478 46% 48%, #f2efe8 49%);
+}
+.swatch.style-theme-tokyo {
+  background: linear-gradient(135deg, #b3261e 0 50%, #1d1a1a 50%);
+}
+.swatch.style-theme-istanbul {
+  background: radial-gradient(circle, #2a8fb0 0 30%, #f5f2ea 32%);
+}
+.swatch.style-theme-berlin {
+  background: radial-gradient(circle at 30% 30%, #f05bd8 0 22%, transparent 24%), radial-gradient(circle at 70% 70%, #36e3f0 0 22%, #8f9399 24%);
+}
+.swatch.style-theme-madrid {
+  background: linear-gradient(135deg, #c8714a 0 50%, #d48a5f 50%);
+}
+.swatch.style-theme-newyork {
+  background: linear-gradient(135deg, #7a4a3a 0 50%, #8a5a48 50%);
+}
+/* A city's set before its city opens. */
+.tag.locked {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+.shop-item.locked .swatch {
+  opacity: 0.45;
+}
 .payout {
   display: flex;
   align-items: baseline;

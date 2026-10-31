@@ -42,7 +42,7 @@ export const en: Strings = {
   career: (next: number | undefined) => (next === undefined ? 'Top rank' : `Next rank: ${next} scrap lifetime`),
   workshop: {
     title: 'Workshop',
-    tagline: 'Spend scrap on blast styles and new structures. Jobs stay just as hard.',
+    tagline: 'Spend scrap on blast styles, block themes and new structures. Each city brings its own set. Jobs stay just as hard.',
     styles: 'Blast styles',
     themes: 'Block themes',
     structures: 'Free Site structures',
@@ -51,6 +51,7 @@ export const en: Strings = {
     owned: 'Owned',
     buy: (n: number) => `${n} scrap`,
     errors: { owned: 'You already own this.', insufficient: 'Not enough scrap.' },
+    opensWith: (city: string) => `Opens with ${city}`,
   },
   freeSiteMore: 'More structures in the Workshop.',
   modeLabel: 'Mode',
@@ -81,7 +82,7 @@ export const en: Strings = {
   },
   contracts: {
     title: 'Weekly contracts',
-    renews: 'New ones every Monday. Campaign jobs and the daily count.',
+    renews: 'New ones every Monday. New wins, more stars and the day’s daily count; replays and hint wins do not.',
     footer: (done: number, total: number) => `Contracts ${done}/${total}`,
     reward: (n: number, count: number, goal: number) => `+${n} scrap · ${count}/${goal}`,
     done: 'Done',

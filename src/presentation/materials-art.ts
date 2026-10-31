@@ -124,6 +124,122 @@ const ice =
     }
   };
 
+/** Dressed stone: courses of blocks in the base colour, fine joints and a little grit. */
+const stone =
+  (base: string, joint: string): Paint =>
+  (c, s, rng) => {
+    c.fillStyle = joint;
+    c.fillRect(0, 0, s, s);
+    const course = s / 4;
+    for (let row = 0; row < 4; row++) {
+      const offset = row % 2 === 0 ? 0 : s / 4;
+      for (let x = -s / 2; x < s; x += s / 2) {
+        c.fillStyle = base;
+        c.fillRect(x + offset + 1, row * course + 1, s / 2 - 2, course - 2);
+      }
+    }
+    for (let i = 0; i < 120; i++) {
+      c.fillStyle = `rgba(0, 0, 0, ${rng() * 0.12})`;
+      c.fillRect(rng() * s, rng() * s, 1, 1);
+    }
+  };
+
+/** Brick in a range of shades from `[r, g, b]`, plus `spread` per channel, laid in stretcher bond. */
+const tintedBrick =
+  (mortar: string, rgb: readonly [number, number, number], spread: number): Paint =>
+  (c, s, rng) => {
+    c.fillStyle = mortar;
+    c.fillRect(0, 0, s, s);
+    const bw = 16;
+    const bh = 8;
+    for (let row = 0; row * bh < s; row++) {
+      const offset = row % 2 === 0 ? 0 : bw / 2;
+      for (let x = -bw; x < s + bw; x += bw) {
+        const v = (k: number) => Math.min(255, (rgb[k] ?? 0) + Math.floor(rng() * spread));
+        c.fillStyle = `rgb(${v(0)}, ${v(1)}, ${v(2)})`;
+        c.fillRect(x + offset + 0.8, row * bh + 0.8, bw - 1.6, bh - 1.6);
+      }
+    }
+  };
+
+/** Polished marble: a pale ground with soft wandering veins. */
+const marble =
+  (base: string, vein: string): Paint =>
+  (c, s, rng) => {
+    c.fillStyle = base;
+    c.fillRect(0, 0, s, s);
+    c.strokeStyle = vein;
+    for (let i = 0; i < 5; i++) {
+      c.lineWidth = 0.5 + rng() * 1.5;
+      c.globalAlpha = 0.25 + rng() * 0.35;
+      let x = rng() * s;
+      let y = 0;
+      c.beginPath();
+      c.moveTo(x, y);
+      while (y < s) {
+        x += (rng() - 0.5) * 10;
+        y += 4 + rng() * 6;
+        c.lineTo(x, y);
+      }
+      c.stroke();
+    }
+    c.globalAlpha = 1;
+  };
+
+/** Lacquer: a deep glossy colour with a soft band of shine. */
+const lacquer =
+  (base: string, shine: string): Paint =>
+  (c, s) => {
+    c.fillStyle = base;
+    c.fillRect(0, 0, s, s);
+    const g = c.createLinearGradient(0, 0, s, s);
+    g.addColorStop(0, 'rgba(255, 255, 255, 0)');
+    g.addColorStop(0.45, shine);
+    g.addColorStop(0.55, 'rgba(255, 255, 255, 0)');
+    c.fillStyle = g;
+    c.fillRect(0, 0, s, s);
+  };
+
+/** Glazed tiles: square tiles with a four-petal motif in the accent colour. */
+const tile =
+  (base: string, accent: string, grout: string): Paint =>
+  (c, s) => {
+    c.fillStyle = grout;
+    c.fillRect(0, 0, s, s);
+    const t = s / 2;
+    for (let y = 0; y < s; y += t) {
+      for (let x = 0; x < s; x += t) {
+        c.fillStyle = base;
+        c.fillRect(x + 1, y + 1, t - 2, t - 2);
+        c.fillStyle = accent;
+        for (const [dx, dy] of [[0, -1], [1, 0], [0, 1], [-1, 0]] as const) {
+          c.beginPath();
+          c.ellipse(x + t / 2 + dx * 6, y + t / 2 + dy * 6, dx === 0 ? 3 : 5, dx === 0 ? 5 : 3, 0, 0, Math.PI * 2);
+          c.fill();
+        }
+      }
+    }
+  };
+
+/** Concrete in spray paint: grey ground with bright blobs and drips. */
+const graffiti =
+  (base: string, colours: readonly string[]): Paint =>
+  (c, s, rng) => {
+    c.fillStyle = base;
+    c.fillRect(0, 0, s, s);
+    for (let i = 0; i < 6; i++) {
+      c.fillStyle = colours[Math.floor(rng() * colours.length)] ?? '#ffffff';
+      c.globalAlpha = 0.55 + rng() * 0.35;
+      const x = rng() * s;
+      const y = rng() * s;
+      c.beginPath();
+      c.arc(x, y, 5 + rng() * 9, 0, Math.PI * 2);
+      c.fill();
+      c.fillRect(x - 1, y, 2, 6 + rng() * 12);
+    }
+    c.globalAlpha = 1;
+  };
+
 /** Theme surfaces for structural materials; vehicles and glass keep their real look. */
 const THEMES: Readonly<Record<string, Partial<Record<MaterialId, Paint>>>> = {
   'theme:cardboard': {
@@ -138,7 +254,65 @@ const THEMES: Readonly<Record<string, Partial<Record<MaterialId, Paint>>>> = {
     concrete: ice('#9ccbe4'),
     metal: ice('#86b9d8'),
   },
+  // City sets (content/workshop.ts).
+  'theme:ankara': {
+    wood: stone('#c9a19a', '#9c7a74'),
+    brick: stone('#b98d86', '#8c6a64'),
+    concrete: stone('#a88a85', '#7f6762'),
+    metal: stone('#8d7471', '#685452'),
+  },
+  'theme:paris': {
+    wood: stone('#e8dcc2', '#bfb294'),
+    brick: stone('#ddd0b3', '#b3a689'),
+    concrete: stone('#d4c6a6', '#a99b7d'),
+    metal: stone('#9aa3a8', '#6e777c'),
+  },
+  'theme:london': {
+    wood: tintedBrick('#cfc8b6', [200, 168, 100], 30),
+    brick: tintedBrick('#cfc8b6', [185, 150, 85], 30),
+    concrete: tintedBrick('#bdb6a5', [165, 140, 95], 25),
+    metal: tintedBrick('#9c968a', [120, 110, 95], 20),
+  },
+  'theme:rome': {
+    wood: marble('#f2efe8', '#8a8478'),
+    brick: marble('#efe6dc', '#a07a5a'),
+    concrete: marble('#e6e3dc', '#6e6a62'),
+    metal: marble('#c9cdd2', '#5c636b'),
+  },
+  'theme:tokyo': {
+    wood: lacquer('#b3261e', 'rgba(255, 255, 255, 0.35)'),
+    brick: lacquer('#8f1d18', 'rgba(255, 255, 255, 0.3)'),
+    concrete: lacquer('#1d1a1a', 'rgba(255, 255, 255, 0.25)'),
+    metal: lacquer('#2b2626', 'rgba(255, 220, 160, 0.3)'),
+  },
+  'theme:istanbul': {
+    wood: tile('#f5f2ea', '#2a8fb0', '#d6d0c2'),
+    brick: tile('#2a8fb0', '#f5f2ea', '#1f6f88'),
+    concrete: tile('#e9f3f2', '#c0392b', '#c6d3d2'),
+    metal: tile('#1f5f7a', '#4fc1c9', '#173f52'),
+  },
+  'theme:berlin': {
+    wood: graffiti('#8f9399', ['#f05bd8', '#36e3f0', '#ffe600']),
+    brick: graffiti('#7f8389', ['#ff3f3f', '#ffe600', '#4cb36a']),
+    concrete: graffiti('#9a9ea4', ['#7c6cf0', '#36e3f0', '#ffffff']),
+    metal: graffiti('#5d646c', ['#f2b134', '#f05bd8']),
+  },
+  'theme:madrid': {
+    wood: stone('#c8714a', '#9a5235'),
+    brick: tintedBrick('#e0c9b0', [190, 95, 60], 25),
+    concrete: stone('#d48a5f', '#a86845'),
+    metal: stone('#9b5f45', '#734331'),
+  },
+  'theme:newyork': {
+    wood: stone('#7a4a3a', '#5a3428'),
+    brick: tintedBrick('#b8aa98', [120, 60, 45], 25),
+    concrete: stone('#8a5a48', '#634034'),
+    metal: stone('#4b4f55', '#33363b'),
+  },
 };
+
+/** Every block theme that has its own surfaces, for checking the catalogue against. */
+export const BLOCK_THEME_IDS: readonly string[] = Object.keys(THEMES);
 
 let theme = 'theme:standard';
 

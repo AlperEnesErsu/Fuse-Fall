@@ -3,7 +3,10 @@ import { ADS, PAYOUT, RANK_THRESHOLDS, adsToday, payout, rankOf, salvageOf } fro
 import { addBoughtScrap, buyItem, earnScrap, emptyProgress, parseProgress, recordCareer, recordOneShot, rewardAd } from '../src/core/progress';
 import { scoreLevel } from '../src/core/scoring';
 import { loadCampaign } from '../src/content/levels';
-import { WORKSHOP, activeLook, isOwned, structureItemId, workshopItem } from '../src/content/workshop';
+import { WORKSHOP, activeLook, cityStyleId, cityThemeId, isOwned, onSale, structureItemId, workshopItem } from '../src/content/workshop';
+import { BLAST_STYLE_IDS } from '../src/presentation/blast-styles';
+import { BLOCK_THEME_IDS } from '../src/presentation/materials-art';
+import { DEFAULT_BLOCK_THEME } from '../src/core/progress';
 import { SANDBOX_TEMPLATES } from '../src/content/sandbox';
 import { playSolution } from './play';
 
@@ -96,6 +99,45 @@ describe('career and workshop', () => {
     for (const t of SANDBOX_TEMPLATES) expect(workshopItem(structureItemId(t.id))).toBeDefined();
     expect(WORKSHOP.filter((i) => i.kind === 'structure' && isOwned([], i)).length).toBeGreaterThan(0);
     expect(new Set(WORKSHOP.map((i) => i.id)).size).toBe(WORKSHOP.length);
+  });
+});
+
+describe('city sets', () => {
+  const campaign = loadCampaign();
+
+  it('give every city a blast style and a block theme, dearer city by city', () => {
+    let previous = { style: 0, theme: 0 };
+    for (const w of campaign.worlds) {
+      const style = workshopItem(cityStyleId(w.key));
+      const theme = workshopItem(cityThemeId(w.key));
+      expect(style).toMatchObject({ kind: 'blast-style', city: w.world });
+      expect(theme).toMatchObject({ kind: 'block-theme', city: w.world });
+      expect(style?.cost ?? 0).toBeGreaterThan(previous.style);
+      expect(theme?.cost ?? 0).toBeGreaterThan(previous.theme);
+      previous = { style: style?.cost ?? 0, theme: theme?.cost ?? 0 };
+    }
+  });
+
+  it('draw every look the catalogue sells', () => {
+    for (const item of WORKSHOP) {
+      if (item.kind === 'blast-style') expect(BLAST_STYLE_IDS).toContain(item.id);
+      if (item.kind === 'block-theme' && item.id !== DEFAULT_BLOCK_THEME) expect(BLOCK_THEME_IDS).toContain(item.id);
+    }
+  });
+
+  it('go on sale when their city opens; everything else is always on sale', () => {
+    const paris = workshopItem(cityThemeId('paris'));
+    const thermite = workshopItem('thermite');
+    if (!paris || !thermite) throw new Error('missing items');
+    expect(onSale(paris, (w) => w === 1)).toBe(false);
+    expect(onSale(paris, (w) => w <= 2)).toBe(true);
+    expect(onSale(thermite, () => false)).toBe(true);
+  });
+
+  it('give scrap a use to the end of the campaign', () => {
+    // The whole catalogue costs more than a full first run of the campaign pays (about 11 700),
+    // so contracts, dailies and replays for stars keep paying toward something.
+    expect(WORKSHOP.reduce((sum, i) => sum + i.cost, 0)).toBeGreaterThan(15_000);
   });
 });
 
