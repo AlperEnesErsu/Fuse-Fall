@@ -10,6 +10,7 @@ import { MATERIAL_COLORS, PALETTE } from './palette';
 import { paintScene, SCENE_MARGIN, skyAt } from './scenery';
 import { flame, puff } from './sprites';
 import { bevel, fillMaterial, glassPane, steelBeam } from './materials-art';
+import { drawPart, planBuildings, type BuildingPart } from './buildings';
 
 /** Height of a tram's overhead wire above its roof. */
 const TRAM_WIRE = 16;
@@ -51,8 +52,8 @@ const SHADOW_REACH = 240;
  * and extend the sky above and the ground below to fill the screen.
  */
 export class Renderer {
-  /** What the targets' eyes follow: the charge being placed, the last charge, or the last blast. */
-  private lookAt: Vec2 | undefined;
+  /** The job's blocks dressed as buildings, planned once from where they stood at the start. */
+  private buildings: { session: LevelSession; plan: Map<string, BuildingPart> } | undefined;
   private readonly ctx: CanvasRenderingContext2D;
   private scale = 1;
   private offsetX = 0;
@@ -177,9 +178,7 @@ export class Renderer {
       const threatened = session.phase === 'placing' ? this.blastRadii(session, overlay) : new Set<string>();
       this.groundShadows(session);
       this.ropes(session);
-      const charges = session.charges;
-      const light = juice.lights[juice.lights.length - 1];
-      this.lookAt = overlay.ghost?.position ?? charges[charges.length - 1]?.position ?? (light && { x: light.x, y: light.y }) ?? this.lookAt;
+      if (this.buildings?.session !== session) this.buildings = { session, plan: planBuildings([...session.view()]) };
       for (const e of session.view()) this.entity(e, overlay.time, threatened.has(e.id));
       this.birds(session, juice, overlay.time);
       this.charges(session, overlay);
@@ -555,12 +554,13 @@ export class Renderer {
       if (e.material === 'metal') steelBeam(c, w, h);
       bevel(c, w, h);
     }
+    const part = this.buildings?.plan.get(e.id);
+    if (part) drawPart(c, part, w, h, e.material === 'glass');
     if (e.protected) this.facade(w, h, e.compromised || threatened);
     if (e.damage > 0.25) this.cracks(e.id, w, h, e.damage, e.material);
     c.strokeStyle = 'rgba(0,0,0,0.45)';
     c.lineWidth = 1.2;
     c.strokeRect(-w / 2, -h / 2, w, h);
-    if (e.target) this.targetFace(e, Math.min(w, h));
   }
 
   /** A broken-off fragment: same surface as its parent, with darker fracture edges. */
@@ -604,74 +604,6 @@ export class Renderer {
       }
     }
     c.stroke();
-  }
-
-  /**
-   * A target has a face: crosshair ticks say what it is, the eyes say how it
-   * feels. Calm eyes watch the charge being placed or the last blast; they go
-   * wide when the block shakes or cracks, and turn to crosses once it is down.
-   * Drawn in the body's own (rotated) frame.
-   */
-  private targetFace(e: EntityView, size: number): void {
-    const c = this.ctx;
-    const speed = Math.hypot(e.state.velocity.x, e.state.velocity.y);
-    const mood = e.down ? 'down' : speed > 70 || e.damage > 0.3 ? 'scared' : 'calm';
-    const r = size * 0.42;
-    c.strokeStyle = e.down ? PALETTE.targetDown : PALETTE.target;
-    c.lineWidth = 2;
-    c.beginPath();
-    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
-      c.moveTo(dx * r * 0.95, dy * r * 0.95);
-      c.lineTo(dx * r * 1.25, dy * r * 1.25);
-    }
-    c.stroke();
-    // Where to look, turned into the body's frame.
-    let lx = 0;
-    let ly = 0.4;
-    if (this.lookAt) {
-      const dx = this.lookAt.x - e.state.position.x;
-      const dy = this.lookAt.y - e.state.position.y;
-      const a = -e.state.angle;
-      const rx = dx * Math.cos(a) - dy * Math.sin(a);
-      const ry = dx * Math.sin(a) + dy * Math.cos(a);
-      const d = Math.hypot(rx, ry) || 1;
-      lx = rx / d;
-      ly = ry / d;
-    }
-    const eye = size * (mood === 'scared' ? 0.15 : 0.12);
-    for (const side of [-1, 1]) {
-      const x = side * size * 0.17;
-      const y = -size * 0.06;
-      if (mood === 'down') {
-        c.strokeStyle = '#2a2320';
-        c.lineWidth = 1.8;
-        c.beginPath();
-        c.moveTo(x - eye * 0.7, y - eye * 0.7);
-        c.lineTo(x + eye * 0.7, y + eye * 0.7);
-        c.moveTo(x + eye * 0.7, y - eye * 0.7);
-        c.lineTo(x - eye * 0.7, y + eye * 0.7);
-        c.stroke();
-        continue;
-      }
-      c.fillStyle = '#f7f3ea';
-      c.beginPath();
-      c.ellipse(x, y, eye, eye * 1.15, 0, 0, Math.PI * 2);
-      c.fill();
-      c.strokeStyle = 'rgba(30, 24, 20, 0.6)';
-      c.lineWidth = 1;
-      c.stroke();
-      const pupil = eye * (mood === 'scared' ? 0.38 : 0.55);
-      c.fillStyle = '#1d1a18';
-      c.beginPath();
-      c.arc(x + lx * (eye - pupil) * 0.8, y + ly * (eye - pupil) * 0.8, pupil, 0, Math.PI * 2);
-      c.fill();
-    }
-    if (mood === 'scared') {
-      c.fillStyle = '#2a2320';
-      c.beginPath();
-      c.ellipse(0, size * 0.2, size * 0.06, size * 0.08, 0, 0, Math.PI * 2);
-      c.fill();
-    }
   }
 
   /** Pigeons: perched on their roof until the first blast, then flapping away. */
