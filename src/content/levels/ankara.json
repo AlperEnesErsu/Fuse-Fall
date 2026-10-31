@@ -452,17 +452,31 @@
   "blocks": [
    {
     "x": 400,
-    "y": 410.0,
+    "y": 465.0,
+    "w": 50,
+    "h": 30,
+    "material": "concrete"
+   },
+   {
+    "x": 400,
+    "y": 395.0,
     "w": 30,
-    "h": 140,
+    "h": 110,
+    "material": "wood"
+   },
+   {
+    "x": 680,
+    "y": 465.0,
+    "w": 50,
+    "h": 30,
     "material": "concrete"
    },
    {
     "x": 680,
-    "y": 410.0,
+    "y": 395.0,
     "w": 30,
-    "h": 140,
-    "material": "concrete"
+    "h": 110,
+    "material": "wood"
    },
    {
     "x": 540,
@@ -478,6 +492,20 @@
     "h": 40,
     "material": "wood",
     "target": true
+   },
+   {
+    "x": 420,
+    "y": 298.0,
+    "w": 12,
+    "h": 44,
+    "material": "wood"
+   },
+   {
+    "x": 660,
+    "y": 298.0,
+    "w": 12,
+    "h": 44,
+    "material": "wood"
    }
   ],
   "barrels": [],

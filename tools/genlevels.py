@@ -121,8 +121,10 @@ def ankara():
     l.zone(440, 380, 160, 100); l.sol((500, 470)); out.append(l)
 
     l = L(1, 7, 'Köprü', 2, 1, 0.6, 'Tabliye ayaklara bağlı; bir ayağı kesersen köprü yana yatar.')
-    l.col(400, G, 30, 140, 'concrete'); l.col(680, G, 30, 140, 'concrete')
+    for x in (400, 680):
+        base = l.col(x, G, 50, 30, 'concrete'); l.col(x, base, 30, 110, 'wood')
     top = l.col(540, G - 140, 340, 20, 'wood'); l.col(540, top, 40, 40, 'wood', True)
+    for x in (420, 660): l.col(x, top, 12, 44, 'wood')
     l.zone(340, 400, 400, 80); l.sol((386, 436)); out.append(l)
 
     l = L(1, 8, 'Zincirleme', 1, 1, 0.5, 'İlk varili ateşle; zincir gerisini taşır.')
@@ -157,7 +159,7 @@ def paris():
     l.zone(440, 380, 160, 100); l.sol((530, 450)); out.append(l)
 
     l = L(2, 3, 'Cam Teras', 1, 1, 0.6, 'Soldaki dükkân korunuyor. Şarjı ondan uzak tut.')
-    top = tower(l, 650, G, 90, 100, 'glass', 'wood'); top = tower(l, 650, top, 70, 90, 'glass', 'wood')
+    top = tower(l, 650, G, 90, 140, 'glass', 'wood'); top = tower(l, 650, top, 70, 60, 'glass', 'wood')
     l.col(650, top, 36, 36, 'wood', True)
     l.house(300, 80, 80)
     l.zone(440, 400, 120, 80); l.sol((535, 468)); out.append(l)
@@ -242,18 +244,19 @@ def london():
     out = []
     # 1. Warm-up: two columns, protected neighbour on the right.
     l = L(3, 1, 'Çift Kolon', 2, 1, 0.5, 'Sağdaki bina korunuyor. Patlama çemberini ondan uzak tut.')
-    top = frame(l, [470, 590], G, 120); top = frame(l, [470, 590], top, 100)
-    l.col(530, top, 36, 36, 'wood', True)
+    top = frame(l, [480, 560], G, 120, col_m='wood'); top = frame(l, [480, 560], top, 100, col_m='wood')
+    l.col(520, top, 36, 36, 'wood', True)
     l.house(840, 60, 90)
-    l.zone(440, 380, 60, 100); l.zone(560, 380, 60, 100)
-    l.sol((477, 425)); out.append(l)
+    l.zone(440, 380, 60, 100); l.zone(540, 380, 60, 100)
+    l.sol((480, 450)); out.append(l)
 
     # 2. Three columns; one well-placed charge is enough.
     l = L(3, 2, 'Üç Kolon', 2, 1, 0.5, 'Orta kolon yükün çoğunu taşır.')
-    top = frame(l, [420, 520, 620], G, 110); l.col(520, top, 36, 36, 'wood', True)
+    top = frame(l, [420, 520, 620], G, 140, col_m='wood'); top = frame(l, [480, 560], top, 50, col_m='wood', deck_m='wood')
+    l.col(520, top, 36, 36, 'wood', True)
     l.house(810, 60, 90)
     l.zone(395, 380, 250, 100)
-    l.sol((481, 425)); out.append(l)
+    l.sol((500, 440)); out.append(l)
 
     # 3. Convoy: the timeline is introduced. Two cars, one spot, two delays.
     l = L(3, 3, 'Konvoy', 2, 2, 0.4, 'İki araç aynı noktadan geçecek. İkinci şarjın gecikmesini ikinci araca göre ayarla.')
@@ -266,9 +269,10 @@ def london():
 
     # 4. Tower crane: steel cannot break, so cut its legs.
     l = L(3, 4, 'Kule Vinci', 2, 1, 0.5, 'Çelik kırılmaz; vinci devirmek için ahşap ayaklarını kes.')
-    l.col(470, G, 24, 140, 'wood'); l.col(570, G, 24, 140, 'wood')
-    top = l.col(520, G - 140, 140, 16, 'metal')
-    top = l.col(520, top, 20, 120, 'metal')
+    for x in (470, 570):
+        base = l.col(x, G, 24, 85, 'wood'); l.col(x, base, 24, 85, 'wood')
+    top = l.col(520, G - 170, 140, 16, 'metal')
+    top = l.col(520, top, 20, 80, 'metal')
     l.col(520, top, 36, 36, 'wood', True)
     l.zone(440, 400, 160, 80)
     l.sol((466, 436)); out.append(l)
@@ -345,27 +349,28 @@ def rome():
     # 2. Footprint introduced: keep the debris on site.
     l = L(4, 2, 'Dar Şantiye', 3, 1, 0.5, 'Enkaz şeritli alanda kalmalı. Hassas şarj daha az savurur.')
     l.d['chargeKinds'] = ['standard', 'precision']
-    top = tower(l, 520, G, 80, 120); top = tower(l, 520, top, 60, 90); l.col(520, top, 36, 36, 'wood', True)
-    l.d['footprint'] = dict(**{'from': 400}, to=640, ratio=0.75)
+    top = tower(l, 520, G, 80, 150); top = tower(l, 520, top, 60, 60); l.col(520, top, 36, 36, 'wood', True)
+    l.d['footprint'] = dict(**{'from': 370}, to=690, ratio=0.7)
     l.zone(450, 380, 140, 100)
-    l.sol((460, 450)); out.append(l)
+    l.sol((500, 450)); out.append(l)
 
     # 3. Three-bay arcade.
     l = L(4, 3, 'Kemerli Avlu', 2, 1, 0.5, 'Üç ayaklı yapı. Doğru ayağı kesersen kendi içine çöker.')
     l.d['chargeKinds'] = ['standard', 'precision']
     top = frame(l, [430, 520, 610], G, 110, col_m='wood', deck_m='wood'); l.col(520, top, 36, 36, 'wood', True)
-    l.d['footprint'] = dict(**{'from': 380}, to=660, ratio=0.92)
+    l.d['footprint'] = dict(**{'from': 380}, to=660, ratio=0.85)
     l.zone(400, 380, 240, 100)
     l.sol((490, 450, None, P)); out.append(l)
 
     # 4. Marble columns beside a protected ruin.
     l = L(4, 4, 'Mermer Sütunlar', 3, 2, 0.5, 'Soldaki tarihi yapı korunuyor ve şantiye dar.')
     l.d['chargeKinds'] = ['standard', 'precision']
-    top = frame(l, [500, 600], G, 140, col_m='concrete', deck_m='wood'); l.col(550, top, 36, 36, 'wood', True)
+    top = frame(l, [500, 600], G, 170, col_m='concrete', deck_m='wood'); top = l.col(550, top, 80, 14, 'wood')
+    l.col(550, top, 36, 36, 'wood', True)
     l.house(330, 70, 70)
     l.d['footprint'] = dict(**{'from': 440}, to=700, ratio=0.8)
     l.zone(470, 360, 160, 120)
-    l.sol((580, 450)); out.append(l)
+    l.sol((510, 440), (600, 440)); out.append(l)
 
     # 5. Two buildings, one site.
     l = L(4, 5, 'Pazar Yeri', 3, 2, 0.5, 'İki yapı aynı şantiyede. İkisini de alanın içine indir.')
@@ -390,7 +395,9 @@ def rome():
     l = L(4, 7, 'Çan Kulesi', 2, 1, 0.5, 'Şantiye kulenin solunda. Kuleyi o tarafa yatır.')
     l.d['chargeKinds'] = ['standard', 'precision']
     chimney(l, 560, 6)
-    l.d['footprint'] = dict(**{'from': 140}, to=620, ratio=0.75)
+    # A buttress on the right: the tower leans the way the site is.
+    l.col(597, G, 30, 70, 'concrete')
+    l.d['footprint'] = dict(**{'from': 140}, to=620, ratio=0.7)
     l.zone(480, 380, 160, 100)
     l.sol((524, 465)); out.append(l)
 
@@ -406,14 +413,14 @@ def rome():
     # 9. Dome: a stepped timber dome on a drum.
     l = L(4, 9, 'Kubbe', 3, 2, 0.5, 'Kasnağı kes; kubbe kendi ağırlığıyla iner.')
     l.d['chargeKinds'] = ['standard', 'precision']
-    base = tower(l, 520, G, 140, 100, 'wood', 'wood')
+    base = tower(l, 520, G, 140, 140, 'wood', 'wood')
     for w in (150, 110, 70):
         base = l.col(520, base, w, 26, 'wood')
     l.col(520, base, 34, 34, 'wood', True)
     l.house(300, 60, 80); l.house(740, 60, 80)
     l.d['footprint'] = dict(**{'from': 400}, to=640, ratio=0.75)
     l.zone(420, 380, 200, 100)
-    l.sol((490, 450, None, P), (550, 450, None, P)); out.append(l)
+    l.sol((470, 430, None, P), (570, 430, None, P)); out.append(l)
 
     # 10. Finale: two buildings, one tight site, ancient neighbour.
     l = L(4, 10, 'Roma Finali', 4, 3, 0.5, 'İki yapı, dar şantiye, yanında tarihi yapı. Her şarjın tipini ve yerini seç.')
@@ -989,7 +996,7 @@ def newyork():
     # 5. Fuel run: the cart shoves into a row of barrels; their chain takes the depot down.
     l = L(9, 5, 'Yakıt Hattı', 1, 1, 0.5, 'Şarj varillere kadar sürsün; gerisini zincir halleder.')
     l.d['chargeKinds'] = ['standard', R]
-    for x in (520, 560):
+    for x in (520, 560, 600):
         l.barrel(x)
     top = tower(l, 690, G, 80, 120, plank='metal'); l.col(690, top, 34, 34, 'wood', True)
     l.zone(90, 430, 140, 50)
@@ -1018,7 +1025,7 @@ def newyork():
     l = L(9, 8, 'Bariyer', 2, 2, 0.5, 'Tek yürüyen şarj bariyeri aşamaz. Arkasından gelen ikincisi yolu açar.')
     l.d['chargeKinds'] = [R]
     l.col(450, G, 24, 40, 'concrete')
-    top = tower(l, 760, G, 60, 120); l.col(760, top, 34, 34, 'wood', True)
+    top = tower(l, 640, G, 60, 120); l.col(640, top, 34, 34, 'wood', True)
     l.zone(90, 430, 160, 50)
     l.sol((200, Y, None, R, 1), (130, Y, None, R, 1)); out.append(l)
 
