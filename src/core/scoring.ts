@@ -70,6 +70,15 @@ export const SCORE = {
  * demolition, domino), at most 3. A failure earns none.
  * Score: base + a bonus for each unused charge + the collapse ratio; 0 for a failure.
  */
+/**
+ * A job won by copying the hints: it counts as cleared (the next job opens),
+ * but earns at most one star and no play styles. The stars are the player's own work.
+ */
+export const assistedResult = (result: LevelResult): LevelResult =>
+  result.cleared
+    ? { ...result, stars: Math.min(result.stars, 1) as Stars, styles: { surgical: false, demolition: false, domino: false } }
+    : result;
+
 export const scoreLevel = (outcome: LevelOutcome, rules: ScoringRules): LevelResult => {
   const targetsMet = outcome.targetsTotal > 0 && outcome.targetsDown >= outcome.targetsTotal;
   // Collateral damage is reported first: it voids the contract whatever else happened.

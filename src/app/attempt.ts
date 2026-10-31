@@ -20,7 +20,7 @@ import {
   type Progress,
 } from '../core/progress';
 import type { Draft } from '../core/editor';
-import type { LevelResult } from '../core/scoring';
+import { assistedResult, type LevelResult } from '../core/scoring';
 import type { SandboxVariant } from '../content/sandbox';
 
 export type Mode =
@@ -55,6 +55,8 @@ export interface Attempt {
   /** Captured at Fire. */
   plan: Plan | undefined;
   stats: AttemptCounts;
+  /** The player asked for a hint during this attempt: a win counts, but earns at most one star. */
+  assisted: boolean;
   /** The attempt's result, once it has settled. */
   result: LevelResult | undefined;
   /** The report shown after the attempt, re-shown when a replay ends. */
@@ -67,6 +69,7 @@ export const newAttempt = (level: LevelDefinition, mode: Mode): Attempt => ({
   replaying: false,
   plan: undefined,
   stats: { barrelsBlown: 0, carsWrecked: 0, blasts: 0 },
+  assisted: false,
   result: undefined,
   report: undefined,
 });
@@ -86,6 +89,8 @@ export const settleOneShot = (
 /** A campaign or daily job, once it has been booked into the save. */
 export interface JobSettlement {
   readonly progress: Progress;
+  /** The result as booked: a hint-assisted win is capped here. The report shows this one. */
+  readonly result: LevelResult;
   readonly payout: Payout;
   /** Why the job paid nothing by rule (not for lack of salvage), so the report can say so. */
   readonly unpaid: UnpaidReason | undefined;
@@ -104,11 +109,13 @@ export interface JobSettlement {
 export const settleJob = (
   progress: Progress,
   campaign: Campaign,
-  attempt: Pick<Attempt, 'level' | 'mode' | 'plan' | 'stats'>,
-  result: LevelResult,
+  attempt: Pick<Attempt, 'level' | 'mode' | 'plan' | 'stats'> & Partial<Pick<Attempt, 'assisted'>>,
+  played: LevelResult,
   now: Date,
 ): JobSettlement => {
   const { level, mode } = attempt;
+  const assisted = attempt.assisted === true;
+  const result = assisted ? assistedResult(played) : played;
   const today = dayOf(now);
   const daily = mode.kind === 'daily';
   const previousBest = progress.best[level.id] ?? 0;
@@ -118,8 +125,9 @@ export const settleJob = (
   const improved = daily ? firstClear : result.stars > (progress.stars[level.id] ?? 0);
   const firstAttempt = daily ? progress.daily.lastPlayed !== mode.day : !progress.played[level.id];
   // Only fresh results move the contracts: a replay that gains nothing is not new work.
-  const counts = daily ? firstClear : firstClear || improved;
-  const pay = payout(result, { firstClear, improved, firstAttempt, daily });
+  // A hint-assisted win is not the player's own work: it moves no contract.
+  const counts = !assisted && (daily ? firstClear : firstClear || improved);
+  const pay = payout(result, { firstClear, improved, firstAttempt, daily, assisted });
   const paysNothing = result.cleared ? !firstClear && !improved : !firstAttempt;
   const unpaid: UnpaidReason | undefined = !paysNothing ? undefined : daily ? 'daily' : result.cleared ? 'replay' : 'retry';
   const rankBefore = rankOf(progress.wallet.earned).index;
@@ -163,6 +171,7 @@ export const settleJob = (
   );
   return {
     progress: p,
+    result,
     payout: pay,
     unpaid,
     previousBest,

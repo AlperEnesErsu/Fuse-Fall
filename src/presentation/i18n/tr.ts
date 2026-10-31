@@ -273,6 +273,7 @@ export const tr = {
     },
     stylesNote: 'Her tarz bir yıldız. Herhangi ikisi üç yıldız.',
     stylesOnWin: 'Tarzlar yalnızca görev kazanılınca yıldız verir.',
+    assisted: 'İpucuyla kazanıldı: en fazla bir yıldız. Kendi çözümünle tekrar dene.',
     unpaid: {
       replay: 'Tekrar, yalnızca yıldızı artırırsa hurda öder.',
       retry: 'Başarısız tekrarlar hurda ödemez.',
