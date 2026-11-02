@@ -1,6 +1,6 @@
 # Gereksinimler — Fuse & Fall
 
-> Başlangıç: 2026-10-16 · Son güncelleme: 2026-10-18 · Durum: v0.9 (bölüm başlıklarındaki sürümler, eklendikleri sırayı gösterir) · Öncelik: **M** = Must (MVP), **S** = Should, **C** = Could
+> Başlangıç: 2026-10-16 · Son güncelleme: 2026-11-02 · Uygulama sürümü: 1.1.0 (`package.json`, bkz. [CHANGELOG](../CHANGELOG.md)) · Bölüm başlıklarındaki v0.2–v1.5 yalnızca gereksinimlerin eklendiği sırayı gösterir, uygulama sürümü değildir · Öncelik: **M** = Must (MVP), **S** = Should, **C** = Could
 
 ## 1. Ürün vizyonu
 
@@ -69,7 +69,7 @@ Yapıyı incele → Patlayıcı yerleştir → Ateşle → Yıkımı izle → Pu
 | NFR-05 | Determinizm | Aynı seviye, aynı yerleşim ve aynı tohum aynı sonucu verir (sabit zaman adımı 1/60 sn). | S |
 | NFR-06 | Gizlilik | Hesap yok, analitik yok; oyun kişisel veri toplamaz. Reklam ağı yalnızca onay kurallarına uyularak ve oyuncu reklam izlemeyi seçince çalışır (FR-88). | M |
 | NFR-07 | Paket boyutu | Web derlemesi ≤ 5 MB (sesler dahil). | S |
-| NFR-08 | Platform | Masaüstü ve mobil tarayıcı (PWA) öncelikli. Capacitor ile Android/iOS paketi sonra. | M (PWA) |
+| NFR-08 | Platform | Masaüstü ve mobil tarayıcı (PWA) ve Capacitor ile Android paketi (Google Play). iOS paketi henüz yok (bkz. §7). | M (PWA, Android) |
 | NFR-09 | Test edilebilirlik | Oyun mantığı (puanlama, hedefler, kayıt, seviye doğrulama) render'dan bağımsız birim testleriyle ≥ %80 kapsanır. | M |
 | NFR-10 | Erişilebilirlik | Tüm oynanış tek dokunuşla/tıklamayla yapılabilir. Renk körlüğü için malzemeler şekil veya doku ile de ayırt edilir. | S |
 
@@ -300,6 +300,15 @@ Yapıyı incele → Patlayıcı yerleştir → Ateşle → Yıkımı izle → Pu
 
 ## 7. Açık sorular
 
-1. Kısa vadede Android/iOS paketi (Capacitor) ne zaman?
-2. Londra, Roma, Tokyo için yeni mekanikler: hareketli platform, vinç, tren?
-3. Gelir modeli kararı (bkz. pazar analizi §7) ne zaman verilecek?
+### Yanıtlananlar
+
+1. ~~Android/iOS paketi ne zaman?~~ Android paketi Capacitor ile yapıldı ve Google Play'e hazır (bkz. [release.md](release.md)). iOS hâlâ açık (aşağıda).
+2. ~~Londra, Roma, Tokyo için yeni mekanikler?~~ Londra: gecikme zaman çizelgesi ve tek yönlü trafik; Roma: hassas şarj ve enkaz alanı; Tokyo: tren penceresi. Vinç, Berlin'de yıkım güllesi olarak geldi (FR-80, v1.3).
+3. ~~Gelir modeli kararı?~~ Ödüllü reklam (AdMob) ve hurda paketleri (Play Billing): FR-85, FR-88. Pazar analizinin önerdiği tek seferlik "Premium" satın alma seçilmedi.
+
+### Açık olanlar
+
+1. **iOS paketi:** yapılacak mı, ne zaman? Capacitor iOS platformu ve App Store hesabı gerekir; reklam ve ödeme adaptörleri iOS için ayrıca yazılmalı.
+2. **Satın alma doğrulaması:** hurda paketleri yalnızca cihazda doğrulanıyor; sunucuda makbuz kontrolü yok. Hurda tüketilebilir ve oyun çevrimdışı olduğu için risk düşük, ama bu bilinçli bir karar olarak onaylanmalı ya da sunucu doğrulaması planlanmalı.
+3. **NFR-01 ve NFR-03 ölçümü:** 55 FPS ve ≤ 2 sn açılış hedefleri orta seviye bir Android cihazda henüz ölçülmedi.
+4. **Oyun testi:** gerçek oyuncularla belgelenmiş bir oyun testi yok. Çekirdek döngünün eğlenceli olduğu ve ilk iki dakikada oyuncunun ne yapacağını anladığı doğrulanmadı.
