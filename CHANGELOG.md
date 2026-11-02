@@ -13,6 +13,7 @@ Biçim [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) düzenine yak
 - Oyun açılırken ya da her karede hata verirse "Bir şeyler ters gitti" paneli ve yeniden başlat düğmesi çıkar; tek bir hata oyunu durdurmaz.
 - Büyük yazı ayarı sahadaki şarj numaralarını ve gecikme etiketlerini de 1,5 kat büyütür (#20).
 - `npm run smoke`: ana ekranları gerçek tarayıcıda oynayıp görüntüleriyle rapor yazar; `npm run perf`: açılış süresini ve en ağır görevde kare hızını ölçer.
+- Güvenlik ve gizlilik denetimi (`docs/security-audit-2026-11-02.md`) ve oyun testi şablonu (`docs/qa/playtest-template.md`).
 - GitHub Actions her PR'da tip kontrolü, lint, testler, kapsam eşiği ve derlemeyi çalıştırır (#17).
 
 ### Düzeltildi
