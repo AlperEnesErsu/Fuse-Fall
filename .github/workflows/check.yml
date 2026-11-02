@@ -1,0 +1,31 @@
+# Runs what `npm run check` and `npm run build` run locally, on every push to
+# main and every pull request, so a broken type, lint rule, test or build is
+# seen before merging rather than after.
+name: check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Types, lint and tests
+        run: npm run check
+      - name: Coverage threshold (NFR-09)
+        run: npm run coverage
+      - name: Web build
+        run: npm run build
