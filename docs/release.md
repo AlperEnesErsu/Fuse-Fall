@@ -22,6 +22,8 @@ npm version patch --no-git-tag-version
 
 (Yeni özelliklerde `minor`.) Ara ve yama sayıları en fazla 99 olabilir; biçim `MAJOR.MINOR.PATCH` değilse derleme durur.
 
+Aynı anda [CHANGELOG.md](../CHANGELOG.md) içindeki **Yayınlanmadı** başlığını yeni sürüm numarası ve tarihle değiştir, üstüne boş bir **Yayınlanmadı** aç. Mağaza "Yenilikler" metni (bkz. [store-listing.md](store-listing.md)) bu listeden kısaltılır.
+
 ## 3. Release derlemesi
 
 ```bash
