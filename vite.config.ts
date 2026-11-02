@@ -1,7 +1,29 @@
 import { createHash } from 'node:crypto';
 import { readdirSync } from 'node:fs';
+import { rm } from 'node:fs/promises';
+import { resolve } from 'node:path';
 import { loadEnv, type Plugin } from 'vite';
 import { configDefaults, defineConfig } from 'vitest/config';
+
+/**
+ * Empties dist/ before each build. Vite empties it with fs.rmSync, which on
+ * Node 24 silently deletes nothing under a non-ASCII path such as "Masaüstü":
+ * old bundles piled up and `cap sync` copied every one of them into the APK.
+ * fs.promises.rm does delete there.
+ */
+const cleanOutDir = (): Plugin => {
+  let outDir = '';
+  return {
+    name: 'clean-out-dir',
+    apply: 'build',
+    configResolved(config) {
+      outDir = resolve(config.root, config.build.outDir);
+    },
+    async buildStart() {
+      await rm(outDir, { recursive: true, force: true });
+    },
+  };
+};
 
 /**
  * Emits sw.js after bundling with the exact list of built files, so the whole
@@ -76,7 +98,7 @@ const buildInfo = (mode: string): Plugin => {
 export default defineConfig(({ mode }) => ({
   base: './',
   build: { target: 'es2022' },
-  plugins: [buildInfo(mode), offlineServiceWorker()],
+  plugins: [cleanOutDir(), buildInfo(mode), offlineServiceWorker()],
   test: {
     environment: 'node',
     // `.claude` holds agent worktrees: other checkouts of this repo, tested from their own folders.
