@@ -1726,3 +1726,12 @@ h2,
     animation: none;
   }
 }
+
+/* ---- crash: the way out when the game cannot go on ---- */
+.screen.crash {
+  background: rgba(8, 9, 11, 0.92);
+}
+.panel.crash {
+  max-width: 420px;
+  text-align: center;
+}

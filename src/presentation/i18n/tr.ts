@@ -293,6 +293,11 @@ export const tr = {
     'unknown-charge': '',
     'kind-unavailable': 'Bu görevde bu şarj tipi yok',
   },
+  crash: {
+    title: 'Bir şeyler ters gitti',
+    body: 'Oyun bir hatayla durdu. Bitirdiğin görevler kayıtlı; yeniden başlatınca kaldığın yerden devam edersin.',
+    restart: 'Yeniden başlat',
+  },
 };
 
 /** Every language provides exactly this shape. */
