@@ -63,6 +63,8 @@
 
 ## 7. Gelir modeli (karar sonraya bırakıldı)
 
+> **Karar (2026-10-18):** ödüllü reklam ve hurda paketleri seçildi; tek seferlik Premium seçilmedi. Ayrıntı: [gereksinimler](02-gereksinimler.md) FR-85, FR-88.
+
 Veriler IAP ağırlıklı modelin bu nişte daha iyi çalıştığını gösteriyor. Öneri: **ücretsiz + tek seferlik "Premium" satın alma** (tüm dünyalar ve kozmetik patlama efektleri), isteğe bağlı ödüllü reklam yok. Bu MVP kapsamı dışında. Kod, mimaride ödeme ve reklam modülü takılabilecek şekilde tasarlanacak.
 
 ## Kaynaklar
