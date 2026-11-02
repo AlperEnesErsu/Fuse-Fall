@@ -16,6 +16,8 @@ npm run coverage   # core, infrastructure ve satın alma masası kapsamı (eşik
 npm run levels     # tools/genlevels.py ile görev JSON'larını yeniden üret (Python)
 ```
 
+GitHub Actions ([check.yml](.github/workflows/check.yml)) her PR'da ve `main`'e her push'ta `check`, `coverage` ve `build` çalıştırır.
+
 ## Android
 
 ```bash
