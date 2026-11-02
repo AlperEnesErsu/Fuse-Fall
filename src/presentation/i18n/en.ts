@@ -290,4 +290,9 @@ export const en: Strings = {
     'unknown-charge': '',
     'kind-unavailable': 'That charge type is not available here',
   },
+  crash: {
+    title: 'Something went wrong',
+    body: 'The game stopped with an error. Finished jobs are saved; restart to carry on where you left off.',
+    restart: 'Restart',
+  },
 };
