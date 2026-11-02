@@ -16,7 +16,9 @@
     "format": "prettier --write .",
     "check": "tsc --noEmit && eslint . && vitest run",
     "levels": "python tools/genlevels.py src/content/levels",
-    "store-shots": "node tools/store-shots.mjs"
+    "store-shots": "node tools/store-shots.mjs",
+    "smoke": "node tools/smoke-check.mjs",
+    "perf": "node tools/perf-probe.mjs"
   },
   "dependencies": {
     "@capacitor-community/admob": "8.1.0",
