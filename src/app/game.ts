@@ -21,6 +21,11 @@ import { ScreenFlow } from './screen-flow';
  * and mission without touching the save. Remove the line to play the real progression.
  */
 const UNLOCK_ALL = import.meta.env.VITE_UNLOCK_ALL === '1';
+/**
+ * Large text grows the page by 118%. Labels drawn on the field grow more: they start at
+ * 9-10 world px, which a portrait phone shrinks to about 6 screen px.
+ */
+const LARGE_LABEL_SCALE = 1.5;
 
 /** Composition root. Wires core, infrastructure and presentation together. */
 export class Game {
@@ -130,6 +135,7 @@ export class Game {
     root.toggle('left-handed', leftHanded);
     root.toggle('reduced-motion', reducedMotion);
     root.toggle('large-text', largeText);
+    this.renderer.setLabelScale(largeText ? LARGE_LABEL_SCALE : 1);
   }
 
   /** Picks the language from the saved choice (or the device) and returns the matching content text. */

@@ -61,6 +61,8 @@ export class Renderer {
   private scene = { city: 'ankara', progress: 0 };
   /** The slice of the world a portrait screen frames. */
   private focus: View = FULL_VIEW;
+  /** Charge numbers and delay tags grow with the Large text setting, as the HUD does. */
+  private labelScale = 1;
   /** The backdrop is static per level, so it is painted once and blitted each frame. */
   private backdrop: { key: string; canvas: HTMLCanvasElement; sky: string; ground: string } | undefined;
 
@@ -80,6 +82,10 @@ export class Renderer {
     this.canvas.width = Math.round(w * dpr);
     this.canvas.height = Math.round(h * dpr);
     this.layout();
+  }
+
+  setLabelScale(scale: number): void {
+    this.labelScale = scale;
   }
 
   /** Frames a job's slice of the world on portrait screens; FULL_VIEW for menus. */
@@ -947,7 +953,7 @@ export class Renderer {
     if (directional) this.directionArrow(direction, time);
     if (index > 0) {
       c.fillStyle = '#e9e3cf';
-      c.font = '700 9px Bahnschrift, system-ui, sans-serif';
+      c.font = `700 ${9 * this.labelScale}px Bahnschrift, system-ui, sans-serif`;
       c.textAlign = 'center';
       c.textBaseline = 'middle';
       c.fillText(String(index), 0, 3);
@@ -1059,7 +1065,7 @@ export class Renderer {
       c.setLineDash([]);
       c.globalAlpha = Math.min(1, alpha + 0.3);
       c.fillStyle = PALETTE.accent;
-      c.font = '700 10px Bahnschrift, system-ui, sans-serif';
+      c.font = `700 ${10 * this.labelScale}px Bahnschrift, system-ui, sans-serif`;
       c.textAlign = 'center';
       c.textBaseline = 'bottom';
       const label = s.delay === undefined ? `${i + 1}` : `${i + 1} · +${Math.round(s.delay * 1000)}`;
@@ -1113,14 +1119,15 @@ export class Renderer {
     const c = this.ctx;
     const text = `+${Math.round(delay * 1000)}`;
     c.save();
-    c.font = '700 10px Bahnschrift, system-ui, sans-serif';
+    const k = this.labelScale;
+    c.font = `700 ${10 * k}px Bahnschrift, system-ui, sans-serif`;
     c.textAlign = 'center';
     c.textBaseline = 'top';
     const w = c.measureText(text).width + 8;
     c.fillStyle = 'rgba(15, 17, 20, 0.85)';
-    c.fillRect(p.x - w / 2, p.y + 11, w, 13);
+    c.fillRect(p.x - w / 2, p.y + 11, w, 13 * k);
     c.fillStyle = PALETTE.accent;
-    c.fillText(text, p.x, p.y + 12.5);
+    c.fillText(text, p.x, p.y + 11 + 1.5 * k);
     c.restore();
   }
 
