@@ -14,6 +14,8 @@ npm run preview    # derlemeyi yerelde sun (çevrimdışı mod sadece burada ça
 npm run check      # tsc + eslint + testler
 npm run coverage   # core, infrastructure ve satın alma masası kapsamı (eşik %80)
 npm run levels     # tools/genlevels.py ile görev JSON'larını yeniden üret (Python)
+npm run smoke      # ana ekranları tarayıcıda oyna, görüntü ve rapor: docs/qa/smoke/<tarih>/ (dev sunucusu + BROWSER)
+npm run perf       # açılış süresi ve en ağır görevde FPS, 4× yavaş CPU ile (bkz. docs/performance.md)
 ```
 
 GitHub Actions ([check.yml](.github/workflows/check.yml)) her PR'da ve `main`'e her push'ta `check`, `coverage` ve `build` çalıştırır.

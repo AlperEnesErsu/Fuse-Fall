@@ -310,5 +310,5 @@ Yapıyı incele → Patlayıcı yerleştir → Ateşle → Yıkımı izle → Pu
 
 1. **iOS paketi:** yapılacak mı, ne zaman? Capacitor iOS platformu ve App Store hesabı gerekir; reklam ve ödeme adaptörleri iOS için ayrıca yazılmalı.
 2. **Satın alma doğrulaması:** hurda paketleri yalnızca cihazda doğrulanıyor; sunucuda makbuz kontrolü yok. Hurda tüketilebilir ve oyun çevrimdışı olduğu için risk düşük, ama bu bilinçli bir karar olarak onaylanmalı ya da sunucu doğrulaması planlanmalı.
-3. **NFR-01 ve NFR-03 ölçümü:** 55 FPS ve ≤ 2 sn açılış hedefleri orta seviye bir Android cihazda henüz ölçülmedi.
+3. **NFR-01 ve NFR-03 cihazda:** 4× yavaşlatılmış masaüstü tarayıcıda açılış 0,3 sn, Berlin 10 çöküşünde ortalama 56–57 FPS (sınırda; bkz. [performans](performance.md)). Orta seviye bir Android cihazda henüz ölçülmedi.
 4. **Oyun testi:** gerçek oyuncularla belgelenmiş bir oyun testi yok. Çekirdek döngünün eğlenceli olduğu ve ilk iki dakikada oyuncunun ne yapacağını anladığı doğrulanmadı.
