@@ -1,6 +1,7 @@
 import { WORLD } from '../core/level';
 import { hashString, type Vec2 } from '../core/math';
 import { chargeRadius, contractRadius, type EntityView, type LevelSession } from '../core/session';
+import { drawLandmark } from './landmarks';
 import { smoothed, type Blend } from './smoothing';
 import { halfExtent } from '../core/shapes';
 import { FULL_VIEW, type View, type ActionView } from './camera';
@@ -609,6 +610,12 @@ export class Renderer {
 
   private block(e: EntityView, w: number, h: number, threatened: boolean): void {
     const c = this.ctx;
+    // The city's landmark as the protected neighbour: drawn whole, with no brickwork under it.
+    if (e.landmark && drawLandmark(c, this.scene.city, w, h, e.compromised || threatened)) {
+      if (e.damage > 0.25) this.cracks(e.id, w, h, e.damage, e.material);
+      this.protectedMark(w, h, e.compromised || threatened);
+      return;
+    }
     if (e.anchored) {
       this.girder(w, h);
     } else if (e.material === 'glass') {
@@ -721,7 +728,13 @@ export class Renderer {
     c.fillRect(-6, h / 2 - 14, 12, 14);
     c.fillStyle = mark;
     c.fillRect(-w / 2, -h / 2, w, 4);
-    c.strokeStyle = mark;
+    this.protectedMark(w, h, compromised);
+  }
+
+  /** The corner brackets around protected property: teal while it is safe, red once a blast would reach it. */
+  private protectedMark(w: number, h: number, compromised: boolean): void {
+    const c = this.ctx;
+    c.strokeStyle = compromised ? PALETTE.invalid : PALETTE.protect;
     c.lineWidth = 2.5;
     const k = 8;
     c.beginPath();

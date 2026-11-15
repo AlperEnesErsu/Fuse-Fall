@@ -5,6 +5,7 @@ import { levelsOf } from '../src/core/progress';
 import { LevelSession } from '../src/core/session';
 import { TUNING } from '../src/core/tuning';
 import { loadCampaign } from '../src/content/levels';
+import { LANDMARK_CITIES } from '../src/presentation/landmarks';
 import { MatterPhysicsWorld } from '../src/infrastructure/matter-physics';
 import { playSolution } from './play';
 
@@ -24,6 +25,20 @@ const variant = (id: string, change: (c: LevelDefinition['solution']['charges'][
 };
 
 describe('campaign content', () => {
+  // The city is in the job as the thing to keep safe, not only as a backdrop.
+  it("puts each city's landmark into at least two of its jobs, always as protected property", () => {
+    for (const world of campaign.worlds) {
+      const withLandmark = levelsOf(campaign, world.world).filter((l) => l.blocks.some((b) => b.landmark));
+      expect(withLandmark.length, world.key).toBeGreaterThanOrEqual(2);
+      expect(LANDMARK_CITIES, world.key).toContain(world.key);
+      for (const l of withLandmark) {
+        const landmarks = l.blocks.filter((b) => b.landmark);
+        expect(landmarks, l.id).toHaveLength(1);
+        expect(landmarks.every((b) => b.protected), l.id).toBe(true);
+      }
+    }
+  });
+
   it('records every solution on the placement grid, where a player can put the same charge', () => {
     const g = TUNING.charge.grid;
     const off = levels.flatMap((l) => l.solution.charges.filter((c) => c.x % g !== 0 || c.y % g !== 0).map((c) => `${l.id} (${c.x},${c.y})`));

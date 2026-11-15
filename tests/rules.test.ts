@@ -36,6 +36,16 @@ const validLevel = {
 };
 
 describe('level parsing', () => {
+  it('accepts a landmark only as a protected building', () => {
+    const block = { x: 200, y: 440, w: 60, h: 80, material: 'concrete' };
+    const landmark = parseLevel({ ...validLevel, blocks: [...validLevel.blocks, { ...block, protected: true, landmark: true }] });
+    expect(landmark.ok && landmark.value.blocks.at(-1)).toMatchObject({ protected: true, landmark: true });
+    // An ordinary block carries no landmark field at all.
+    expect(landmark.ok && 'landmark' in (landmark.value.blocks[0] ?? {})).toBe(false);
+    expect(parseLevel({ ...validLevel, blocks: [...validLevel.blocks, { ...block, landmark: true }] }).ok).toBe(false);
+    expect(parseLevel({ ...validLevel, blocks: [...validLevel.blocks, { ...block, protected: true, landmark: 'yes' }] }).ok).toBe(false);
+  });
+
   it('accepts a valid level and fills defaults', () => {
     const r = parseLevel(validLevel);
     expect(r.ok && r.value.barrels).toEqual([]);

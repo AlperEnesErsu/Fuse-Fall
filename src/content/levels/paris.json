@@ -136,7 +136,8 @@
     "w": 60,
     "h": 80,
     "material": "concrete",
-    "protected": true
+    "protected": true,
+    "landmark": true
    }
   ],
   "barrels": [],
@@ -227,7 +228,8 @@
     "w": 80,
     "h": 80,
     "material": "concrete",
-    "protected": true
+    "protected": true,
+    "landmark": true
    }
   ],
   "barrels": [],
