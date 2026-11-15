@@ -72,6 +72,14 @@ measure fine (w1-01, w2-01, w9-01 … at 100%). The weakest thin ones got richer
 Candidates for a later richer pass (thin, fine to play, but visually plain): w1-04, w1-05,
 w2-04, w2-05, w2-08, w4-06, w5-04, w5-05.
 
+## 2026-11-15: after the settling change
+
+The job is now judged once nothing has left its resting pose for a second (see `TUNING.settle`),
+instead of waiting out the timeout while rubble creeps. Every recorded solution still clears with
+the same stars. The probe moved on five levels, by at most three points:
+w1-06 83% → 80%, w1-10 57% → 56%, w4-07 61% → 59%, w6-02 62% → 63%, w9-08 90% → 91%.
+The table below is from before that change.
+
 ## Results
 
 ✱ = changed in this pass. Before/after use the same probe.

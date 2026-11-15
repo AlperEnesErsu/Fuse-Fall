@@ -217,6 +217,8 @@ export const en: Strings = {
   music: 'Music volume',
   testSound: 'Hear an explosion',
   skip: 'Skip',
+  placementKept: 'Your charges are back in place. Press Try again once more to start clean.',
+  saveFailed: 'Progress could not be saved on this device. Storage may be full or turned off.',
   shake: 'Screen shake',
   flashes: 'Flashes and glare',
   haptics: 'Vibration',

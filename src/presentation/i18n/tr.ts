@@ -220,6 +220,8 @@ export const tr = {
   music: 'Müzik',
   testSound: 'Patlama sesini dinle',
   skip: 'Atla',
+  placementKept: 'Şarjların yerinde. Sıfırdan başlamak için yine Tekrar dene.',
+  saveFailed: 'İlerleme bu cihaza kaydedilemedi. Depolama dolu ya da kapalı olabilir.',
   shake: 'Ekran sarsıntısı',
   flashes: 'Flaş ve parlama',
   haptics: 'Titreşim',

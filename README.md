@@ -62,5 +62,6 @@ Bağımlılıklar içe doğru akar ve ESLint ile zorlanır. `core` Matter.js'i y
 
 - [Pazar analizi](docs/01-pazar-analizi.md)
 - [Gereksinimler ve mühendislik ilkeleri](docs/02-gereksinimler.md)
+- [Eylem planı](docs/eylem-plani.md)
 - [Yayın kontrol listesi](docs/release.md)
 - [Mağaza sayfası metinleri](docs/store-listing.md)

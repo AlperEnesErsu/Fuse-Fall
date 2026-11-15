@@ -16,8 +16,19 @@ Biçim [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) düzenine yak
 - Güvenlik ve gizlilik denetimi (`docs/security-audit-2026-11-02.md`) ve oyun testi şablonu (`docs/qa/playtest-template.md`).
 - GitHub Actions her PR'da tip kontrolü, lint, testler, kapsam eşiği ve derlemeyi çalıştırır (#17).
 
+- "Tekrar dene", ateşlenmiş bir denemeden sonra şarjları yerlerinde geri getirir; oyuncu birini kaydırıp yeniden ateşler. Yerleştirirken bir kez daha basmak sahayı temizler. İpucuyla kurulan yerleşim sonraki denemede de ipuçlu sayılır.
+- Çöküş sırasında "Atla" düğmesi: kalan fizik adımları izlenmeden çalışır, sonuç aynıdır. Bomba havadayken ve Anında Patlat'ta çıkmaz.
+- İlerleme kaydedilemezse (depolama dolu ya da kapalı) oyuncu bir kez uyarılır.
+- Eylem planı: `docs/eylem-plani.md`.
+
+### Değişti
+
+- Durulma tespiti: kaynaklı blokların yerinde titremesi ve molozun saniyede birkaç piksel sürünmesi artık "hâlâ çöküyor" sayılmaz; henüz düşmemiş bir hedef kımıldadıkça hüküm bekler. Kayıtlı çözümlerde zaman aşımıyla biten görev 19'dan 3'e indi.
+- Zaman aşımı ateşlemeden değil son patlamadan sayılır: fitiliyle geç patlayan bomba ya da arabalı şarj da çöküşü için tam süreyi alır.
+
 ### Düzeltildi
 
+- 360×640 dikey ekranda ana menü kaydırmadan sığar.
 - Her derleme `dist/` klasörünü baştan temizler. Node 24'te `fs.rmSync` "Masaüstü" gibi ASCII olmayan yollarda hiçbir şey silmiyordu; eski paketler birikiyor ve `cap sync` 190 dosyayı (18 MB) APK'ya koyuyordu (#15).
 
 ## [1.1.0] - 2026-10-31

@@ -197,15 +197,63 @@ describe('outcome', () => {
     expect(session.result).toMatchObject({ cleared: false, stars: 0 });
   });
 
+  /** Steps the session while a body slides along at `speed` px/s, as real physics would move it. */
+  const slide = (s: ReturnType<typeof setup>, id: string, speed: number, seconds: number) => {
+    for (let t = 0; t < seconds; t += 1 / 60) {
+      const at = s.physics.state(id)?.position ?? { x: 0, y: 0 };
+      s.physics.place(id, { position: { x: at.x + speed / 60, y: at.y }, velocity: { x: speed, y: 0 } });
+      s.session.step(1 / 60);
+    }
+  };
+
   it('waits for motion to stop, but not past the timeout', () => {
+    const s = setup();
+    s.session.placeCharge({ x: 100, y: 450 });
+    s.session.fire();
+    slide(s, 'block-2', 50, TUNING.settle.stillFor + 1);
+    expect(s.session.phase).toBe('running');
+    slide(s, 'block-2', 50, TUNING.settle.timeout);
+    expect(s.session.phase).toBe('finished');
+  });
+
+  it('does not wait for a body that trembles in place', () => {
     const { session, physics, run } = setup();
     session.placeCharge({ x: 100, y: 450 });
     session.fire();
-    physics.place('block-2', { velocity: { x: 50, y: 0 } });
-    run(TUNING.settle.hold + 0.2);
+    // A welded stack: the solver reports a speed above the calm threshold, but the body goes nowhere.
+    physics.place('block-2', { velocity: { x: TUNING.settle.linear * 2, y: 0 }, angularVelocity: TUNING.settle.angular * 2 });
+    run(TUNING.settle.stillFor - 0.3);
     expect(session.phase).toBe('running');
-    run(TUNING.settle.timeout);
+    run(0.6);
     expect(session.phase).toBe('finished');
+  });
+
+  it('judges slow creep as settled, a real slide as moving', () => {
+    const creeping = setup();
+    creeping.session.placeCharge({ x: 100, y: 450 });
+    creeping.session.fire();
+    slide(creeping, 'block-2', TUNING.settle.drift * 0.5, TUNING.settle.stillFor + 0.6);
+    expect(creeping.session.phase).toBe('finished');
+
+    const sliding = setup();
+    sliding.session.placeCharge({ x: 100, y: 450 });
+    sliding.session.fire();
+    slide(sliding, 'block-2', TUNING.settle.drift * 3, TUNING.settle.stillFor + 0.6);
+    expect(sliding.session.phase).toBe('running');
+  });
+
+  it('runs the timeout from the latest blast, so a late one still gets its collapse', () => {
+    const s = setup({ chargeKinds: ['bomb'] });
+    s.session.placeCharge({ x: 500, y: 100 }, 0, 'bomb');
+    s.session.fire();
+    // Nobody presses the detonator: the bomb goes off on its fuse, seconds after Fire.
+    s.run(TUNING.bomb.fuse + 0.2);
+    expect(s.log.filter((e) => e.type === 'explosion')).toHaveLength(1);
+    // A full timeout counted from Fire would end the job here, while the structure is still coming down.
+    slide(s, 'block-2', 50, TUNING.settle.timeout - TUNING.bomb.fuse);
+    expect(s.session.phase).toBe('running');
+    slide(s, 'block-2', 50, TUNING.bomb.fuse + 0.5);
+    expect(s.session.phase).toBe('finished');
   });
 
   it('removes bodies that leave the world and counts lost targets as down', () => {

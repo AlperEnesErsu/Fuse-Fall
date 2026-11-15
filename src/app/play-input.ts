@@ -39,7 +39,7 @@ export interface PlayControls {
   fire(): void;
   detonate(): void;
   refreshHud(): void;
-  restart(levelId: string): void;
+  restart(): void;
   back(): void;
 }
 
@@ -198,7 +198,7 @@ export class PlayInput {
         s.removeCharge(this.selected);
         this.selectedId = undefined;
         ctl.refreshHud();
-      } else if (e.key === 'r' || e.key === 'R') ctl.restart(s.level.id);
+      } else if (e.key === 'r' || e.key === 'R') ctl.restart();
       else if (e.key === 'Escape') ctl.back();
     });
   }

@@ -86,6 +86,8 @@ export interface HudState {
   readonly canUndo: boolean;
   /** The hint button shows once the player has struggled with this job. */
   readonly hintAvailable: boolean;
+  /** The collapse is under way and the player may jump to the report. */
+  readonly canSkip: boolean;
 }
 
 export interface ReportInfo {
@@ -171,6 +173,8 @@ export interface HudActions {
   readonly onFire: () => void;
   readonly onDetonate: () => void;
   readonly onRetry: () => void;
+  /** Jumps to the end of the collapse. */
+  readonly onSkip: () => void;
   readonly onUndo: () => void;
   readonly onHint: () => void;
   readonly onMenu: () => void;
@@ -207,6 +211,7 @@ export class Ui {
         guarded: HTMLElement;
         fire: HTMLButtonElement;
         detonate: HTMLButtonElement;
+        skip: HTMLElement;
         undo: HTMLElement;
         hint: HTMLElement;
         timeline: DelayTimeline;
@@ -880,6 +885,7 @@ export class Ui {
       ICONS.detonator(30),
       h('span', {}, T.detonate),
     ) as HTMLButtonElement;
+    const skip = h('button', { class: 'btn skip-btn hidden', click: () => this.tap(a.onSkip) }, T.skip);
     const undo = this.iconButton(ICONS.undo(), a.onUndo, T.undo);
     const hint = this.iconButton(ICONS.hint(), a.onHint, T.hint.button);
     hint.classList.add('hint-btn');
@@ -912,8 +918,9 @@ export class Ui {
       kindSwitch,
       fire,
       detonate,
+      skip,
     );
-    this.hudParts = { name, charges, targets, guarded, fire, detonate, undo, hint, timeline, kinds: kindSwitch };
+    this.hudParts = { name, charges, targets, guarded, fire, detonate, skip, undo, hint, timeline, kinds: kindSwitch };
     this.hud.classList.remove('hidden');
   }
 
@@ -936,6 +943,7 @@ export class Ui {
     this.hudParts.guarded.replaceChildren(h('span', { class: 'label' }, T.protectedLabel), String(s.protectedTotal));
     this.hudParts.guarded.classList.toggle('hidden', s.protectedTotal === 0);
     this.hudParts.fire.disabled = !s.canFire;
+    this.hudParts.skip.classList.toggle('hidden', !s.canSkip);
     this.hudParts.undo.classList.toggle('hidden', !s.canUndo);
     this.hudParts.hint.classList.toggle('hidden', !s.hintAvailable);
   }

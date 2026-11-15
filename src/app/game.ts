@@ -41,6 +41,8 @@ export class Game {
   /** The job in play. */
   private readonly play: PlayController;
   private progress: Progress;
+  /** The player has been told that saving does not work on this device. */
+  private saveWarned = false;
   /** Display text for missions and cities in the current language. */
   private text: ContentText;
 
@@ -57,7 +59,13 @@ export class Game {
       get: () => this.progress,
       set: (p) => {
         this.progress = p;
-        return this.saves.save(p);
+        const saved = this.saves.save(p);
+        // Said once: the game goes on, but the player should know this session may not last.
+        if (!saved && !this.saveWarned) {
+          this.saveWarned = true;
+          this.ui.toast(T.saveFailed, 5000);
+        }
+        return saved;
       },
     };
     this.desk = new OfferDesk(
