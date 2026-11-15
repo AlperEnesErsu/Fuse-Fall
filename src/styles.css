@@ -1093,6 +1093,19 @@ h2,
   }
 }
 
+.skip-btn {
+  pointer-events: auto;
+  position: absolute;
+  right: max(18px, env(safe-area-inset-right));
+  bottom: max(18px, env(safe-area-inset-bottom));
+  min-width: 100px;
+  min-height: 48px;
+}
+.left-handed .skip-btn {
+  right: auto;
+  left: max(18px, env(safe-area-inset-left));
+}
+
 /* The detonator: same place as the fire button, brighter and pulsing while bombs fall. */
 .detonate-btn {
   background:
@@ -1734,4 +1747,23 @@ h2,
 .panel.crash {
   max-width: 420px;
   text-align: center;
+}
+
+/* Short portrait phones (360×640): the whole menu fits without scrolling. */
+@media (orientation: portrait) and (max-height: 700px) {
+  .panel.menu {
+    gap: 8px;
+    padding: 14px 18px;
+  }
+  .panel.menu .logo {
+    font-size: 2rem;
+    white-space: nowrap;
+  }
+  .panel.menu .tagline {
+    display: none;
+  }
+  .panel.menu .btn.big {
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
 }

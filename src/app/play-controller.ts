@@ -38,7 +38,7 @@ import { setBlockTheme } from '../presentation/materials-art';
 import type { Renderer } from '../presentation/renderer';
 import { T, language } from '../presentation/strings';
 import type { Ui } from '../presentation/ui';
-import { newAttempt, settleJob, settleOneShot, type Attempt, type Mode } from './attempt';
+import { newAttempt, settleJob, settleOneShot, type Attempt, type Mode, type Plan } from './attempt';
 import { FIXED_STEP } from './loop';
 import type { Ledger, OfferDesk } from './offer-desk';
 import { PlayInput } from './play-input';
@@ -53,6 +53,10 @@ const RESULT_DELAY_MS = 450;
 const HINT_AFTER_FAILURES = 2;
 /** After this many misses the hint also lays out the whole solution as outlines to copy. */
 const SOLUTION_AFTER_FAILURES = 4;
+/** Skipping the collapse runs this many extra fixed steps a frame: the same physics, just not watched. */
+const SKIP_STEPS_PER_FRAME = 20;
+/** The skip button shows once the collapse has had this long to be seen. */
+const SKIP_AFTER = 1.2;
 /** Replays run at this fraction of real time. */
 const REPLAY_SPEED = 0.5;
 /** Replay speeds the player can pick (not offered while a clip is being recorded). */
@@ -91,6 +95,8 @@ export class PlayController implements Launcher {
   private time = 0;
   /** The playback speed picked for this replay. */
   private replaySpeed: number = REPLAY_SPEED;
+  /** The player asked to skip the rest of the collapse. */
+  private skipping = false;
   /** The charge type the next placement uses. */
   private chargeKind: ChargeKind = 'standard';
   private readonly input: PlayInput;
@@ -128,7 +134,7 @@ export class PlayController implements Launcher {
       fire: () => this.fire(),
       detonate: () => this.detonate(),
       refreshHud: () => this.refreshHud(),
-      restart: (id) => this.startLevel(id),
+      restart: () => this.retry(),
       back: () => d.nav().levels(),
     });
   }
@@ -146,9 +152,20 @@ export class PlayController implements Launcher {
     this.d.sound.setMood('menu');
     this.session = undefined;
     this.attempt = undefined;
+    this.skipping = false;
     this.d.juice.reset();
     this.d.coach.stop();
     this.d.ui.hideReplay();
+  }
+
+  /**
+   * Another go at the same job. After a fired attempt the charges come back where they were,
+   * so the player can nudge one and fire again; retrying before firing clears the field.
+   */
+  private retry(): void {
+    const a = this.attempt;
+    if (!a) return;
+    this.play(a.level, a.mode, a.plan && a.plan.charges.length > 0 ? { charges: a.plan.charges, assisted: a.assisted } : undefined);
   }
 
   startLevel(id: string): void {
@@ -157,7 +174,7 @@ export class PlayController implements Launcher {
   }
 
   /** Instant restart: a new session and physics world are cheap to build (FR-10). */
-  play(level: LevelDefinition, mode: Mode): void {
+  play(level: LevelDefinition, mode: Mode, restore?: { readonly charges: Plan['charges']; readonly assisted: boolean }): void {
     const { campaign, renderer, ui, coach } = this.d;
     const base = mode.kind === 'daily' ? campaign.levels.find((l) => l.id === mode.baseId) : level;
     const city = campaign.worlds.find((w) => w.world === level.world);
@@ -177,15 +194,23 @@ export class PlayController implements Launcher {
     this.d.sound.setMood('plan', city.key);
     this.hintIndex = 0;
     this.showSolution = false;
+    this.skipping = false;
     this.session = new LevelSession(level, new MatterPhysicsWorld(), this.d.events);
     this.perchBirds(this.session);
     this.attempt = newAttempt(level, mode);
+    let restored = 0;
+    for (const c of restore?.charges ?? []) {
+      if (this.session.placeCharge(c.position, c.delay, c.kind, c.direction).ok) restored++;
+    }
+    // A layout copied from the hints is still the hints' work on the next go.
+    if (restore?.assisted) this.attempt.assisted = true;
     ui.showHud({
       kinds: level.chargeKinds,
       skyInUse: level.dropZones.length > 0 || level.balls.length > 0,
       onFire: () => this.fire(),
       onDetonate: () => this.detonate(),
-      onRetry: () => this.play(level, mode),
+      onRetry: () => this.retry(),
+      onSkip: () => this.skip(),
       onUndo: () => this.undoCharge(),
       onHint: () => this.showHint(),
       onMenu: () => {
@@ -208,9 +233,15 @@ export class PlayController implements Launcher {
       },
       onHelp: featuresOf(level).length > 0 ? () => this.showFeatureCards(featuresOf(level), false) : undefined,
     });
-    this.chargeKind = level.chargeKinds[0] ?? 'standard';
+    this.chargeKind = restore?.charges.at(-1)?.kind ?? level.chargeKinds[0] ?? 'standard';
     ui.setChargeKind(this.chargeKind);
     this.refreshHud();
+    if (restored > 0) {
+      // The charges are already down: nothing to coach, and the opening hint has been read.
+      coach.start([], level.balls.length > 0);
+      ui.toast(T.placementKept, 2600);
+      return;
+    }
     // Anything new in this job gets its card first; the coaching starts once the cards are read.
     const fresh = mode.kind === 'campaign' || mode.kind === 'daily' ? newFeatures(level, progress.seenFeatures) : [];
     if (fresh.length > 0) {
@@ -273,8 +304,19 @@ export class PlayController implements Launcher {
     }
   }
 
+  /** Runs the rest of the collapse without showing it. The steps are the same, so the result is too. */
+  private skip(): void {
+    const s = this.session;
+    if (!s || s.phase !== 'running' || this.attempt?.replaying || s.level.instantBlasts || s.liveBombs > 0) return;
+    this.skipping = true;
+  }
+
   frame(realDt: number, simDt: number): void {
     this.time += realDt;
+    if (this.skipping) {
+      for (let i = 0; i < SKIP_STEPS_PER_FRAME && this.session?.phase === 'running'; i++) this.step(FIXED_STEP);
+      if (this.session?.phase !== 'running') this.skipping = false;
+    }
     this.d.juice.update(realDt, simDt);
     if (this.session?.phase === 'running') this.refreshHud();
     const placing = this.session?.phase === 'placing';
@@ -382,6 +424,7 @@ export class PlayController implements Launcher {
     const a = this.attempt;
     if (!a?.plan) return;
     this.d.juice.reset();
+    this.skipping = false;
     const session = new LevelSession(a.level, new MatterPhysicsWorld(), this.d.events);
     for (const c of a.plan.charges) session.placeCharge(c.position, c.delay, c.kind, c.direction);
     // Cars cruise while placing, so fast-forward to the exact step the player fired on.
@@ -496,7 +539,7 @@ export class PlayController implements Launcher {
           ui.freeSiteDone(
             result,
             {
-              onReset: () => this.play(attempt.level, attempt.mode),
+              onReset: () => this.retry(),
               onReplay: () => this.replay(),
               onShare: () => this.recordClip(),
               onSetup: () => this.openEditor(draft),
@@ -515,7 +558,7 @@ export class PlayController implements Launcher {
         this.d.ui.freeSiteDone(
           result,
           {
-            onReset: () => this.play(attempt.level, attempt.mode),
+            onReset: () => this.retry(),
             onReplay: () => this.replay(),
             onShare: () => this.recordClip(),
             onSetup: () => this.d.nav().menu(),
@@ -539,7 +582,7 @@ export class PlayController implements Launcher {
         ui.freeSiteDone(
           result,
           {
-            onReset: () => this.play(attempt.level, mode),
+            onReset: () => this.retry(),
             onReplay: () => this.replay(),
             onShare: () => this.recordClip(),
             onSetup: () => this.d.nav().freeSite(attempt.level.world, mode.template, mode.variant, mode.traffic),
@@ -594,7 +637,7 @@ export class PlayController implements Launcher {
         },
         {
           onCopy: () => void this.copyCode(level),
-          onRetry: () => this.play(level, attempt.mode),
+          onRetry: () => this.retry(),
           onReplay: () => this.replay(),
           onShare: () => this.recordClip(),
           onNext: daily
@@ -764,6 +807,14 @@ export class PlayController implements Launcher {
       canFire: s.phase === 'placing' && (s.charges.length > 0 || s.level.balls.length > 0),
       canUndo: s.phase === 'placing' && s.charges.length > 0 && !this.attempt?.replaying,
       hintAvailable: s.phase === 'placing' && this.attempt?.mode.kind === 'campaign' && this.failuresOn(s.level.id) >= HINT_AFTER_FAILURES,
+      // Bombs wait for the detonator, and smash play never ends: neither can be skipped.
+      canSkip:
+        s.phase === 'running' &&
+        !this.skipping &&
+        !this.attempt?.replaying &&
+        !s.level.instantBlasts &&
+        s.liveBombs === 0 &&
+        s.elapsedSinceFire >= SKIP_AFTER,
     });
     ui.setDetonateVisible(s.phase === 'running' && s.liveBombs > 0 && !this.attempt?.replaying);
     const stock = s.level.charges.stock;

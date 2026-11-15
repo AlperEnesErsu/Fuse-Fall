@@ -211,6 +211,11 @@ export class LevelSession {
   private time = 0;
   private firedAt = 0;
   private calmFor = 0;
+  /** When the latest blast went off: the timeout runs from it, so a late blast still gets its collapse. */
+  private lastBlastAt = 0;
+  /** Where each body was when it last really moved, and for how long none has: jitter is not motion. */
+  private readonly restPose = new Map<string, { x: number; y: number; angle: number }>();
+  private stillFor = 0;
   private currentPhase: Phase = 'placing';
   private finalResult: LevelResult | undefined;
   private readonly structuralTotal: number;
@@ -662,6 +667,7 @@ export class LevelSession {
   private explode(center: Vec2, blast: BlastKind, aim?: 1 | -1): void {
     const spec = BLASTS[blast];
     const source = sourceOf(blast);
+    this.lastBlastAt = this.time;
     const radius = spec.radius;
     // A rolling charge caught in a blast goes off with it.
     for (const [id, r] of this.rollers) {
@@ -932,23 +938,42 @@ export class LevelSession {
   private checkSettled(dt: number): void {
     if (this.pending.length > 0 || this.liveBombs > 0 || this.launches.length > 0 || this.rollers.size > 0) {
       this.calmFor = 0;
+      this.stillFor = 0;
       return;
     }
     let calm = true;
+    let still = true;
     for (const e of this.entities.values()) {
       if (e.driver?.engine) continue; // a car driving its route never settles, by design
       // A ball on its rope swings for ever: it holds the job open only while its first swings can still hit.
       if (e.kind === 'ball' && this.roped(e.id) && this.elapsedSinceFire >= TUNING.wreckingBall.swingFor) continue;
       const s = this.physics.state(e.id);
-      if (s && (length(s.velocity) > TUNING.settle.linear || Math.abs(s.angularVelocity) > TUNING.settle.angular)) {
-        calm = false;
-        break;
+      if (!s) continue;
+      if (length(s.velocity) > TUNING.settle.linear || Math.abs(s.angularVelocity) > TUNING.settle.angular) calm = false;
+      // Welded blocks tremble without going anywhere: only a body that leaves its resting pose is moving.
+      const rest = this.restPose.get(e.id);
+      // A target still standing decides the job: while it creeps at all, the verdict waits for it.
+      const limit = e.target && !e.down ? TUNING.settle.target : e.kind === 'debris' ? TUNING.settle.debris : TUNING.settle;
+      if (!rest) {
+        this.restPose.set(e.id, { x: s.position.x, y: s.position.y, angle: s.angle });
+        still = false;
+      } else if (
+        Math.abs(s.position.x - rest.x) > limit.drift ||
+        Math.abs(s.position.y - rest.y) > limit.drift ||
+        Math.abs(s.angle - rest.angle) > limit.turn
+      ) {
+        rest.x = s.position.x;
+        rest.y = s.position.y;
+        rest.angle = s.angle;
+        still = false;
       }
     }
     this.calmFor = calm ? this.calmFor + dt : 0;
+    this.stillFor = still ? this.stillFor + dt : 0;
     // Smash play goes on until the player leaves; everything else ends once the dust settles.
     if (this.level.instantBlasts) return;
-    if (this.calmFor >= TUNING.settle.hold || this.elapsedSinceFire >= TUNING.settle.timeout) this.finish();
+    const sinceLastBlast = this.time - Math.max(this.firedAt, this.lastBlastAt);
+    if (this.calmFor >= TUNING.settle.hold || this.stillFor >= TUNING.settle.stillFor || sinceLastBlast >= TUNING.settle.timeout) this.finish();
   }
 
   private finish(): void {
@@ -1138,6 +1163,7 @@ export class LevelSession {
   private removeEntity(e: Entity): void {
     for (const id of [...(this.jointsOf.get(e.id) ?? [])]) this.breakJoint(id);
     this.entities.delete(e.id);
+    this.restPose.delete(e.id);
     this.physics.remove(e.id);
   }
 }

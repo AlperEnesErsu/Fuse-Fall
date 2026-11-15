@@ -31,7 +31,6 @@ export const TUNING = {
     drop: 220,
     damage: 110,
   },
-  /** A free-fall bomb: released on Fire, falls under gravity, set off by the detonator or its fuse. */
   /**
    * A rolling charge: a small motorised cart set on the ground. Fired, it drives
    * the way its arrow points and goes off when it runs into something (it stalls),
@@ -64,6 +63,7 @@ export const TUNING = {
     damage: 120,
     behind: 0.2,
   },
+  /** A free-fall bomb: released on Fire, falls under gravity, set off by the detonator or its fuse. */
   bomb: {
     radius: 11,
     blastRadius: 140,
@@ -120,6 +120,18 @@ export const TUNING = {
     linear: 8,
     angular: 0.15,
     hold: 0.6,
+    /**
+     * Or: for `stillFor` seconds no body has left its resting pose by more than `drift` px or `turn` rad.
+     * Welded stacks tremble and rubble creeps a few px a second for ever; that is not a collapse still
+     * in progress. Shards are small and light, so they get the looser `debris` limits; a target that
+     * is not down yet gets the tight `target` limits, because where it ends up is the verdict.
+     */
+    drift: 6,
+    turn: 0.06,
+    debris: { drift: 14, turn: 0.5 },
+    target: { drift: 1.5, turn: 0.015 },
+    stillFor: 1,
+    /** Seconds after the latest blast before the job is judged as it stands. */
     timeout: 8,
   },
   collapse: {

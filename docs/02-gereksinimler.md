@@ -34,9 +34,9 @@ Yapıyı incele → Patlayıcı yerleştir → Ateşle → Yıkımı izle → Pu
 | FR-05 | Hasar alan bloklar dayanım eşiğini aşınca malzemeye özgü sayıda parçaya bölünür. | M |
 | FR-06 | Patlayıcı variller ateşlenmeden zincirleme patlama başlatabilir. | S |
 | FR-07 | Seviye hedefleri: (a) hedef blokları zemine indir, (b) yapının %X'ini yık, (c) korunan blokları sağlam bırak. | M (a), S (b, c) |
-| FR-08 | Fizik durulduğunda (tüm cisimler uyuduğunda) veya zaman aşımında (8 sn) seviye değerlendirilir. | M |
+| FR-08 | Fizik durulduğunda veya zaman aşımında (son patlamadan 8 sn sonra) seviye değerlendirilir. Durulma: cisimler yavaşladığında, ya da 1 sn boyunca hiçbiri durduğu yerden ayrılmadığında (titreme ve yavaş sürünme hareket sayılmaz; düşmemiş bir hedef için sınır dardır). Oyuncu çöküşü "Atla" ile izlemeden bitirebilir. | M |
 | FR-09 | Yıldız puanlama: tam başarı 1 yıldız, ardından üç oyun tarzından (*Cerrahi*: par içinde, *Yıkım*: bonus yıkım oranı, *Domino*: patlamanın dokunmadığı bir hedefi devirmek) her biri +1, en fazla 3. Yani herhangi iki tarz 3 yıldız verir. Hedef ayakta kalırsa görev başarısızdır ve yıldız vermez (ayrıntı: FR-60, FR-73). Rapor hangi tarzların tuttuğunu tek tek gösterir. | M |
-| FR-10 | Tek dokunuşla yeniden deneme, 300 ms içinde. | M |
+| FR-10 | Tek dokunuşla yeniden deneme, 300 ms içinde. Ateşlenmiş bir denemeden sonra şarjlar yerlerinde geri gelir; yerleştirirken yeniden basmak sahayı temizler. | M |
 
 ### İlerleme ve içerik
 
