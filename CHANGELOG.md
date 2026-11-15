@@ -20,6 +20,7 @@ Biçim [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) düzenine yak
 - Çöküş sırasında "Atla" düğmesi: kalan fizik adımları izlenmeden çalışır, sonuç aynıdır. Bomba havadayken ve Anında Patlat'ta çıkmaz.
 - İlerleme kaydedilemezse (depolama dolu ya da kapalı) oyuncu bir kez uyarılır.
 - Eylem planı: `docs/eylem-plani.md`.
+- `npm run e2e`: oyunu dokunmatik telefon profilleriyle iki mobil motorda oynar (Chromium: Android, WebKit: iOS; dikey, yatay ve 360×640). CI her PR'da çalıştırır. CI ayrıca görev JSON'unun üreticisiyle aynı olduğunu doğrular.
 
 ### Değişti
 
@@ -29,6 +30,9 @@ Biçim [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) düzenine yak
 ### Düzeltildi
 
 - 360×640 dikey ekranda ana menü kaydırmadan sığar.
+- Web Audio bulunmayan ya da ses bağlamı açamayan tarayıcıda her düğme dokunuşu hata verip hiçbir şey yapmıyordu; oyun artık sessiz çalışır. Eski Safari'nin `webkitAudioContext` adı da tanınır.
+- Küçük dikey ekranda yıkım raporunun düğmeleri panelin altında kesiliyor ve ulaşılamıyordu; düğmeler artık hep görünür, "Sonraki görev" en üstte ve tam genişlikte.
+- Görev bitince "Atla" düğmesi raporun arkasında görünür kalmaz.
 - Her derleme `dist/` klasörünü baştan temizler. Node 24'te `fs.rmSync` "Masaüstü" gibi ASCII olmayan yollarda hiçbir şey silmiyordu; eski paketler birikiyor ve `cap sync` 190 dosyayı (18 MB) APK'ya koyuyordu (#15).
 
 ## [1.1.0] - 2026-10-31
