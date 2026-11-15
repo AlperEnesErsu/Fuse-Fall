@@ -34,9 +34,9 @@ Kayıtlı çözümler gerçek fizikle oynatılarak ölçüldü (`tests/play.ts` 
 | Durulma tespiti; zaman aşımı son patlamadan | Zaman aşımıyla biten çözüm en çok 2 | O | Yapıldı (19 → 3) |
 | Çöküşte "atla" düğmesi | Rapor hemen açılıyor, sonuç değişmiyor | K | Yapıldı |
 | Yerleştirme ızgarası; denge eşiği CI'da | Kolay ≥ %80, orta ≥ %65, zor ≥ %50 | O | Izgara yapıldı. Eşiğin altında 5 görev kaldı (w4-03 %59, w4-07 %57, w4-10 %48, w6-02 %63, w7-10 %40); bunlar görev tasarımıyla düzelir, eşik ondan sonra CI'a girer |
-| Kesilecek bağları önizlemede göster | Önizleme ile kesim aynı fonksiyon | O | |
-| Başarısızlık nedenini sahnede göster | Ayakta kalan hedef vurgulu | O | |
-| Çizim ara değerlemesi | 120 Hz ekranda titreme yok | O | |
+| Kesilecek bağları önizlemede göster | Önizleme ile kesim aynı fonksiyon | O | Yapıldı |
+| Başarısızlık nedenini sahnede göster | Ayakta kalan hedef vurgulu | O | Yapıldı |
+| Çizim ara değerlemesi | 120 Hz ekranda titreme yok | O | Yapıldı; 120 Hz cihazda gözle doğrulanmadı |
 
 **Kapı A:** 5–10 kişiyle oyun testi ([şablon](qa/playtest-template.md)).
 

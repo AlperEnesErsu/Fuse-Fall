@@ -18,7 +18,8 @@ export class FixedStepLoop {
       /** Maps real time to simulation time (hit-stop, slow motion). */
       readonly timeScale: (realDt: number) => number;
       readonly step: (dt: number) => void;
-      readonly frame: (realDt: number, simDt: number) => void;
+      /** `alpha` (0..1): how far this frame lies between the last fixed step and the next, for smooth drawing. */
+      readonly frame: (realDt: number, simDt: number, alpha: number) => void;
     },
   ) {}
 
@@ -38,7 +39,7 @@ export class FixedStepLoop {
         steps++;
       }
       if (steps === MAX_STEPS_PER_FRAME) this.accumulator = 0;
-      this.hooks.frame(realDt, simDt);
+      this.hooks.frame(realDt, simDt, Math.min(1, this.accumulator / FIXED_STEP));
     };
     this.handle = requestAnimationFrame(tick);
   }

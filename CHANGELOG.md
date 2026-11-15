@@ -19,6 +19,9 @@ Biçim [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) düzenine yak
 - "Tekrar dene", ateşlenmiş bir denemeden sonra şarjları yerlerinde geri getirir; oyuncu birini kaydırıp yeniden ateşler. Yerleştirirken bir kez daha basmak sahayı temizler. İpucuyla kurulan yerleşim sonraki denemede de ipuçlu sayılır.
 - Çöküş sırasında "Atla" düğmesi: kalan fizik adımları izlenmeden çalışır, sonuç aynıdır. Bomba havadayken ve Anında Patlat'ta çıkmaz.
 - İlerleme kaydedilemezse (depolama dolu ya da kapalı) oyuncu bir kez uyarılır.
+- Yerleştirirken her şarjın keseceği bağlar küçük turuncu çarpılarla işaretlenir. Önizleme, patlamanın kullandığı kuralın kendisidir.
+- Başarısız görevde ayakta kalan hedef kırmızı halkayla ve inmesi gereken çizgiyle gösterilir; rapordaki "Sahneyi gör" düğmesi raporu kenara alır.
+- Çizim, iki fizik adımı arasını ara değerler: 90 ve 120 Hz ekranlarda ve yavaş çekim tekrarda hareket akıcıdır. Fizik ve sonuçlar değişmez.
 - Eylem planı: `docs/eylem-plani.md`.
 - `npm run e2e`: oyunu dokunmatik telefon profilleriyle iki mobil motorda oynar (Chromium: Android, WebKit: iOS; dikey, yatay ve 360×640). CI her PR'da çalıştırır. CI ayrıca görev JSON'unun üreticisiyle aynı olduğunu doğrular.
 

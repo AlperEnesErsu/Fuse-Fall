@@ -1081,9 +1081,15 @@ export class Ui {
           this.button(T.shareCode.copy, actions.onCopy),
           actions.onNext && this.button(actions.nextLabel, actions.onNext, 'primary'),
           this.button(T.levels, actions.onLevels),
+          // A failed job: step aside and look at what is still standing.
+          r.cleared ? undefined : this.button(R.peek, () => this.screen.classList.add('peek')),
         ),
       ),
     );
+    if (!r.cleared) {
+      const back = this.button(R.backToReport, () => this.screen.classList.remove('peek'), 'primary peek-back');
+      this.screen.append(back);
+    }
     if (perfect) this.confetti();
   }
 

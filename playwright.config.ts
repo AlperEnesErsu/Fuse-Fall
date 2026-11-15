@@ -13,6 +13,8 @@ export default defineConfig({
   testDir: 'e2e',
   testMatch: '*.e2e.ts',
   fullyParallel: true,
+  // A cold dev server compiles the game on the first request; a crowd of pages at once times out waiting for it.
+  workers: process.env.CI ? 2 : 4,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : 'list',

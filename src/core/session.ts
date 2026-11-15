@@ -39,6 +39,8 @@ export interface EntityView {
   readonly material: MaterialId;
   readonly target: boolean;
   readonly down: boolean;
+  /** For a target still standing: the height (y of its centre) it must sink to before it counts as down. */
+  readonly downAt: number | undefined;
   readonly protected: boolean;
   /** A protected building that has been damaged. */
   readonly compromised: boolean;
@@ -188,6 +190,9 @@ const GROUND_ID = 'ground';
 
 /** Gap between the ground and a body's lowest possible point (any orientation). */
 const clearance = (shape: Shape, position: Vec2): number => WORLD.groundY - halfExtent(shape) - position.y;
+/** A target that started at `origin` is down once its clearance is at most this: lying on rubble counts. */
+const downClearance = (shape: Shape, origin: Vec2): number =>
+  Math.max(TUNING.downTolerance, clearance(shape, origin) * TUNING.downFraction);
 /** How far a blast travels past `center` before it starts to hurt a body (damage falloff). */
 const blastReach = (center: Vec2, shape: Shape, position: Vec2): number =>
   Math.max(0, length(sub(position, center)) - innerRadius(shape));
@@ -335,11 +340,11 @@ export class LevelSession {
   }
 
   /** Ropes still holding their wrecking balls, for drawing: from the hook to the ball. */
-  get ropeLines(): { readonly hook: Vec2; readonly ball: Vec2 }[] {
-    const lines: { hook: Vec2; ball: Vec2 }[] = [];
+  get ropeLines(): { readonly id: string; readonly hook: Vec2; readonly ball: Vec2 }[] {
+    const lines: { id: string; hook: Vec2; ball: Vec2 }[] = [];
     for (const r of this.ropes.values()) {
       const s = this.physics.state(r.ball);
-      if (s) lines.push({ hook: r.hook, ball: s.position });
+      if (s) lines.push({ id: r.ball, hook: r.hook, ball: s.position });
     }
     return lines;
   }
@@ -400,6 +405,7 @@ export class LevelSession {
         material: e.material,
         target: e.target,
         down: e.down,
+        downAt: e.target && !e.down ? WORLD.groundY - halfExtent(e.shape) - downClearance(e.shape, e.origin.position) : undefined,
         protected: e.guarded,
         compromised: e.compromised,
         anchored: e.anchored,
@@ -427,6 +433,29 @@ export class LevelSession {
       if (circleTouches(center, contractRadius(kind), e.shape, s.position, s.angle)) reached.push(e.id);
     }
     return reached;
+  }
+
+  /**
+   * Where a charge at `center` would cut the structure: one point per joint its blast severs.
+   * The preview of the cut in `explode`, through the same rule. Bombs and rolling charges go
+   * off wherever they end up, so they have nothing to show here.
+   */
+  jointsCutFrom(center: Vec2, kind: ChargeKind): Vec2[] {
+    if (kind === 'bomb' || kind === 'roller') return [];
+    return this.jointsWithin(center, chargeRadius(kind) * TUNING.joints.cut).map((id) => {
+      const anchors = this.joints.get(id)?.anchors ?? [];
+      const sum = anchors.reduce((acc, a) => vec(acc.x + a.x, acc.y + a.y), vec(0, 0));
+      return anchors.length > 0 ? scale(sum, 1 / anchors.length) : center;
+    });
+  }
+
+  /** Joints with an anchor within `reach` of `center`: what a blast there cuts. */
+  private jointsWithin(center: Vec2, reach: number): string[] {
+    const cut: string[] = [];
+    for (const [id, joint] of this.joints) {
+      if (joint.anchors.some((a) => distance(a, center) <= reach)) cut.push(id);
+    }
+    return cut;
   }
 
   /** `radius` lets touch input use a bigger, finger-sized pick area. */
@@ -688,9 +717,7 @@ export class LevelSession {
 
     // The blast cuts mortar and welds near it before it throws anything.
     const cut = radius * TUNING.joints.cut;
-    for (const [id, joint] of [...this.joints]) {
-      if (joint.anchors.some((a) => distance(a, center) <= cut)) this.breakJoint(id);
-    }
+    for (const id of this.jointsWithin(center, cut)) this.breakJoint(id);
     // ...and wrecking ball ropes at their hooks.
     for (const [id, rope] of [...this.ropes]) {
       if (distance(rope.hook, center) <= cut) this.cutRope(id);
@@ -888,9 +915,7 @@ export class LevelSession {
       const s = this.physics.state(e.id);
       if (!s) continue;
       // A target lying on rubble counts as down once it has lost most of its height.
-      const start = clearance(e.shape, e.origin.position);
-      const now = clearance(e.shape, s.position);
-      if (now <= Math.max(TUNING.downTolerance, start * TUNING.downFraction)) this.markDown(e, s.position);
+      if (clearance(e.shape, s.position) <= downClearance(e.shape, e.origin.position)) this.markDown(e, s.position);
     }
   }
 
