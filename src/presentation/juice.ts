@@ -80,6 +80,8 @@ const FEEL = {
   slowMo: { scale: 0.3, duration: 0.9 },
   /** The first big structural break of an attempt: a beat of slow motion and a push-in on it. */
   critical: { minSize: 40, slowScale: 0.3, slowFor: 0.22, zoom: 0.09, holdFor: 0.55, release: 3 },
+  /** The last target going down: a longer, deeper push-in over the slow motion. */
+  finale: { zoom: 0.16, holdFor: 0.9 },
   maxScorches: 24,
 } as const;
 
@@ -101,6 +103,8 @@ export class JuiceDirector {
   private criticalHold = 0;
   private criticalDone = false;
   private focusZoom = 0;
+  /** How far the current push-in goes. */
+  private focusGoal: number = FEEL.critical.zoom;
   private punch = 0;
   private trauma = 0;
   private shakeTime = 0;
@@ -131,7 +135,13 @@ export class JuiceDirector {
     });
     events.on('targetDown', (e) => {
       this.dust(e.position, 14, ['#b9b2a6']);
-      if (e.remaining === 0) this.slowMoLeft = FEEL.slowMo.duration;
+      if (e.remaining === 0) {
+        this.slowMoLeft = FEEL.slowMo.duration;
+        // The moment the job is won: the camera pushes in on the last target as it lands.
+        this.focus = { x: e.position.x, y: e.position.y };
+        this.focusGoal = FEEL.finale.zoom;
+        this.criticalHold = FEEL.finale.holdFor;
+      }
     });
   }
 
@@ -189,7 +199,7 @@ export class JuiceDirector {
     this.punch = decay(this.punch, FEEL.zoomPunch.decay, realDt);
     if (this.criticalHold > 0) {
       this.criticalHold -= realDt;
-      this.focusZoom += (FEEL.critical.zoom - this.focusZoom) * Math.min(1, realDt * 12);
+      this.focusZoom += (this.focusGoal - this.focusZoom) * Math.min(1, realDt * 12);
     } else {
       this.focusZoom = decay(this.focusZoom, FEEL.critical.release, realDt);
       if (this.focusZoom === 0) this.focus = undefined;
@@ -444,6 +454,7 @@ export class JuiceDirector {
     this.criticalDone = true;
     this.criticalSlowLeft = FEEL.critical.slowFor;
     this.criticalHold = FEEL.critical.holdFor;
+    this.focusGoal = FEEL.critical.zoom;
     this.focus = { x: p.x, y: p.y };
     const r = Math.random;
     for (let i = 0; i < 12; i++) {

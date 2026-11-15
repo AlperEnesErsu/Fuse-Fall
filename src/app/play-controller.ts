@@ -30,7 +30,7 @@ import { featureCard, featuresOf, newFeatures, type FeatureId } from '../content
 import { markFeaturesSeen } from '../core/progress';
 import { activeLook, newlyAffordable } from '../content/workshop';
 import type { SoundDirector } from '../presentation/audio';
-import { FULL_VIEW, focusOf } from '../presentation/camera';
+import { FULL_VIEW, actionOf, focusOf } from '../presentation/camera';
 import { ClipRecorder } from '../presentation/clip-recorder';
 import type { Coach } from '../presentation/coach';
 import type { JuiceDirector } from '../presentation/juice';
@@ -413,9 +413,16 @@ export class PlayController implements Launcher {
       this.d.coach.notify('fired');
       this.d.sound.fuse();
       this.d.sound.setMood('tension');
+      this.closeInOn(s?.level);
       this.d.ui.setFireVisible(false);
       this.refreshHud();
     }
+  }
+
+  /** Once the charges are fired the zones no longer matter: the camera closes in on the structure. */
+  private closeInOn(level: LevelDefinition | undefined): void {
+    if (!level || this.d.ledger.get().settings.reducedMotion) return;
+    this.d.renderer.setAction(actionOf(level));
   }
 
   /** The detonator: sets off every falling bomb now, and remembers when for the replay. */
@@ -440,6 +447,8 @@ export class PlayController implements Launcher {
     for (let i = 0; i < a.plan.fireSteps; i++) session.step(FIXED_STEP);
     this.perchBirds(session);
     session.fire();
+    this.d.renderer.setFocus(focusOf(a.level));
+    this.closeInOn(a.level);
     this.session = session;
     this.attempt = { ...a, replaying: true };
     this.d.ui.hideScreen();
