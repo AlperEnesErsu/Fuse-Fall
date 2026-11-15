@@ -28,6 +28,8 @@ export class SoundDirector {
   private lastCrack = 0;
   private lastCreak = 0;
   private lastCollapse = 0;
+  /** This browser has no usable Web Audio: stop trying, stay silent. */
+  private unavailable = false;
 
   constructor(
     events: EventBus<GameEvents>,
@@ -59,16 +61,29 @@ export class SoundDirector {
 
   /** Browsers only allow audio after a user gesture; call from the first tap. */
   unlock(): void {
+    if (this.unavailable) return;
     if (!this.ctx) {
-      const ctx = new AudioContext();
-      this.volume = ctx.createGain();
-      this.volume.connect(ctx.destination);
-      this.synth = new SoundSynth(ctx, this.volume);
-      this.music = new MusicPlayer(ctx);
-      this.music.setMood(this.mood.mood, this.mood.city);
-      this.ctx = ctx;
+      // Sound is optional. A browser without Web Audio, or one that refuses a context,
+      // plays the game silently: this runs on every tap and must never stop one.
+      try {
+        const Context = audioContextClass();
+        if (!Context) throw new Error('no Web Audio');
+        const ctx = new Context();
+        const volume = ctx.createGain();
+        volume.connect(ctx.destination);
+        const synth = new SoundSynth(ctx, volume);
+        const music = new MusicPlayer(ctx);
+        music.setMood(this.mood.mood, this.mood.city);
+        this.volume = volume;
+        this.synth = synth;
+        this.music = music;
+        this.ctx = ctx;
+      } catch {
+        this.unavailable = true;
+        return;
+      }
     }
-    void this.ctx.resume();
+    void this.ctx.resume().catch(() => undefined);
     this.applyVolumes();
   }
 
@@ -138,3 +153,9 @@ export class SoundDirector {
     this.synth?.impact('concrete', 0.3, panOf(p));
   }
 }
+
+/** The Web Audio constructor, under its standard name or the prefixed one older Safari versions use. */
+const audioContextClass = (): typeof AudioContext | undefined => {
+  const g = globalThis as { AudioContext?: typeof AudioContext; webkitAudioContext?: typeof AudioContext };
+  return g.AudioContext ?? g.webkitAudioContext;
+};

@@ -4,7 +4,7 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   // `.claude` holds agent worktrees: other checkouts of this repo, linted from their own folders.
-  { ignores: ['dist', 'node_modules', 'coverage', 'android', '.claude'] },
+  { ignores: ['dist', 'node_modules', 'coverage', 'android', '.claude', 'test-results', 'playwright-report'] },
   js.configs.recommended,
   ...tseslint.configs.strict,
   {

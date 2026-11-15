@@ -502,6 +502,8 @@ export class PlayController implements Launcher {
     if (!session || !attempt) return;
     const { ui, ledger } = this.d;
     this.d.sound.setMood('result');
+    // The HUD is refreshed while the job runs; once more now, so nothing of the run (Skip) is left showing.
+    this.refreshHud();
     if (attempt.replaying) {
       window.setTimeout(() => this.endReplay(true), RESULT_DELAY_MS * 2);
       return;

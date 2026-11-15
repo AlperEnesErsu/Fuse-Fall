@@ -1186,7 +1186,11 @@ export class Ui {
   }
 
   private tap(action: () => void): void {
-    this.onAnyTap();
-    action();
+    // Whatever the tap hook does (it unlocks sound), the button still does its job.
+    try {
+      this.onAnyTap();
+    } finally {
+      action();
+    }
   }
 }

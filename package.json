@@ -18,6 +18,7 @@
     "levels": "python tools/genlevels.py src/content/levels",
     "store-shots": "node tools/store-shots.mjs",
     "smoke": "node tools/smoke-check.mjs",
+    "e2e": "playwright test",
     "perf": "node tools/perf-probe.mjs"
   },
   "dependencies": {
@@ -32,6 +33,7 @@
   "devDependencies": {
     "@capacitor/cli": "8.5.3",
     "@eslint/js": "10.0.1",
+    "@playwright/test": "1.65.1",
     "@types/matter-js": "0.20.2",
     "@types/node": "24.19.2",
     "@vitest/coverage-v8": "5.0.5",

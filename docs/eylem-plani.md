@@ -69,8 +69,8 @@ Kayıtlı çözümler gerçek fizikle oynatılarak ölçüldü (`tests/play.ts` 
 
 | İş | Bitiş ölçütü | Efor | Durum |
 |---|---|---|---|
-| CI: görev üretici farkı ve duman testi | Ayrışma ya da kırık ekran PR'da yakalanıyor | O | |
-| Mobil tarayıcı motorlarında duman testi (Chromium, WebKit) | iPhone ve Android profilleri CI'da geçiyor | O | |
+| CI: görev üretici farkı ve duman testi | Ayrışma ya da kırık ekran PR'da yakalanıyor | O | Yapıldı |
+| Mobil tarayıcı motorlarında duman testi (Chromium, WebKit) | iPhone ve Android profilleri CI'da geçiyor | O | Yapıldı (`npm run e2e`) |
 | Satın alma ve reklam akışına test | Üç dosya %80'in üstünde | O | |
 | `session.ts`'i alt sistemlere böl; şarj türü strateji tablosu | Yeni şarj türü tek dosyada ekleniyor | B | |
 | `onFinished`'i mod başına rapor stratejisine ayır | Kopya dallar kalmadı | O | |
