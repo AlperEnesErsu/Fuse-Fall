@@ -14,6 +14,7 @@ npm run preview    # derlemeyi yerelde sun (çevrimdışı mod sadece burada ça
 npm run check      # tsc + eslint + testler
 npm run coverage   # core, infrastructure ve satın alma masası kapsamı (eşik %80)
 npm run levels     # tools/genlevels.py ile görev JSON'larını yeniden üret (Python)
+npm run balance    # her görevin yakın ıskalarda yeterince kazanıldığını ölçer (kolay ≥ %80, orta ≥ %65, zor ≥ %50); yaklaşık bir dakika
 npm run e2e        # oyunu dokunmatik telefon profilleriyle iki mobil motorda oynar: Chromium (Android) ve WebKit (iOS); ilk seferde `npx playwright install chromium webkit`
 npm run smoke      # ana ekranları tarayıcıda oyna, görüntü ve rapor: docs/qa/smoke/<tarih>/ (dev sunucusu + BROWSER)
 npm run perf       # açılış süresi ve en ağır görevde FPS, 4× yavaş CPU ile (bkz. docs/performance.md)

@@ -1,12 +1,20 @@
 import { writeFileSync } from 'node:fs';
-import { describe, it } from 'vitest';
-import { difficultyOf } from '../src/core/difficulty';
+import { describe, expect, it } from 'vitest';
+import { difficultyOf, type Difficulty } from '../src/core/difficulty';
 import type { LevelDefinition } from '../src/core/level';
 import { loadCampaign } from '../src/content/levels';
 import { playSolution } from './play';
 
 /**
- * Balance probe, off by default: `BALANCE=out.json npx vitest run tests/level-balance.test.ts`.
+ * How forgiving each level must be: the share of near misses that still clear it.
+ * Below this a job stops being hard and starts being luck.
+ */
+const MIN_CLEAR_RATE: Readonly<Record<Difficulty, number>> = { easy: 0.8, medium: 0.65, hard: 0.5, expert: 0.5 };
+
+/**
+ * Balance probe, off by default (it plays about 5000 collapses):
+ * `npm run balance` checks every level against MIN_CLEAR_RATE, as CI does;
+ * `BALANCE=out.json npx vitest run tests/level-balance.test.ts` writes the numbers.
  * Replays each level's solution with small mistakes a player would make (a charge
  * 10–20 px off, a delay or a press a tenth of a second off) and records how many
  * still clear the job. See docs/level-balance.md.
@@ -64,8 +72,10 @@ const variants = (level: LevelDefinition): { kind: Kind; plan: Plan }[] => {
 };
 
 const out = process.env.BALANCE;
+/** `npm run balance` (npm sets this), so the switch needs no shell-specific environment syntax. */
+const check = process.env.npm_lifecycle_event === 'balance';
 
-describe.skipIf(!out)('level balance probe', () => {
+describe.skipIf(!out && !check)('level balance probe', () => {
   it('measures every level', { timeout: 3_600_000 }, () => {
     const only = process.env.BALANCE_ONLY?.split(',');
     const rows = loadCampaign()
@@ -105,6 +115,15 @@ describe.skipIf(!out)('level balance probe', () => {
         console.log(JSON.stringify(row));
         return row;
       });
-    writeFileSync(out ?? '', JSON.stringify(rows, null, 1));
+    if (out) writeFileSync(out, JSON.stringify(rows, null, 1));
+    if (check) {
+      const rate = (r: (typeof rows)[number]) => (r.place[0] + r.time[0]) / (r.place[1] + r.time[1]);
+      // Crane-only jobs have no charge to misplace and nothing to measure.
+      const below = rows
+        .filter((r) => r.place[1] + r.time[1] > 0 && rate(r) < MIN_CLEAR_RATE[r.difficulty])
+        .map((r) => `${r.id} (${r.difficulty}): ${Math.round(rate(r) * 100)}% < ${MIN_CLEAR_RATE[r.difficulty] * 100}%`);
+      expect(below).toEqual([]);
+      expect(rows.filter((r) => !r.base).map((r) => r.id)).toEqual([]);
+    }
   });
 });
