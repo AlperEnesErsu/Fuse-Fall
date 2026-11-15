@@ -78,7 +78,15 @@ The job is now judged once nothing has left its resting pose for a second (see `
 instead of waiting out the timeout while rubble creeps. Every recorded solution still clears with
 the same stars. The probe moved on five levels, by at most three points:
 w1-06 83% → 80%, w1-10 57% → 56%, w4-07 61% → 59%, w6-02 62% → 63%, w9-08 90% → 91%.
-The table below is from before that change.
+
+The same day charges went onto a 5 px grid (`TUNING.charge.grid`) and every recorded solution
+moved to the nearest grid point. Rounding alone lost w1-07 and w9-08, so those two and w2-09 got
+the grid point with the most winning neighbours: w1-07 89% → 98%, w9-08 91% → 86%,
+w2-09 58% → 50%, w9-04 66% → 72%; the campaign average stayed at 89%.
+Still under the targets (easy 80%, medium 65%, hard and expert 50%): w4-03 59%, w4-07 57%,
+w4-10 48%, w6-02 63%, w7-10 40%. Those need a layout change, not a better spot.
+
+The table below is from before both changes.
 
 ## Results
 

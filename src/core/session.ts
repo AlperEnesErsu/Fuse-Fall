@@ -454,7 +454,12 @@ export class LevelSession {
     if (this.currentPhase !== 'placing') return undefined;
     const zones = kind === 'bomb' ? this.level.dropZones : this.level.zones;
     const others = this.chargeList.filter((c) => c.id !== ignore).map((c) => c.position);
-    return placementFor(position, zones, others, TUNING.charge.placementSpacing);
+    const g = TUNING.charge.grid;
+    const onGrid = vec(Math.round(position.x / g) * g, Math.round(position.y / g) * g);
+    // The grid point when it is allowed as it stands; a spot pulled in from outside a zone keeps where it landed.
+    const exact = placementFor(onGrid, zones, others, TUNING.charge.placementSpacing);
+    if (exact && exact.x === onGrid.x && exact.y === onGrid.y) return exact;
+    return placementFor(position, zones, others, TUNING.charge.placementSpacing) ?? exact;
   }
 
   /** Without an explicit delay, a new charge fires one step after the latest one. */

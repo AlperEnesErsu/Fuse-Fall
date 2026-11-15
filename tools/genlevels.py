@@ -43,7 +43,8 @@ class L:
     def sol(s, *pts, fireAt=0, detonateAt=None):
         if detonateAt: s.d['solution']['detonateAt'] = detonateAt
         def charge(p):
-            c = dict(x=round(p[0], 1), y=round(p[1], 1))
+            # The game sets charges on a 5 px grid (TUNING.charge.grid): a solution off it could not be copied.
+            c = dict(x=int(round(p[0] / 5.0)) * 5, y=int(round(p[1] / 5.0)) * 5)
             if len(p) > 2 and p[2] is not None: c['delay'] = p[2]
             if len(p) > 3: c['kind'] = p[3]
             if len(p) > 4: c['dir'] = p[4]
@@ -125,7 +126,7 @@ def ankara():
         base = l.col(x, G, 50, 30, 'concrete'); l.col(x, base, 30, 110, 'wood')
     top = l.col(540, G - 140, 340, 20, 'wood'); l.col(540, top, 40, 40, 'wood', True)
     for x in (420, 660): l.col(x, top, 12, 44, 'wood')
-    l.zone(340, 400, 400, 80); l.sol((386, 436)); out.append(l)
+    l.zone(340, 400, 400, 80); l.sol((385, 445)); out.append(l)
 
     l = L(1, 8, 'Zincirleme', 1, 1, 0.5, 'İlk varili ateşle; zincir gerisini taşır.')
     top = tower(l, 780, G, 80, 130); l.col(780, top, 40, 40, 'wood', True)
@@ -210,7 +211,7 @@ def paris():
     for w in (200, 150, 100, 60):
         base = l.col(600, base, w, 30, 'glass')
     l.col(600, base, 36, 36, 'wood', True)
-    l.zone(420, 400, 100, 80); l.zone(680, 400, 100, 80); l.sol((512, 468)); out.append(l)
+    l.zone(420, 400, 100, 80); l.zone(680, 400, 100, 80); l.sol((510, 465)); out.append(l)
 
     l = L(2, 10, 'Seine Operasyonu', 3, 2, 0.45, 'Trafik, cam ve ahşap. Üç hedefi de indir.')
     deck = road(l, 120, 400, 120)
@@ -1027,7 +1028,7 @@ def newyork():
     l.col(450, G, 24, 40, 'concrete')
     top = tower(l, 640, G, 60, 120); l.col(640, top, 34, 34, 'wood', True)
     l.zone(90, 430, 160, 50)
-    l.sol((200, Y, None, R, 1), (130, Y, None, R, 1)); out.append(l)
+    l.sol((200, 465, None, R, 1), (130, 465, None, R, 1)); out.append(l)
 
     # 9. Three at once: carts out to both sides first, then the standard under the middle tower, once they are clear.
     l = L(9, 9, 'Üç Yöne', 3, 3, 0.5, 'İki yürüyen şarj iki yana, ortadaki kuleye standart. Önce arabaları yerleştir: sıra, gecikme sırasıdır.')

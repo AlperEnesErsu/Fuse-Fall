@@ -24,6 +24,7 @@ Biçim [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) düzenine yak
 
 ### Değişti
 
+- Şarjlar 5 piksellik ızgaraya oturur: aynı görünen yerleşim aynı yerleşimdir ve aynı sonucu verir. Kayıtlı çözümler ızgaraya taşındı; Ankara 7, Paris 9 ve New York 8'in çözümü çevresi en sağlam ızgara noktasına alındı.
 - Durulma tespiti: kaynaklı blokların yerinde titremesi ve molozun saniyede birkaç piksel sürünmesi artık "hâlâ çöküyor" sayılmaz; henüz düşmemiş bir hedef kımıldadıkça hüküm bekler. Kayıtlı çözümlerde zaman aşımıyla biten görev 19'dan 3'e indi.
 - Zaman aşımı ateşlemeden değil son patlamadan sayılır: fitiliyle geç patlayan bomba ya da arabalı şarj da çöküşü için tam süreyi alır.
 
