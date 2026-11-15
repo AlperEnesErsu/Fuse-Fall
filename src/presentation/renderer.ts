@@ -3,7 +3,7 @@ import { hashString, type Vec2 } from '../core/math';
 import { chargeRadius, contractRadius, type EntityView, type LevelSession } from '../core/session';
 import { smoothed, type Blend } from './smoothing';
 import { halfExtent } from '../core/shapes';
-import { FULL_VIEW, type View } from './camera';
+import { FULL_VIEW, type View, type ActionView } from './camera';
 import { TUNING } from '../core/tuning';
 import type { ChargeKind } from '../core/level';
 import type { JuiceDirector } from './juice';
@@ -46,6 +46,12 @@ export const removeBadgeOf = (p: Vec2): Vec2 => ({ x: p.x + BADGE_OFFSET.x, y: p
 /** The loupe: its radius and magnification, in CSS px, and how far above the finger it floats. */
 const LOUPE = { radius: 52, zoom: 2.2, lift: 120 };
 
+/** How much closer than the placing frame the camera may get for the collapse, and how long the move takes. */
+const MAX_CLOSE_IN = 1.9;
+/** Closing in by less than this is not worth moving the camera for. */
+const WORTH_CLOSING_IN = 1.12;
+const CLOSE_IN_SECONDS = 0.7;
+
 /** Bodies higher than this above the ground cast no visible shadow. */
 const SHADOW_REACH = 240;
 
@@ -64,6 +70,10 @@ export class Renderer {
   private scene = { city: 'ankara', progress: 0 };
   /** The slice of the world a portrait screen frames. */
   private focus: View = FULL_VIEW;
+  /** The closer frame for the collapse, and how far the camera has moved into it (0..1). */
+  private action: ActionView | undefined;
+  private closeIn = 0;
+  private lastDrawAt = 0;
   /** Charge numbers and delay tags grow with the Large text setting, as the HUD does. */
   private labelScale = 1;
   /** The backdrop is static per level, so it is painted once and blitted each frame. */
@@ -91,10 +101,17 @@ export class Renderer {
     this.labelScale = scale;
   }
 
-  /** Frames a job's slice of the world on portrait screens; FULL_VIEW for menus. */
+  /** Frames a job's slice of the world on portrait screens; FULL_VIEW for menus. Any closer frame is dropped at once. */
   setFocus(view: View): void {
     this.focus = view;
+    this.action = undefined;
+    this.closeIn = 0;
     this.layout();
+  }
+
+  /** Closes in on the collapse (see camera.ts `actionOf`), smoothly; undefined eases back out. */
+  setAction(view: ActionView | undefined): void {
+    this.action = view;
   }
 
   private get portrait(): boolean {
@@ -106,14 +123,38 @@ export class Renderer {
     const { width: cw, height: ch } = this.canvas;
     const view = this.portrait ? this.focus : FULL_VIEW;
     const vw = view.x1 - view.x0;
-    this.scale = Math.min(cw / vw, ch / WORLD.height);
-    this.offsetX = (cw - vw * this.scale) / 2 - view.x0 * this.scale;
-    this.offsetY = (ch - WORLD.height * this.scale) / 2;
+    const scale = Math.min(cw / vw, ch / WORLD.height);
+    const offsetX = (cw - vw * scale) / 2 - view.x0 * scale;
+    const offsetY = (ch - WORLD.height * scale) / 2;
+    const a = this.action;
+    if (!a || this.closeIn <= 0) {
+      this.scale = scale;
+      this.offsetX = offsetX;
+      this.offsetY = offsetY;
+      return;
+    }
+    // The closer frame keeps the ground where it is on screen and grows the scene up from it,
+    // as far as the action's width and height allow, and never by more than MAX_CLOSE_IN.
+    const ground = offsetY + WORLD.groundY * scale;
+    const aw = a.x1 - a.x0;
+    const close = Math.min(cw / aw, ground / (WORLD.groundY - a.top), scale * MAX_CLOSE_IN);
+    if (close < scale * WORTH_CLOSING_IN) {
+      // The placing frame is nearly as close already: a camera that barely moves only distracts.
+      this.scale = scale;
+      this.offsetX = offsetX;
+      this.offsetY = offsetY;
+      return;
+    }
+    const t = this.closeIn * this.closeIn * (3 - 2 * this.closeIn);
+    this.scale = scale + (close - scale) * t;
+    const centred = cw / 2 - ((a.x0 + a.x1) / 2) * close;
+    this.offsetX = offsetX + (centred - offsetX) * t;
+    this.offsetY = ground - WORLD.groundY * this.scale;
   }
 
   /** The canvas rectangle (device pixels) showing the framed world, for clip recording. */
   visibleWorld(): { readonly sx: number; readonly sy: number; readonly sw: number; readonly sh: number } {
-    const view = this.portrait ? this.focus : FULL_VIEW;
+    const view = this.closeIn > 0 && this.action ? this.action : this.portrait ? this.focus : FULL_VIEW;
     const sx = Math.max(0, this.offsetX + view.x0 * this.scale);
     const sy = Math.max(0, this.offsetY);
     return {
@@ -154,6 +195,15 @@ export class Renderer {
   draw(session: LevelSession | undefined, juice: JuiceDirector, overlay: Overlay): void {
     // A hidden or minimised window has no size; there is nothing to draw until it comes back.
     if (this.canvas.width === 0 || this.canvas.height === 0) return;
+    // Ease the camera towards the frame it was last given.
+    const dt = Math.min(0.1, Math.max(0, overlay.time - this.lastDrawAt));
+    this.lastDrawAt = overlay.time;
+    const goal = this.action ? 1 : 0;
+    if (this.closeIn !== goal) {
+      const step = dt / CLOSE_IN_SECONDS;
+      this.closeIn = goal > this.closeIn ? Math.min(1, this.closeIn + step) : Math.max(0, this.closeIn - step);
+      this.layout();
+    }
     const c = this.ctx;
     c.setTransform(1, 0, 0, 1, 0, 0);
     const backdrop = this.paintedBackdrop();

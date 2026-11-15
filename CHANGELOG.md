@@ -22,6 +22,8 @@ Biçim [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) düzenine yak
 - Yerleştirirken her şarjın keseceği bağlar küçük turuncu çarpılarla işaretlenir. Önizleme, patlamanın kullandığı kuralın kendisidir.
 - Başarısız görevde ayakta kalan hedef kırmızı halkayla ve inmesi gereken çizgiyle gösterilir; rapordaki "Sahneyi gör" düğmesi raporu kenara alır.
 - Çizim, iki fizik adımı arasını ara değerler: 90 ve 120 Hz ekranlarda ve yavaş çekim tekrarda hareket akıcıdır. Fizik ve sonuçlar değişmez.
+- ATEŞLE'den sonra kamera şarj bölgesini bırakıp yapıya yaklaşır (en çok 1,9 kat); zemin ekranda yerinde kalır. Yerleştirme çerçevesinin zaten dar olduğu görevlerde ve Anında Patlat'ta kamera oynamaz; "hareketi azalt" ayarı bunu kapatır.
+- Son hedef düşerken kamera ağır çekimle birlikte hedefe doğru kısa bir yakın çekim yapar.
 - Eylem planı: `docs/eylem-plani.md`.
 - `npm run e2e`: oyunu dokunmatik telefon profilleriyle iki mobil motorda oynar (Chromium: Android, WebKit: iOS; dikey, yatay ve 360×640). CI her PR'da çalıştırır. CI ayrıca görev JSON'unun üreticisiyle aynı olduğunu doğrular.
 
