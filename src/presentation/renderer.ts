@@ -1,6 +1,7 @@
 import { WORLD } from '../core/level';
 import { hashString, type Vec2 } from '../core/math';
 import { chargeRadius, contractRadius, type EntityView, type LevelSession } from '../core/session';
+import { smoothed, type Blend } from './smoothing';
 import { halfExtent } from '../core/shapes';
 import { FULL_VIEW, type View } from './camera';
 import { TUNING } from '../core/tuning';
@@ -29,6 +30,8 @@ export interface Overlay {
   readonly selected?: number | undefined;
   /** A finger is dragging here: show a magnified view of it, clear of the finger. */
   readonly loupe?: Vec2 | undefined;
+  /** Draw between the previous fixed step and this one, so motion is smooth at any refresh rate and in slow motion. */
+  readonly blend?: Blend | undefined;
   /** Hint: the recorded solution, drawn as faint outlines to copy. */
   readonly solution?: readonly { readonly position: Vec2; readonly kind: ChargeKind; readonly delay: number | undefined; readonly direction?: 1 | -1 | undefined }[] | undefined;
 }
@@ -182,12 +185,16 @@ export class Renderer {
         this.routes(session, overlay.time);
       }
       const threatened = session.phase === 'placing' ? this.blastRadii(session, overlay) : new Set<string>();
-      this.groundShadows(session);
-      this.ropes(session);
+      // One list for the whole frame, each body where it is between the last step and this one.
+      const views = smoothed(session.view(), overlay.blend);
+      this.groundShadows(views);
+      this.ropes(session, views);
       if (this.buildings?.session !== session) this.buildings = { session, plan: planBuildings([...session.view()]) };
-      for (const e of session.view()) this.entity(e, overlay.time, threatened.has(e.id));
-      this.birds(session, juice, overlay.time);
+      for (const e of views) this.entity(e, overlay.time, threatened.has(e.id));
+      this.birds(views, juice, overlay.time);
       this.charges(session, overlay);
+      if (session.phase === 'placing') this.cutMarks(session, overlay);
+      if (session.phase === 'finished') this.standingTargets(views, overlay.time);
     }
     this.effects(juice);
     if (overlay.coach) this.coachMarker(overlay.coach.world, overlay.coach.radius, overlay.time);
@@ -341,9 +348,12 @@ export class Renderer {
   }
 
   /** Wrecking ball ropes: a steel cable from the crane hook, with the hook block, to the ball's shackle. */
-  private ropes(session: LevelSession): void {
+  private ropes(session: LevelSession, views: readonly EntityView[]): void {
     const c = this.ctx;
-    for (const { hook, ball } of session.ropeLines) {
+    for (const line of session.ropeLines) {
+      const hook = line.hook;
+      // The rope ends where the ball is drawn, not one step ahead of it.
+      const ball = views.find((e) => e.id === line.id)?.state.position ?? line.ball;
       c.strokeStyle = '#2b2d31';
       c.lineWidth = 2.4;
       c.beginPath();
@@ -613,11 +623,11 @@ export class Renderer {
   }
 
   /** Pigeons: perched on their roof until the first blast, then flapping away. */
-  private birds(session: LevelSession, juice: JuiceDirector, time: number): void {
+  private birds(views: readonly EntityView[], juice: JuiceDirector, time: number): void {
     if (juice.birds.length === 0) return;
     const c = this.ctx;
     const bodies = new Map<string, EntityView>();
-    for (const e of session.view()) bodies.set(e.id, e);
+    for (const e of views) bodies.set(e.id, e);
     c.fillStyle = '#2b2a30';
     c.strokeStyle = '#2b2a30';
     c.lineWidth = 1.6;
@@ -831,6 +841,86 @@ export class Renderer {
     return threatened;
   }
 
+  /** The charges whose effect is previewed while placing: those set, the one being dragged, the one under the finger. */
+  private previewed(session: LevelSession, overlay: Overlay): { position: Vec2; kind: ChargeKind }[] {
+    const list: { position: Vec2; kind: ChargeKind }[] = session.charges
+      .filter((ch) => overlay.drag?.id !== ch.id)
+      .map((ch) => ({ position: ch.position, kind: ch.kind }));
+    const dragged = session.charges.find((ch) => ch.id === overlay.drag?.id);
+    if (overlay.drag && dragged) list.push({ position: overlay.drag.position, kind: dragged.kind });
+    else if (overlay.ghost?.valid) list.push({ position: overlay.ghost.position, kind: overlay.kind });
+    return list;
+  }
+
+  /**
+   * Where the charges would cut the structure: a small cross on every joint a blast severs.
+   * The blast circle says how far the push reaches; these say what actually comes apart.
+   */
+  private cutMarks(session: LevelSession, overlay: Overlay): void {
+    const c = this.ctx;
+    const seen = new Set<string>();
+    c.save();
+    c.lineCap = 'round';
+    for (const { position, kind } of this.previewed(session, overlay)) {
+      for (const p of session.jointsCutFrom(position, kind)) {
+        const key = `${Math.round(p.x)},${Math.round(p.y)}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        const r = 4.5;
+        for (const [width, colour] of [[4, 'rgba(15, 17, 20, 0.85)'], [1.8, '#ff8a3d']] as const) {
+          c.lineWidth = width;
+          c.strokeStyle = colour;
+          c.beginPath();
+          c.moveTo(p.x - r, p.y - r);
+          c.lineTo(p.x + r, p.y + r);
+          c.moveTo(p.x + r, p.y - r);
+          c.lineTo(p.x - r, p.y + r);
+          c.stroke();
+        }
+      }
+    }
+    c.restore();
+  }
+
+  /**
+   * After the job: every target still standing is ringed, with the line it had to sink to.
+   * A failed job shows what was left and by how much.
+   */
+  private standingTargets(views: readonly EntityView[], time: number): void {
+    const c = this.ctx;
+    const pulse = 0.65 + 0.35 * Math.sin(time * 5);
+    c.save();
+    for (const e of views) {
+      if (!e.target || e.down || e.downAt === undefined) continue;
+      const p = e.state.position;
+      const reach = halfExtent(e.shape) + 9;
+      c.strokeStyle = `rgba(229, 72, 77, ${pulse})`;
+      c.lineWidth = 2.5;
+      c.setLineDash([]);
+      c.beginPath();
+      c.arc(p.x, p.y, reach, 0, Math.PI * 2);
+      c.stroke();
+      if (e.downAt <= p.y) continue;
+      // The line its centre had to reach, and the drop still missing.
+      c.setLineDash([5, 4]);
+      c.lineWidth = 1.6;
+      c.strokeStyle = 'rgba(235, 232, 226, 0.9)';
+      c.beginPath();
+      c.moveTo(p.x - reach - 6, e.downAt);
+      c.lineTo(p.x + reach + 6, e.downAt);
+      c.stroke();
+      c.setLineDash([]);
+      c.beginPath();
+      c.moveTo(p.x, p.y);
+      c.lineTo(p.x, e.downAt - 2);
+      c.moveTo(p.x - 5, e.downAt - 8);
+      c.lineTo(p.x, e.downAt - 2);
+      c.lineTo(p.x + 5, e.downAt - 8);
+      c.stroke();
+    }
+    c.restore();
+  }
+
   /** A blast's outline: a full circle, or a half-disc on the side an aimed blast throws into. */
   private blastPath(centre: Vec2, r: number, aim: 1 | -1 | undefined): void {
     const c = this.ctx;
@@ -871,10 +961,10 @@ export class Renderer {
    * Soft contact shadows on the ground: dark and tight under bodies resting on it,
    * fainter and wider as they rise, so falling pieces read as having height.
    */
-  private groundShadows(session: LevelSession): void {
+  private groundShadows(views: readonly EntityView[]): void {
     const c = this.ctx;
     const shade = puff('#000000');
-    for (const e of session.view()) {
+    for (const e of views) {
       const { position: p, angle } = e.state;
       const shape = e.shape;
       const [halfW, halfH] =

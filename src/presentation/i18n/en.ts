@@ -277,6 +277,8 @@ export const en: Strings = {
     },
     stylesNote: 'Each style is a star. Any two make three stars.',
     stylesOnWin: 'Styles earn stars only when the job is won.',
+    peek: 'See the site',
+    backToReport: 'Back to report',
     assisted: 'Won with hints: one star at most. Try again with your own plan.',
     unpaid: {
       replay: 'A replay pays scrap only when it raises your stars.',

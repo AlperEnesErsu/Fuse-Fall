@@ -36,6 +36,7 @@ import type { Coach } from '../presentation/coach';
 import type { JuiceDirector } from '../presentation/juice';
 import { setBlockTheme } from '../presentation/materials-art';
 import type { Renderer } from '../presentation/renderer';
+import { rememberPoses, type Pose } from '../presentation/smoothing';
 import { T, language } from '../presentation/strings';
 import type { Ui } from '../presentation/ui';
 import { newAttempt, settleJob, settleOneShot, type Attempt, type Mode, type Plan } from './attempt';
@@ -97,6 +98,8 @@ export class PlayController implements Launcher {
   private replaySpeed: number = REPLAY_SPEED;
   /** The player asked to skip the rest of the collapse. */
   private skipping = false;
+  /** Where every body was one fixed step ago: the renderer draws between that and now. */
+  private readonly lastPoses = new Map<string, Pose>();
   /** The charge type the next placement uses. */
   private chargeKind: ChargeKind = 'standard';
   private readonly input: PlayInput;
@@ -153,6 +156,7 @@ export class PlayController implements Launcher {
     this.session = undefined;
     this.attempt = undefined;
     this.skipping = false;
+    this.lastPoses.clear();
     this.d.juice.reset();
     this.d.coach.stop();
     this.d.ui.hideReplay();
@@ -195,6 +199,7 @@ export class PlayController implements Launcher {
     this.hintIndex = 0;
     this.showSolution = false;
     this.skipping = false;
+    this.lastPoses.clear();
     this.session = new LevelSession(level, new MatterPhysicsWorld(), this.d.events);
     this.perchBirds(this.session);
     this.attempt = newAttempt(level, mode);
@@ -296,6 +301,7 @@ export class PlayController implements Launcher {
   step(dt: number): void {
     const s = this.session;
     if (!s) return;
+    rememberPoses(s, this.lastPoses);
     s.step(dt);
     const a = this.attempt;
     if (a?.replaying && a.plan && s.phase === 'running') {
@@ -311,7 +317,7 @@ export class PlayController implements Launcher {
     this.skipping = true;
   }
 
-  frame(realDt: number, simDt: number): void {
+  frame(realDt: number, simDt: number, alpha = 1): void {
     this.time += realDt;
     if (this.skipping) {
       for (let i = 0; i < SKIP_STEPS_PER_FRAME && this.session?.phase === 'running'; i++) this.step(FIXED_STEP);
@@ -323,6 +329,8 @@ export class PlayController implements Launcher {
     this.d.coach.refresh();
     this.d.renderer.draw(this.session ?? (this.editing ? this.previewSession : undefined), this.d.juice, {
       time: this.time,
+      // While skipping, steps run faster than frames: there is nothing to draw in between.
+      blend: this.skipping ? undefined : { alpha, previous: this.lastPoses },
       coach: this.d.coach.worldMarker,
       kind: this.chargeKind,
       ghost: placing ? this.input.preview : undefined,
@@ -425,6 +433,7 @@ export class PlayController implements Launcher {
     if (!a?.plan) return;
     this.d.juice.reset();
     this.skipping = false;
+    this.lastPoses.clear();
     const session = new LevelSession(a.level, new MatterPhysicsWorld(), this.d.events);
     for (const c of a.plan.charges) session.placeCharge(c.position, c.delay, c.kind, c.direction);
     // Cars cruise while placing, so fast-forward to the exact step the player fired on.
@@ -684,6 +693,7 @@ export class PlayController implements Launcher {
     this.session = undefined;
     this.attempt = undefined;
     this.editing = { draft, tool: 'block', material: 'wood' };
+    this.lastPoses.clear();
     this.previewSession = new LevelSession(previewLevel(draft), new MatterPhysicsWorld(), new EventBus<GameEvents>());
     this.d.juice.reset();
     this.d.coach.stop();

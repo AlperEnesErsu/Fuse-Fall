@@ -176,6 +176,38 @@ describe('detonation', () => {
   });
 });
 
+describe('what the field shows', () => {
+  it('previews the joints a charge would cut with the rule the blast uses', () => {
+    const { session, physics, run } = setup({ zones: [{ x: 600, y: 380, w: 200, h: 100 }] });
+    // block-2 stands on the ground at x = 700: its weld to the ground is the joint in reach.
+    const near = session.jointsCutFrom({ x: 700, y: 475 }, 'standard');
+    expect(near.length).toBeGreaterThan(0);
+    expect(session.jointsCutFrom({ x: 100, y: 450 }, 'standard')).toEqual([]);
+    // Bombs and rolling charges go off somewhere else: nothing to preview.
+    expect(session.jointsCutFrom({ x: 700, y: 475 }, 'bomb')).toEqual([]);
+    expect(session.jointsCutFrom({ x: 700, y: 475 }, 'roller')).toEqual([]);
+    // Fired, the blast removes exactly those joints.
+    const before = physics.joints.size;
+    session.placeCharge({ x: 700, y: 475 });
+    session.fire();
+    run(0.1);
+    expect(before - physics.joints.size).toBeGreaterThanOrEqual(near.length);
+    expect(session.jointsCutFrom({ x: 700, y: 475 }, 'standard')).toEqual([]);
+  });
+
+  it('tells a standing target how far it must sink, and stops once it is down', () => {
+    const { session, physics, run } = setup();
+    const target = () => [...session.view()].find((e) => e.target);
+    const line = target()?.downAt;
+    expect(line).toBeGreaterThan(300); // it starts at y = 300 and must come down
+    session.placeCharge({ x: 100, y: 450 });
+    session.fire();
+    physics.place('block-1', { position: { x: 500, y: (line ?? 0) + 1 } });
+    run(0.1);
+    expect(target()).toMatchObject({ down: true, downAt: undefined });
+  });
+});
+
 describe('outcome', () => {
   it('counts a target as down when it reaches the ground and scores at settle', () => {
     const { session, physics, log, run } = setup();

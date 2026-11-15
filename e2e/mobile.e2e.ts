@@ -72,6 +72,12 @@ test('a job plays through: a miss, a retry that keeps the charge, a win, and ski
   await fire.tap();
   await expect(page.locator('.panel.report.lose')).toBeVisible({ timeout: 15_000 });
 
+  // A look at the site: the report steps aside, and comes back.
+  await page.getByRole('button', { name: 'See the site' }).tap();
+  await expect(page.locator('.panel.report')).toBeHidden();
+  await page.getByRole('button', { name: 'Back to report' }).tap();
+  await expect(page.locator('.panel.report.lose')).toBeVisible();
+
   // Try again from the report: the charge is back where it was.
   await page.locator('.report .actions .btn').first().tap();
   await expect(fire).toBeVisible();

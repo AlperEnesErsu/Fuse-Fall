@@ -1795,3 +1795,34 @@ h2,
     font-size: 0.95rem;
   }
 }
+
+/* A look at the site behind the report: the panel steps aside, one button brings it back. */
+.peek-back {
+  display: none;
+}
+.screen.peek {
+  background: none;
+  pointer-events: none;
+}
+.screen.peek .panel,
+.screen.peek ~ .toast {
+  display: none;
+}
+.screen.peek .peek-back {
+  display: block;
+  pointer-events: auto;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: max(18px, env(safe-area-inset-bottom));
+}
+
+/* Portrait report: the share icon keeps the narrow third column, the labelled buttons fill the rest. */
+@media (orientation: portrait) {
+  .report .actions {
+    grid-auto-flow: dense;
+  }
+  .report .actions .btn.icon {
+    grid-column: 3;
+  }
+}

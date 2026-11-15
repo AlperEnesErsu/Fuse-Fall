@@ -124,7 +124,7 @@ export class Game {
     this.loop = new FixedStepLoop({
       timeScale: (dt) => this.juice.simDelta(dt) * this.play.speed,
       step: (dt) => this.play.step(dt),
-      frame: (realDt, simDt) => this.play.frame(realDt, simDt),
+      frame: (realDt, simDt, alpha) => this.play.frame(realDt, simDt, alpha),
     });
     // Development builds expose the world-to-screen mapping for automated play-throughs.
     if (import.meta.env.DEV) Object.assign(window, { __fuse: { toClient: (x: number, y: number) => this.renderer.toClient({ x, y }) } });
