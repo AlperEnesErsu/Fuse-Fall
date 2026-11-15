@@ -26,8 +26,10 @@ class L:
     def col(s, x, base, w, h, m='wood', target=False, anchored=False):
         return s.b(x, base - h / 2, w, h, m, target, anchored)
 
-    def house(s, x, w=70, h=90, m='concrete'):
+    def house(s, x, w=70, h=90, m='concrete', landmark=False):
+        """A protected neighbour. `landmark`: drawn as the city's monument instead of an ordinary building."""
         blk = dict(x=x, y=G - h / 2, w=w, h=h, material=m, protected=True)
+        if landmark: blk['landmark'] = True
         s.d['blocks'].append(blk)
 
     def zone(s, x, y, w, h): s.d['zones'].append(dict(x=x, y=y, w=w, h=h))
@@ -118,7 +120,7 @@ def ankara():
     l = L(1, 6, 'Fabrika Bacası', 2, 1, 0.6, 'Sağdaki bina korunuyor. Baca, tabanı hangi taraftan kesilirse o tarafa devrilir; patlama çemberi binaya değmemeli.')
     base = G
     chimney(l, 520, 5)
-    l.house(720, 60, 80)
+    l.house(720, 60, 80, landmark=True)
     l.zone(440, 380, 160, 100); l.sol((500, 470)); out.append(l)
 
     l = L(1, 7, 'Köprü', 2, 1, 0.6, 'Tabliye ayaklara bağlı; bir ayağı kesersen köprü yana yatar.')
@@ -143,7 +145,7 @@ def ankara():
     top = tower(l, 420, G, 80, 120, 'concrete', 'wood', colw=26); l.col(420, top, 36, 36, 'wood', True)
     top = tower(l, 760, G, 80, 140, 'glass', 'wood'); l.col(760, top, 36, 36, 'wood', True)
     top = tower(l, 590, G, 60, 100); top = tower(l, 590, top, 60, 80); l.col(590, top, 36, 36, 'wood', True)
-    l.barrel(680); l.house(150, 80, 100)
+    l.barrel(680); l.house(150, 80, 100, landmark=True)
     l.zone(300, 380, 360, 100); l.sol((420, 470), (600, 470)); out.append(l)
     return out
 
@@ -156,13 +158,13 @@ def paris():
 
     l = L(2, 2, 'Komşu Duvar', 2, 1, 0.6, 'Soldaki bina korunuyor. Bacayı doğru taraftan kes.')
     chimney(l, 520, 6)
-    l.house(330, 60, 80)
+    l.house(330, 60, 80, landmark=True)
     l.zone(440, 380, 160, 100); l.sol((530, 450)); out.append(l)
 
     l = L(2, 3, 'Cam Teras', 1, 1, 0.6, 'Soldaki dükkân korunuyor. Şarjı ondan uzak tut.')
     top = tower(l, 650, G, 90, 140, 'glass', 'wood'); top = tower(l, 650, top, 70, 60, 'glass', 'wood')
     l.col(650, top, 36, 36, 'wood', True)
-    l.house(300, 80, 80)
+    l.house(300, 80, 80, landmark=True)
     l.zone(440, 400, 120, 80); l.sol((535, 468)); out.append(l)
 
     l = L(2, 4, 'Hareketli Hedef', 1, 1, 0.4, 'Araç şarjın üstünden geçerken ateşle. Zamanlama kritik.')
@@ -247,7 +249,7 @@ def london():
     l = L(3, 1, 'Çift Kolon', 2, 1, 0.5, 'Sağdaki bina korunuyor. Patlama çemberini ondan uzak tut.')
     top = frame(l, [480, 560], G, 120, col_m='wood'); top = frame(l, [480, 560], top, 100, col_m='wood')
     l.col(520, top, 36, 36, 'wood', True)
-    l.house(840, 60, 90)
+    l.house(840, 60, 90, landmark=True)
     l.zone(440, 380, 60, 100); l.zone(540, 380, 60, 100)
     l.sol((480, 450)); out.append(l)
 
@@ -255,7 +257,7 @@ def london():
     l = L(3, 2, 'Üç Kolon', 2, 1, 0.5, 'Orta kolon yükün çoğunu taşır.')
     top = frame(l, [420, 520, 620], G, 140, col_m='wood'); top = frame(l, [480, 560], top, 50, col_m='wood', deck_m='wood')
     l.col(520, top, 36, 36, 'wood', True)
-    l.house(810, 60, 90)
+    l.house(810, 60, 90, landmark=True)
     l.zone(395, 380, 250, 100)
     l.sol((500, 440)); out.append(l)
 
@@ -343,7 +345,7 @@ def rome():
     l = L(4, 1, 'Hassas Şarj', 2, 1, 0.5, 'Komşu bina çok yakın: standart şarjın çemberi ona değer. Hassas şarja geç.')
     l.d['chargeKinds'] = ['standard', 'precision']
     top = tower(l, 520, G, 70, 120); l.col(520, top, 36, 36, 'wood', True)
-    l.house(620, 60, 80)
+    l.house(620, 60, 80, landmark=True)
     l.zone(460, 380, 120, 100)
     l.sol((480, 425, None, P)); out.append(l)
 
@@ -368,7 +370,7 @@ def rome():
     l.d['chargeKinds'] = ['standard', 'precision']
     top = frame(l, [500, 600], G, 170, col_m='concrete', deck_m='wood'); top = l.col(550, top, 80, 14, 'wood')
     l.col(550, top, 36, 36, 'wood', True)
-    l.house(330, 70, 70)
+    l.house(330, 70, 70, landmark=True)
     l.d['footprint'] = dict(**{'from': 440}, to=700, ratio=0.8)
     l.zone(470, 360, 160, 120)
     l.sol((510, 440), (600, 440)); out.append(l)
@@ -430,7 +432,7 @@ def rome():
     # the drop of its short upper storey a real fall, even when it lands upright.
     top = frame(l, [400, 480], G, 120, col_m='wood', deck_m='wood'); l.col(440, top, 34, 34, 'wood', True)
     top = tower(l, 620, G, 60, 140); top = tower(l, 620, top, 50, 40); l.col(620, top, 32, 32, 'wood', True)
-    l.house(820, 60, 80)
+    l.house(820, 60, 80, landmark=True)
     l.d['footprint'] = dict(**{'from': 310}, to=730, ratio=0.88)
     l.zone(370, 380, 300, 100)
     l.sol((430, 445, None, P), (650, 440, None, P)); out.append(l)
@@ -531,7 +533,7 @@ def tokyo():
     l.d['chargeKinds'] = S
     viaduct(l); c = train(l, 200)
     chimney(l, 700, 3, w=36, h=60)
-    l.house(460, 50, 60)
+    l.house(460, 50, 60, landmark=True)
     l.zone(690, 380, 80, 100)
     t = window_for(c, [(720, 0)]); l.sol((720, 450), fireAt=t); out.append(l)
 
@@ -578,7 +580,7 @@ def tokyo():
     l.d['chargeKinds'] = S
     viaduct(l); c = train(l, 300)
     top = frame(l, [620, 720, 820], G, 150, col_m='wood', deck_m='wood'); l.col(720, top, 32, 32, 'wood', True)
-    l.house(420, 50, 60)
+    l.house(420, 50, 60, landmark=True)
     l.d['footprint'] = dict(**{'from': 560}, to=900, ratio=0.75)
     l.zone(590, 300, 260, 60)
     t = window_for(c, [(720, 0)]); l.sol((720, 330), fireAt=t); out.append(l)
@@ -628,7 +630,7 @@ def istanbul():
     # The tie beam is the target; the rafters above it send a late bomb rolling towards the neighbour.
     top = infill(l, 420, 580, G, 72); top = l.col(500, top, 180, 14, 'wood')
     pitched(l, 500, top)
-    l.house(690, 50, 60)
+    l.house(690, 50, 60, landmark=True)
     SKY(l, 440, 120); l.zone(420, 380, 160, 100)
     l.sol((500, 60, 0, B), detonateAt=[1.2]); out.append(l)
 
@@ -656,7 +658,7 @@ def istanbul():
     t = G
     for i in range(6): t = l.col(520, t, 56, 52, 'brick' if i > 0 else 'concrete')
     l.col(520, t, 32, 32, 'wood', True)
-    l.house(380, 60, 70)
+    l.house(380, 60, 70, landmark=True)
     SKY(l, 460, 120); l.zone(470, 380, 120, 100)
     l.sol((520, 60, 0, B), detonateAt=[1.0]); out.append(l)
 
@@ -698,7 +700,7 @@ def istanbul():
     l.col(300, base, 32, 32, 'wood', True)
     # The chimney has room to fall towards the apartment; the neighbour stands well clear.
     chimney(l, 620, 5, w=40, h=56)
-    l.house(860, 50, 60)
+    l.house(860, 50, 60, landmark=True)
     SKY(l, 560, 120); l.zone(190, 380, 220, 100)
     l.sol((300, 440), (620, 60, 0, B), detonateAt=[1.0]); out.append(l)
     return out
@@ -773,7 +775,7 @@ def berlin():
     l = L(7, 6, 'Baca', 1, 1, 0.5, 'Bacaya yüksekten vur. Soldaki ev korunuyor; gülle üstünden geçer.')
     crane(l, 330, 80, 190, -1.2)
     chimney(l, 480, 5, w=40, h=56)
-    l.house(210, 60, 70)
+    l.house(210, 60, 70, landmark=True)
     l.zone(440, 440, 80, 40)
     l.sol(); out.append(l)
 
@@ -816,7 +818,7 @@ def berlin():
         for k in range(2): infill(l, xs[k] + 12, xs[k + 1] - 12, base, 72)
         base = frame(l, xs, base, 72, col_m='wood', deck_m='wood')
     l.col(500, base, 32, 32, 'wood', True)
-    l.house(860, 60, 80)
+    l.house(860, 60, 80, landmark=True)
     l.zone(400, 420, 200, 60)
     hook_zone(l, hook)
     l.sol((420, 450), (580, 450, 0.3)); out.append(l)
@@ -892,6 +894,7 @@ def madrid():
     deck = tram_line(l, 80, 500, 110)
     c = tram(l, 400, deck, 140, 440, 90)
     top = tower(l, 720, G, 70, 130); l.col(720, top, 34, 34, 'wood', True)
+    l.house(905, 60, 80, landmark=True)
     l.zone(250, deck - 40, 80, 38); l.zone(640, 400, 160, 80)
     t = time_to(c, 290); l.sol((290, deck - 12, 0), (700, 470, 0.35), fireAt=t); out.append(l)
 
@@ -946,7 +949,7 @@ def madrid():
     deck = tram_line(l, 120, 500, 110)
     c = tram(l, 200, deck, 180, 440, 90)
     tt = tower(l, 700, G, 60, 120); l.col(700, tt, 32, 32, 'wood', True)
-    l.house(880, 50, 60)
+    l.house(880, 50, 60, landmark=True)
     l.zone(270, deck - 40, 80, 38); l.zone(650, 400, 140, 80)
     # Fire as the low tram crosses the zone with the protected tram well away overhead.
     t = 0.0
@@ -974,7 +977,7 @@ def newyork():
     # 2. Back door: the zone is against a protected shop; a charge there would wreck it, a cart drives away to the job.
     l = L(9, 2, 'Arka Kapı', 1, 1, 0.5, 'Dükkân korunuyor. Yönlü şarjı oka dükkândan uzağa bakacak şekilde koy; ya da yürüyen şarjla işe sür.')
     l.d['chargeKinds'] = ['standard', R, 'directional']
-    l.house(150, 80, 90)
+    l.house(150, 80, 90, landmark=True)
     top = tower(l, 720, G, 60, 120); l.col(720, top, 34, 34, 'wood', True)
     l.zone(200, 430, 110, 50)
     l.sol((260, Y, None, R)); out.append(l)
@@ -1018,7 +1021,7 @@ def newyork():
     l.d['chargeKinds'] = ['standard', P, R]
     l.d['charges']['stock'] = {'standard': 1, P: 1, R: 1}
     l.d['charges']['max'] = 3
-    l.house(240, 70, 80)
+    l.house(240, 70, 80, landmark=True)
     top = tower(l, 340, G, 50, 100); l.col(340, top, 30, 30, 'wood', True)
     top = tower(l, 810, G, 60, 110); l.col(810, top, 30, 30, 'wood', True)
     l.zone(300, 430, 160, 50)

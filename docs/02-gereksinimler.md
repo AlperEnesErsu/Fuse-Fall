@@ -138,7 +138,7 @@ Yapıyı incele → Patlayıcı yerleştir → Ateşle → Yıkımı izle → Pu
 
 | ID | Gereksinim | Öncelik |
 |---|---|---|
-| FR-27 | **Korunan yapılar:** bazı seviyelerde komşu bina korunur. Herhangi bir patlama çemberi ona değerse, ya da yer değiştirir/eğilir/dayanımının yarısını kaybederse sözleşme iptal olur (görev başarısız). | M |
+| FR-27 | **Korunan yapılar:** bazı seviyelerde komşu bina korunur. Herhangi bir patlama çemberi ona değerse, ya da yer değiştirir/eğilir/dayanımının yarısını kaybederse sözleşme iptal olur (görev başarısız). Her şehrin simge yapısı en az iki görevde korunan komşu olarak yer alır (aynı kural, anıt olarak çizilir; testle doğrulanır). | M |
 | FR-28 | Yerleştirme sırasında her şarjın patlama çemberi gösterilir. Korunan yapıya değen çember ve o yapı kırmızıya döner. Önizleme ile hasar kuralı core'daki aynı fonksiyonu kullanır. | M |
 | FR-29 | **Yıkım raporu:** sonuç (BAŞARILI/BAŞARISIZ ve nedeni), hedefler, kullanılan şarj/par, yıkım oranı/eşik, korunan yapı durumu, süre, puan, en iyi puan ve üç kriter. | M |
 | FR-30 | Puan = 1000 + kullanılmayan şarj başına 300 + 500 × yıkım oranı. Seviye başına en iyi puan cihazda saklanır (eski kayıtlarla uyumlu). | M |

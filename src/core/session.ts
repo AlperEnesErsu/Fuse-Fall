@@ -44,6 +44,8 @@ export interface EntityView {
   readonly protected: boolean;
   /** A protected building that has been damaged. */
   readonly compromised: boolean;
+  /** A protected building that is the city's landmark. */
+  readonly landmark: boolean;
   readonly anchored: boolean;
   /** 0 = intact, 1 = about to break. */
   readonly damage: number;
@@ -85,6 +87,7 @@ interface Entity {
   /** Counts toward the collapse ratio (an original block to demolish, not debris, a barrel or a protected building). */
   readonly structural: boolean;
   readonly guarded: boolean;
+  readonly landmark: boolean;
   readonly anchored: boolean;
   readonly fromStructure: boolean;
   compromised: boolean;
@@ -142,6 +145,7 @@ interface SpawnSpec {
   readonly target?: boolean;
   readonly structural?: boolean;
   readonly guarded?: boolean;
+  readonly landmark?: boolean;
   readonly anchored?: boolean;
   readonly motion?: { readonly velocity: Vec2; readonly angularVelocity: number };
   readonly driver?: Driver;
@@ -264,6 +268,7 @@ export class LevelSession {
         material: b.material,
         target: b.target,
         guarded: b.protected,
+        landmark: b.landmark === true,
         anchored: b.anchored,
         structural: !b.protected && !b.anchored,
       });
@@ -408,6 +413,7 @@ export class LevelSession {
         downAt: e.target && !e.down ? WORLD.groundY - halfExtent(e.shape) - downClearance(e.shape, e.origin.position) : undefined,
         protected: e.guarded,
         compromised: e.compromised,
+        landmark: e.landmark,
         anchored: e.anchored,
         damage: Number.isFinite(e.maxHp) ? 1 - Math.max(0, e.hp) / e.maxHp : 0,
         state,
@@ -1165,6 +1171,7 @@ export class LevelSession {
       target: spec.target ?? false,
       structural: spec.structural ?? false,
       guarded: spec.guarded ?? false,
+      landmark: spec.landmark ?? false,
       anchored: spec.anchored ?? false,
       fromStructure: spec.fromStructure ?? false,
       compromised: false,

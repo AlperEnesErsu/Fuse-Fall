@@ -29,6 +29,8 @@ export interface BlockDef {
   readonly target: boolean;
   /** A neighbouring building that must come through the job undamaged. */
   readonly protected: boolean;
+  /** A protected building that is the city's landmark: the same rule, drawn as the monument it is. */
+  readonly landmark?: true;
   /** Fixed infrastructure (road decks, bridge piers): immovable, indestructible, not part of the job. */
   readonly anchored: boolean;
 }
@@ -193,6 +195,8 @@ const block = (v: unknown, path: string): BlockDef => {
   if (Number(target) + Number(guarded) + Number(anchored) > 1) {
     fail(path, 'a block is at most one of target, protected or anchored');
   }
+  const landmark = o.landmark === undefined ? false : typeof o.landmark === 'boolean' ? o.landmark : fail(`${path}.landmark`, 'expected boolean');
+  if (landmark && !guarded) fail(path, 'a landmark is a protected building');
   const def: BlockDef = {
     x: num(o.x, `${path}.x`, 0, WORLD.width),
     y: num(o.y, `${path}.y`, 0, WORLD.groundY),
@@ -203,6 +207,7 @@ const block = (v: unknown, path: string): BlockDef => {
     target,
     protected: guarded,
     anchored,
+    ...(landmark ? { landmark: true as const } : {}),
   };
   if (def.target && !startsClear(def.y, def.w, def.h)) fail(path, 'target must start clear of the ground');
   return def;

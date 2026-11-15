@@ -24,6 +24,7 @@ Biçim [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) düzenine yak
 - Çizim, iki fizik adımı arasını ara değerler: 90 ve 120 Hz ekranlarda ve yavaş çekim tekrarda hareket akıcıdır. Fizik ve sonuçlar değişmez.
 - ATEŞLE'den sonra kamera şarj bölgesini bırakıp yapıya yaklaşır (en çok 1,9 kat); zemin ekranda yerinde kalır. Yerleştirme çerçevesinin zaten dar olduğu görevlerde ve Anında Patlat'ta kamera oynamaz; "hareketi azalt" ayarı bunu kapatır.
 - Son hedef düşerken kamera ağır çekimle birlikte hedefe doğru kısa bir yakın çekim yapar.
+- Şehrin simge yapısı artık görevin içinde, korunan komşu olarak: Ankara'da anıt mezar, Paris'te zafer takı, Londra'da saat kulesi, Roma'da amfitiyatro, Tokyo'da pagoda, İstanbul'da taş kule, Berlin'de kapı, Madrid'de şehir kapısı, New York'ta basamaklı kule. Her şehirde en az iki görevde yer alır; kural aynıdır (patlama değmemeli), yalnız çizim değişir. Madrid 4'e bu amaçla korunan bir yapı eklendi.
 - Eylem planı: `docs/eylem-plani.md`.
 - `npm run e2e`: oyunu dokunmatik telefon profilleriyle iki mobil motorda oynar (Chromium: Android, WebKit: iOS; dikey, yatay ve 360×640). CI her PR'da çalıştırır. CI ayrıca görev JSON'unun üreticisiyle aynı olduğunu doğrular.
 
