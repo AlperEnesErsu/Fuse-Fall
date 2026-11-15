@@ -57,7 +57,7 @@ Bağımlılıklar içe doğru akar ve ESLint ile zorlanır. `core` Matter.js'i y
 - `src/content/workshop.ts`: atölye kataloğu (fiyatlar). Hurda ve rütbe kuralları `src/core/economy.ts`, patlama stillerinin renkleri `src/presentation/blast-styles.ts`.
 - Simge yapı: korunan bir blokta `landmark: true` (üreticide `l.house(..., landmark=True)`). Kural değişmez; blok şehrin anıtı olarak çizilir (`src/presentation/landmarks.ts`). Yeni şehir için oraya bir çizim eklenir.
 - Araçlar: `protected` (korunan üçüncü taraf trafik) ve `style` (`car`, `train`). Trenler raylarda gider; rotalar ekran kenarlarını aşabilir.
-- Yeni şehir: `cities.json`'a ekle, seviye paketini `src/content/levels.ts` içindeki `PACKS` listesine ekle, silüetini `src/presentation/scenery.ts` içinde çiz.
+- Yeni şehir: `cities.json`'a ekle, seviye paketini `src/content/levels.ts` içindeki `PACKS` listesine ekle, silüetini `src/presentation/scenery.ts` içinde çiz, bina stilini (çatı, kat süsü, pencere) `src/presentation/city-style.ts` içine, simge yapısını `src/presentation/landmarks.ts` içine ekle. Testler ikisinin de her şehir için var olduğunu denetler.
 
 `tests/levels.test.ts` her seviyenin ateşlenmeden ayakta durduğunu, çözümünün gerçek fizikle kazandığını ve araba seviyelerinde zamanlamanın, bomba görevlerinde PATLAT düğmesinin gerçekten önemli olduğunu doğrular.
 

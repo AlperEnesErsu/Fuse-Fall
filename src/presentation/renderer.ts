@@ -628,7 +628,7 @@ export class Renderer {
       bevel(c, w, h);
     }
     const part = this.buildings?.plan.get(e.id);
-    if (part) drawPart(c, part, w, h, e.material === 'glass');
+    if (part) drawPart(c, part, w, h, e.material === 'glass', this.scene.city);
     if (e.protected) this.facade(w, h, e.compromised || threatened);
     if (e.damage > 0.25) this.cracks(e.id, w, h, e.damage, e.material);
     c.strokeStyle = 'rgba(0,0,0,0.45)';
