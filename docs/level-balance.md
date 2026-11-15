@@ -86,7 +86,25 @@ w2-09 58% → 50%, w9-04 66% → 72%; the campaign average stayed at 89%.
 Still under the targets (easy 80%, medium 65%, hard and expert 50%): w4-03 59%, w4-07 57%,
 w4-10 48%, w6-02 63%, w7-10 40%. Those need a layout change, not a better spot.
 
-The table below is from before both changes.
+
+## 2026-11-15: the thresholds, enforced
+
+`npm run balance` (and the `balance` CI job) now fails when a level's near-miss clear rate
+drops under its difficulty's floor: easy 80%, medium 65%, hard and expert 50%. The five levels
+under it were changed:
+
+| Level | Change | Before | After |
+|---|---|---|---|
+| w4-03 Kemerli Avlu | The recorded solution is the implosion charge the job teaches, a little higher | 59% | 82% |
+| w4-07 Çan Kulesi | The site reaches 80 px further right, where the kicked-out base lands | 57% | 80% |
+| w4-10 Roma Finali | Taller ground floor under a short upper storey, a wider site, charges where a miss still topples | 48% | 74% |
+| w6-02 Havada Patlat | The protected houses stand 40 px further from the mast | 63% | 71% |
+| w7-10 Berlin Finali | The protected neighbour stands 60 px further away | 40% | 54% |
+
+Averages now: easy 92%, medium 94%, hard 88%, expert 87%. The thinnest margin is w2-09 at
+exactly 50%: the next change near it should give it room.
+
+The table below is from before all of these changes.
 
 ## Results
 

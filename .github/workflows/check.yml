@@ -44,6 +44,20 @@ jobs:
           python tools/genlevels.py src/content/levels
           git diff --exit-code -- src/content/levels
 
+  # Every level stays forgiving enough: near misses of its solution still clear it often enough for its difficulty.
+  balance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Level balance thresholds
+        run: npm run balance
+
   # The game played with touch in the two mobile engines: Chromium (Android) and WebKit (iOS).
   mobile:
     runs-on: ubuntu-latest

@@ -361,7 +361,7 @@ def rome():
     top = frame(l, [430, 520, 610], G, 110, col_m='wood', deck_m='wood'); l.col(520, top, 36, 36, 'wood', True)
     l.d['footprint'] = dict(**{'from': 380}, to=660, ratio=0.85)
     l.zone(400, 380, 240, 100)
-    l.sol((490, 450, None, P)); out.append(l)
+    l.sol((490, 400, None, 'implosion')); out.append(l)
 
     # 4. Marble columns beside a protected ruin.
     l = L(4, 4, 'Mermer Sütunlar', 3, 2, 0.5, 'Soldaki tarihi yapı korunuyor ve şantiye dar.')
@@ -398,7 +398,7 @@ def rome():
     chimney(l, 560, 6)
     # A buttress on the right: the tower leans the way the site is.
     l.col(597, G, 30, 70, 'concrete')
-    l.d['footprint'] = dict(**{'from': 140}, to=620, ratio=0.7)
+    l.d['footprint'] = dict(**{'from': 140}, to=700, ratio=0.7)
     l.zone(480, 380, 160, 100)
     l.sol((524, 465)); out.append(l)
 
@@ -426,12 +426,14 @@ def rome():
     # 10. Finale: two buildings, one tight site, ancient neighbour.
     l = L(4, 10, 'Roma Finali', 4, 3, 0.5, 'İki yapı, dar şantiye, yanında tarihi yapı. Her şarjın tipini ve yerini seç.')
     l.d['chargeKinds'] = ['standard', 'precision']
+    # Legs close enough for one precision charge to cut both; the tower's tall ground floor makes
+    # the drop of its short upper storey a real fall, even when it lands upright.
     top = frame(l, [400, 480], G, 120, col_m='wood', deck_m='wood'); l.col(440, top, 34, 34, 'wood', True)
-    top = tower(l, 620, G, 60, 100); top = tower(l, 620, top, 50, 80); l.col(620, top, 32, 32, 'wood', True)
+    top = tower(l, 620, G, 60, 140); top = tower(l, 620, top, 50, 40); l.col(620, top, 32, 32, 'wood', True)
     l.house(820, 60, 80)
-    l.d['footprint'] = dict(**{'from': 340}, to=700, ratio=0.88)
+    l.d['footprint'] = dict(**{'from': 310}, to=730, ratio=0.88)
     l.zone(370, 380, 300, 100)
-    l.sol((500, 450, None, P), (560, 450, None, P)); out.append(l)
+    l.sol((430, 445, None, P), (650, 440, None, P)); out.append(l)
     return out
 
 
@@ -616,7 +618,7 @@ def istanbul():
     l = L(6, 2, 'Havada Patlat', 1, 1, 0.5, 'Aşağıdaki evler korunuyor. Bombayı direğin tepesindeyken patlat, yere inmeden.')
     l.d['chargeKinds'] = [B]
     chimney(l, 500, 5, w=40, h=60)
-    l.house(360, 60, 70); l.house(640, 60, 70)
+    l.house(320, 60, 70); l.house(680, 60, 70)
     SKY(l, 440, 120); l.zone(0, 0, 1, 1)
     l.sol((520, 60, 0, B), detonateAt=[0.7]); out.append(l)
 
@@ -814,7 +816,7 @@ def berlin():
         for k in range(2): infill(l, xs[k] + 12, xs[k + 1] - 12, base, 72)
         base = frame(l, xs, base, 72, col_m='wood', deck_m='wood')
     l.col(500, base, 32, 32, 'wood', True)
-    l.house(800, 60, 80)
+    l.house(860, 60, 80)
     l.zone(400, 420, 200, 60)
     hook_zone(l, hook)
     l.sol((420, 450), (580, 450, 0.3)); out.append(l)

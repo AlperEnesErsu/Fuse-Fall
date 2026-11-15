@@ -28,6 +28,8 @@ Biçim [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) düzenine yak
 ### Değişti
 
 - Şarjlar 5 piksellik ızgaraya oturur: aynı görünen yerleşim aynı yerleşimdir ve aynı sonucu verir. Kayıtlı çözümler ızgaraya taşındı; Ankara 7, Paris 9 ve New York 8'in çözümü çevresi en sağlam ızgara noktasına alındı.
+- Beş görev yakın ıskalarda fazla kırılgandı ve yeniden düzenlendi: Roma 3 (çözümü, öğretilen içe çöken şarj oldu; %59 → %82), Roma 7 (şantiye sağa genişledi; %57 → %80), Roma Finali (kulenin zemin katı uzadı, şantiye genişledi, çözüm sağlam noktalara taşındı; %48 → %74), İstanbul 2 (korunan evler uzaklaştı; %63 → %71), Berlin Finali (korunan komşu uzaklaştı; %40 → %54).
+- `npm run balance` ve CI: her görev, zorluğuna göre bir yakın ıska eşiğini tutmak zorunda (kolay %80, orta %65, zor ve uzman %50).
 - Durulma tespiti: kaynaklı blokların yerinde titremesi ve molozun saniyede birkaç piksel sürünmesi artık "hâlâ çöküyor" sayılmaz; henüz düşmemiş bir hedef kımıldadıkça hüküm bekler. Kayıtlı çözümlerde zaman aşımıyla biten görev 19'dan 3'e indi.
 - Zaman aşımı ateşlemeden değil son patlamadan sayılır: fitiliyle geç patlayan bomba ya da arabalı şarj da çöküşü için tam süreyi alır.
 
