@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { EventBus, type GameEvents } from '../src/core/events';
 import { WORLD, type LevelDefinition } from '../src/core/level';
 import { levelsOf } from '../src/core/progress';
 import { LevelSession } from '../src/core/session';
@@ -23,6 +24,21 @@ const variant = (id: string, change: (c: LevelDefinition['solution']['charges'][
 };
 
 describe('campaign content', () => {
+  it('records every solution on the placement grid, where a player can put the same charge', () => {
+    const g = TUNING.charge.grid;
+    const off = levels.flatMap((l) => l.solution.charges.filter((c) => c.x % g !== 0 || c.y % g !== 0).map((c) => `${l.id} (${c.x},${c.y})`));
+    expect(off).toEqual([]);
+  });
+
+  it.each(cases)('%s: the player can set every solution charge exactly where it is recorded', (_id, level) => {
+    const session = new LevelSession(level, new MatterPhysicsWorld(), new EventBus<GameEvents>());
+    for (const c of level.solution.charges) {
+      const kind = c.kind ?? 'standard';
+      expect(session.snapPlacement({ x: c.x + 1.4, y: c.y - 1.2 }, kind)).toEqual({ x: c.x, y: c.y });
+      session.placeCharge({ x: c.x, y: c.y }, c.delay, kind, c.direction);
+    }
+  });
+
   it('ships ten ordered levels for each playable city', () => {
     for (const world of [1, 2, 3, 4, 5, 6, 7, 8, 9]) {
       expect(levelsOf(campaign, world).map((l) => l.order)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);

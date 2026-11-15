@@ -27,7 +27,7 @@ Yapıyı incele → Patlayıcı yerleştir → Ateşle → Yıkımı izle → Pu
 
 | ID | Gereksinim | Öncelik |
 |---|---|---|
-| FR-01 | Oyuncu, seviyenin izin verdiği bölgelere patlayıcı yerleştirebilir, taşıyabilir ve kaldırabilir. | M |
+| FR-01 | Oyuncu, seviyenin izin verdiği bölgelere patlayıcı yerleştirebilir, taşıyabilir ve kaldırabilir. Şarjlar 5 piksellik ızgaraya oturur; kayıtlı çözümler de ızgaradadır (testle doğrulanır). | M |
 | FR-02 | Oyuncu "Ateşle" ile tüm patlayıcıları seviyenin tanımladığı sırayla ve gecikmeyle patlatır. | M |
 | FR-03 | Patlamalar yarıçap ve güç parametreleriyle cisimlere radyal itme uygular. | M |
 | FR-04 | Malzemeler farklı davranır: **ahşap** (orta dayanım, kırılır), **cam** (düşük dayanım, çok parçaya ayrılır), **beton** (yüksek dayanım, büyük parçalar), **metal** (kırılmaz, ağır). | M (ahşap, beton), S (cam, metal) |

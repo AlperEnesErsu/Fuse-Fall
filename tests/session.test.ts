@@ -50,6 +50,24 @@ describe('placement', () => {
     expect(session.placeCharge({ x: 600, y: 450 })).toEqual({ ok: false, error: 'outside-zone' });
   });
 
+  it('sets a charge on the grid, so the same-looking layout is the same layout', () => {
+    const { session } = setup();
+    const g = TUNING.charge.grid;
+    // Two taps a couple of pixels apart land on one spot.
+    expect(session.snapPlacement({ x: 101.7, y: 448.9 })).toEqual({ x: 100, y: 450 });
+    expect(session.snapPlacement({ x: 99.2, y: 451.6 })).toEqual({ x: 100, y: 450 });
+    const spot = session.snapPlacement({ x: 233.3, y: 417.1 });
+    expect(spot && spot.x % g === 0 && spot.y % g === 0).toBe(true);
+  });
+
+  it('still pulls a tap from just outside a zone inside it', () => {
+    const { session } = setup();
+    // The zone starts at y = 400: the grid point above it is not allowed, the pulled-in spot is.
+    const spot = session.snapPlacement({ x: 150, y: 391 });
+    expect(spot).toBeDefined();
+    expect(session.canPlaceAt(spot ?? { x: 0, y: 0 }).ok).toBe(true);
+  });
+
   it('enforces spacing and the charge limit', () => {
     const { session } = setup();
     session.placeCharge({ x: 100, y: 450 });

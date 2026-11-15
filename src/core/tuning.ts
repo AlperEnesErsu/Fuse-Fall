@@ -8,6 +8,8 @@ export const TUNING = {
     /** Fraction of the blast pushed upwards, as a ground charge would. */
     lift: 0.3,
     placementSpacing: 26,
+    /** Charges sit on a grid this fine (world px), so a layout that looks the same is the same and plays the same. */
+    grid: 5,
     pickRadius: 24,
     /** Detonation delays, as on a real blasting machine: new charges default to one step after the last. */
     delay: { defaultStep: 0.35, step: 0.05, max: 2 },
