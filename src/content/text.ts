@@ -30,7 +30,7 @@ const EN_LEVELS: Readonly<Record<string, { readonly name: string; readonly hint:
   'w2-07': { name: 'Convoy', hint: 'Catch the vehicle first, then bring down the tower.' },
   'w2-08': { name: 'Barrel Road', hint: 'Start the chain when the vehicle reaches the barrels.' },
   'w2-09': { name: 'Pyramid Base', hint: 'Cut the base; the pyramid comes down under its own weight.' },
-  'w2-10': { name: 'Operation Seine', hint: 'Traffic, glass and timber. Bring down all three targets.' },
+  'w2-10': { name: 'Operation Seine', hint: 'Traffic, glass and timber. Bring down all three targets; the spare charge is for the showpiece on the far left.' },
   'w3-01': { name: 'Two Columns', hint: 'The building on the right is protected. Keep the blast circle clear of it.' },
   'w3-02': { name: 'Three Columns', hint: 'The middle column carries most of the load.' },
   'w3-03': { name: 'Convoy', hint: 'Two vehicles pass the same spot. Set the second delay for the second vehicle.' },
@@ -40,7 +40,7 @@ const EN_LEVELS: Readonly<Record<string, { readonly name: string; readonly hint:
   'w3-07': { name: 'Tower Bridge', hint: 'Two towers and a vehicle on the bridge. Towers at once, the vehicle when it arrives.' },
   'w3-08': { name: 'Night Convoy', hint: 'Three vehicles in a row. Set the delays to the gaps between them.' },
   'w3-09': { name: 'Glass Tower', hint: 'Glass is brittle; use the charge from a distance.' },
-  'w3-10': { name: 'London Finale', hint: 'A convoy and a building. Set three delays for one firing.' },
+  'w3-10': { name: 'London Finale', hint: 'A convoy and a building. Set three delays for one firing; the fourth charge is for the showpiece.' },
   'w4-01': {
     name: 'Precision Charge',
     hint: 'The neighbour is too close: a standard blast would reach it. Switch to precision.',

@@ -36,6 +36,14 @@ const validLevel = {
 };
 
 describe('level parsing', () => {
+  it('accepts a showpiece only on plain structure', () => {
+    const block = { x: 200, y: 440, w: 60, h: 80, material: 'brick' };
+    const ok = parseLevel({ ...validLevel, blocks: [...validLevel.blocks, { ...block, showpiece: true }] });
+    expect(ok.ok && ok.value.blocks.at(-1)).toMatchObject({ showpiece: true });
+    for (const role of ['target', 'protected', 'anchored'])
+      expect(parseLevel({ ...validLevel, blocks: [...validLevel.blocks, { ...block, showpiece: true, [role]: true }] }).ok, role).toBe(false);
+  });
+
   it('accepts a landmark only as a protected building', () => {
     const block = { x: 200, y: 440, w: 60, h: 80, material: 'concrete' };
     const landmark = parseLevel({ ...validLevel, blocks: [...validLevel.blocks, { ...block, protected: true, landmark: true }] });

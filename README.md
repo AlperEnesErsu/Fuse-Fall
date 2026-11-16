@@ -55,6 +55,7 @@ Bağımlılıklar içe doğru akar ve ESLint ile zorlanır. `core` Matter.js'i y
 - Yıkım gülleleri: `balls` (`hook`, `length`, `angle`, `radius`). Üreticideki `crane()` vinç direğini salınımın dışına kendisi yerleştirir.
 - `src/content/sandbox.ts`: Serbest Şantiye yapı şablonları.
 - `src/content/workshop.ts`: atölye kataloğu (fiyatlar). Hurda ve rütbe kuralları `src/core/economy.ts`, patlama stillerinin renkleri `src/presentation/blast-styles.ts`.
+- Gösteri binası: şehir finallerinde `showpiece: true` taşıyan, hedef olmayan yıkılacak yapı (üreticide `l.showpiece(cx, ...)`). Kazanmak için gerekmez; `tests/levels.test.ts` onsuz kazanıldığını ve yedek şarjla yıkıldığında görevin yine kazanıldığını denetler.
 - Simge yapı: korunan bir blokta `landmark: true` (üreticide `l.house(..., landmark=True)`). Kural değişmez; blok şehrin anıtı olarak çizilir (`src/presentation/landmarks.ts`). Yeni şehir için oraya bir çizim eklenir.
 - Araçlar: `protected` (korunan üçüncü taraf trafik) ve `style` (`car`, `train`). Trenler raylarda gider; rotalar ekran kenarlarını aşabilir.
 - Yeni şehir: `cities.json`'a ekle, seviye paketini `src/content/levels.ts` içindeki `PACKS` listesine ekle, silüetini `src/presentation/scenery.ts` içinde çiz, bina stilini (çatı, kat süsü, pencere) `src/presentation/city-style.ts` içine, simge yapısını `src/presentation/landmarks.ts` içine ekle. Testler ikisinin de her şehir için var olduğunu denetler.

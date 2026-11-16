@@ -106,6 +106,19 @@ exactly 50%: the next change near it should give it room.
 
 The table below is from before all of these changes.
 
+## 2026-11-16: finale showpieces
+
+Paris 10 and London 10 gained a showpiece: a condemned brick block that is not a target, on free
+ground well clear of both the targets and the protected property. The recorded solutions do not touch
+it and still clear; a spare charge at its feet brings it down and the job is still won (tested). Near
+misses after the change: w2-10 85%, w3-10 100%, both over the hard floor of 50%.
+
+What did not work, for the next one who tries: a showpiece within reach of a target either props the
+falling target up (Paris, on the right) or its blast changes the chain that brings the targets down
+(Ankara: the middle target stayed up). Brick walls between a tower's posts make it a shear wall that
+the old charges no longer topple. A tall stack of bodies settles 3-5 px under its own weight before
+anything is fired, which the stand-still test rejects: build wide, not tall.
+
 ## Results
 
 ✱ = changed in this pass. Before/after use the same probe.

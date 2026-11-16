@@ -17,9 +17,22 @@ const THROTTLE = Number(process.env.CPU_THROTTLE ?? 4);
 const executablePath = process.env.BROWSER;
 if (!executablePath) throw new Error('Set BROWSER to a Chromium-based browser executable.');
 
-/** The heaviest job with a plain solution: Berlin 10, 28 blocks and a wrecking ball, shattering as it falls. */
-const berlin = JSON.parse(fs.readFileSync('src/content/levels/berlin.json', 'utf8'));
-const JOB = (berlin.levels ?? berlin).find((l) => l.id === 'w7-10');
+/**
+ * The job to measure: Berlin 10 by default (28 blocks and a wrecking ball, shattering as it falls).
+ * PERF_JOB=w2-10 picks another; a finale's showpiece is fired too, with the spare charge, so the
+ * frame rate is measured over the biggest collapse the job can give.
+ */
+const CITIES = ['ankara', 'paris', 'london', 'rome', 'tokyo', 'istanbul', 'berlin', 'madrid', 'newyork'];
+const JOB_ID = process.env.PERF_JOB ?? 'w7-10';
+const WORLD_INDEX = Number(JOB_ID.slice(1, JOB_ID.indexOf('-'))) - 1;
+const pack = JSON.parse(fs.readFileSync(`src/content/levels/${CITIES[WORLD_INDEX]}.json`, 'utf8'));
+const JOB = (pack.levels ?? pack).find((l) => l.id === JOB_ID);
+if (!JOB) throw new Error(`no job ${JOB_ID}`);
+const SHOWPIECE = JOB.blocks.filter((b) => b.showpiece);
+/** The spare charge: at the foot of the showpiece, when the job has one. */
+const CHARGES = SHOWPIECE.length > 0 && JOB.charges.max > JOB.solution.charges.length
+  ? [...JOB.solution.charges, { x: SHOWPIECE.reduce((s, b) => s + b.x, 0) / SHOWPIECE.length, y: 470 }]
+  : JOB.solution.charges;
 const FEATURES = [...fs.readFileSync('src/content/features.ts', 'utf8').match(/FEATURE_IDS = \[([^\]]*)\]/)[1].matchAll(/'([a-z-]+)'/g)].map((m) => m[1]);
 
 const browser = await puppeteer.launch({ executablePath, headless: true });
@@ -50,7 +63,7 @@ const coldStart = async (throttle) => {
   return median(runs);
 };
 
-/** NFR-01: frame times while Berlin 10 comes down, from requestAnimationFrame. */
+/** NFR-01: frame times while the job comes down, from requestAnimationFrame. */
 const collapseFps = async (throttle) => {
   const { page, context } = await phone(throttle);
   await page.evaluateOnNewDocument((seen) => {
@@ -64,11 +77,11 @@ const collapseFps = async (throttle) => {
   await page.goto(DEV, { waitUntil: 'networkidle0' });
   await page.evaluate(() => (document.querySelector('.menu-main .btn:not(.continue)') ?? document.querySelector('.panel.menu .btn.big')).click());
   await page.waitForSelector('.city-card');
-  await page.evaluate(() => document.querySelectorAll('.city-card')[6].click());
+  await page.evaluate((i) => document.querySelectorAll('.city-card')[i].click(), WORLD_INDEX);
   await page.waitForSelector('.level-card');
-  await page.evaluate(() => document.querySelectorAll('.level-card')[9].click());
+  await page.evaluate((i) => document.querySelectorAll('.level-card')[i].click(), JOB.order - 1);
   await sleep(1500);
-  for (const c of JOB.solution.charges) {
+  for (const c of CHARGES) {
     const p = await page.evaluate(([x, y]) => window.__fuse.toClient(x, y), [c.x, c.y]);
     await page.mouse.click(p.x, p.y);
     await sleep(200);
@@ -88,7 +101,7 @@ const collapseFps = async (throttle) => {
   // Proof the numbers come from a collapse and not an idle screen: PERF_SHOT=dir keeps a frame of it.
   if (process.env.PERF_SHOT) await page.screenshot({ path: `${process.env.PERF_SHOT}/collapse-${throttle}x.jpg`, type: 'jpeg', quality: 70 });
   const title = await page.$eval('.hud', (e) => e.textContent ?? '');
-  if (!title.includes('10')) throw new Error(`Berlin 10 did not open: ${title.slice(0, 60)}`);
+  if (!title.includes(String(JOB.order).padStart(2, '0'))) throw new Error(`${JOB_ID} did not open: ${title.slice(0, 60)}`);
   await sleep(4500);
   const frames = (await page.evaluate(() => window.__frames)).slice(1);
   await context.close();

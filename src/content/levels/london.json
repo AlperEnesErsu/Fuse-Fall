@@ -905,11 +905,17 @@
   "world": 3,
   "order": 10,
   "charges": {
-   "max": 3,
+   "max": 4,
    "par": 3
   },
   "bonusCollapse": 0.4,
   "zones": [
+   {
+    "x": 530,
+    "y": 405,
+    "w": 200,
+    "h": 75
+   },
    {
     "x": 334,
     "y": 298,
@@ -976,6 +982,182 @@
     "h": 36,
     "material": "wood",
     "target": true
+   },
+   {
+    "x": 562.5,
+    "y": 425.0,
+    "w": 18,
+    "h": 110,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 607.5,
+    "y": 425.0,
+    "w": 18,
+    "h": 110,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 652.5,
+    "y": 425.0,
+    "w": 18,
+    "h": 110,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 697.5,
+    "y": 425.0,
+    "w": 18,
+    "h": 110,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 630.0,
+    "y": 361.0,
+    "w": 169.0,
+    "h": 18,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 585.0,
+    "y": 342.0,
+    "w": 25.0,
+    "h": 20,
+    "material": "brick",
+    "showpiece": true
+   },
+   {
+    "x": 585.0,
+    "y": 322.0,
+    "w": 25.0,
+    "h": 20,
+    "material": "brick",
+    "showpiece": true
+   },
+   {
+    "x": 585.0,
+    "y": 302.0,
+    "w": 25.0,
+    "h": 20,
+    "material": "brick",
+    "showpiece": true
+   },
+   {
+    "x": 630.0,
+    "y": 342.0,
+    "w": 25.0,
+    "h": 20,
+    "material": "brick",
+    "showpiece": true
+   },
+   {
+    "x": 630.0,
+    "y": 322.0,
+    "w": 25.0,
+    "h": 20,
+    "material": "brick",
+    "showpiece": true
+   },
+   {
+    "x": 630.0,
+    "y": 302.0,
+    "w": 25.0,
+    "h": 20,
+    "material": "brick",
+    "showpiece": true
+   },
+   {
+    "x": 675.0,
+    "y": 342.0,
+    "w": 25.0,
+    "h": 20,
+    "material": "brick",
+    "showpiece": true
+   },
+   {
+    "x": 675.0,
+    "y": 322.0,
+    "w": 25.0,
+    "h": 20,
+    "material": "brick",
+    "showpiece": true
+   },
+   {
+    "x": 675.0,
+    "y": 302.0,
+    "w": 25.0,
+    "h": 20,
+    "material": "brick",
+    "showpiece": true
+   },
+   {
+    "x": 562.5,
+    "y": 322.0,
+    "w": 18,
+    "h": 60,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 607.5,
+    "y": 322.0,
+    "w": 18,
+    "h": 60,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 652.5,
+    "y": 322.0,
+    "w": 18,
+    "h": 60,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 697.5,
+    "y": 322.0,
+    "w": 18,
+    "h": 60,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 630.0,
+    "y": 283.0,
+    "w": 169.0,
+    "h": 18,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 630.0,
+    "y": 266.5,
+    "w": 125.0,
+    "h": 15,
+    "material": "brick",
+    "showpiece": true
+   },
+   {
+    "x": 630.0,
+    "y": 251.5,
+    "w": 125.0,
+    "h": 15,
+    "material": "brick",
+    "showpiece": true
+   },
+   {
+    "x": 630.0,
+    "y": 236.5,
+    "w": 125.0,
+    "h": 15,
+    "material": "brick",
+    "showpiece": true
    }
   ],
   "barrels": [],
@@ -1023,6 +1205,6 @@
    ],
    "fireAt": 1.1333333333333333
   },
-  "hint": "Konvoy ve bina. Üç gecikmeyi tek ateşlemede kur."
+  "hint": "Konvoy ve bina. Üç gecikmeyi tek ateşlemede kur; dördüncü şarj gösteri binası için."
  }
 ]
