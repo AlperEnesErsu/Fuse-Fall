@@ -857,6 +857,12 @@
   "bonusCollapse": 0.5,
   "zones": [
    {
+    "x": 36,
+    "y": 408,
+    "w": 148,
+    "h": 72
+   },
+   {
     "x": 362,
     "y": 377,
     "w": 316,
@@ -951,6 +957,182 @@
     "material": "concrete",
     "protected": true,
     "landmark": true
+   },
+   {
+    "x": 59.0,
+    "y": 425.0,
+    "w": 14,
+    "h": 110,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 93.0,
+    "y": 425.0,
+    "w": 14,
+    "h": 110,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 127.0,
+    "y": 425.0,
+    "w": 14,
+    "h": 110,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 161.0,
+    "y": 425.0,
+    "w": 14,
+    "h": 110,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 110.0,
+    "y": 361.0,
+    "w": 132.0,
+    "h": 18,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 76.0,
+    "y": 342.0,
+    "w": 18.0,
+    "h": 20,
+    "material": "brick",
+    "showpiece": true
+   },
+   {
+    "x": 76.0,
+    "y": 322.0,
+    "w": 18.0,
+    "h": 20,
+    "material": "brick",
+    "showpiece": true
+   },
+   {
+    "x": 76.0,
+    "y": 302.0,
+    "w": 18.0,
+    "h": 20,
+    "material": "brick",
+    "showpiece": true
+   },
+   {
+    "x": 110.0,
+    "y": 342.0,
+    "w": 18.0,
+    "h": 20,
+    "material": "brick",
+    "showpiece": true
+   },
+   {
+    "x": 110.0,
+    "y": 322.0,
+    "w": 18.0,
+    "h": 20,
+    "material": "brick",
+    "showpiece": true
+   },
+   {
+    "x": 110.0,
+    "y": 302.0,
+    "w": 18.0,
+    "h": 20,
+    "material": "brick",
+    "showpiece": true
+   },
+   {
+    "x": 144.0,
+    "y": 342.0,
+    "w": 18.0,
+    "h": 20,
+    "material": "brick",
+    "showpiece": true
+   },
+   {
+    "x": 144.0,
+    "y": 322.0,
+    "w": 18.0,
+    "h": 20,
+    "material": "brick",
+    "showpiece": true
+   },
+   {
+    "x": 144.0,
+    "y": 302.0,
+    "w": 18.0,
+    "h": 20,
+    "material": "brick",
+    "showpiece": true
+   },
+   {
+    "x": 59.0,
+    "y": 322.0,
+    "w": 14,
+    "h": 60,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 93.0,
+    "y": 322.0,
+    "w": 14,
+    "h": 60,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 127.0,
+    "y": 322.0,
+    "w": 14,
+    "h": 60,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 161.0,
+    "y": 322.0,
+    "w": 14,
+    "h": 60,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 110.0,
+    "y": 283.0,
+    "w": 132.0,
+    "h": 18,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 110.0,
+    "y": 266.5,
+    "w": 92.0,
+    "h": 15,
+    "material": "brick",
+    "showpiece": true
+   },
+   {
+    "x": 110.0,
+    "y": 251.5,
+    "w": 92.0,
+    "h": 15,
+    "material": "brick",
+    "showpiece": true
+   },
+   {
+    "x": 110.0,
+    "y": 236.5,
+    "w": 92.0,
+    "h": 15,
+    "material": "brick",
+    "showpiece": true
    }
   ],
   "barrels": [],
@@ -970,7 +1152,7 @@
    ],
    "fireAt": 0
   },
-  "hint": "İki yapı, dar şantiye, yanında tarihi yapı. Her şarjın tipini ve yerini seç.",
+  "hint": "İki yapı, dar şantiye, yanında tarihi yapı. Her şarjın tipini ve yerini seç; son şarj soldaki gösteri binası için.",
   "chargeKinds": [
    "standard",
    "precision",
@@ -979,7 +1161,7 @@
   "footprint": {
    "from": 310,
    "to": 730,
-   "ratio": 0.88
+   "ratio": 0.97
   }
  }
 ]

@@ -936,6 +936,12 @@
   "bonusCollapse": 0.45,
   "zones": [
    {
+    "x": 798,
+    "y": 419,
+    "w": 105,
+    "h": 52
+   },
+   {
     "x": 280,
     "y": 315,
     "w": 60,
@@ -1043,13 +1049,189 @@
     "target": true
    },
    {
-    "x": 880,
+    "x": 75,
     "y": 450.0,
-    "w": 50,
+    "w": 34,
     "h": 60,
     "material": "concrete",
     "protected": true,
     "landmark": true
+   },
+   {
+    "x": 799.0,
+    "y": 425.0,
+    "w": 14,
+    "h": 110,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 833.0,
+    "y": 425.0,
+    "w": 14,
+    "h": 110,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 867.0,
+    "y": 425.0,
+    "w": 14,
+    "h": 110,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 901.0,
+    "y": 425.0,
+    "w": 14,
+    "h": 110,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 850.0,
+    "y": 361.0,
+    "w": 132.0,
+    "h": 18,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 816.0,
+    "y": 342.0,
+    "w": 18.0,
+    "h": 20,
+    "material": "brick",
+    "showpiece": true
+   },
+   {
+    "x": 816.0,
+    "y": 322.0,
+    "w": 18.0,
+    "h": 20,
+    "material": "brick",
+    "showpiece": true
+   },
+   {
+    "x": 816.0,
+    "y": 302.0,
+    "w": 18.0,
+    "h": 20,
+    "material": "brick",
+    "showpiece": true
+   },
+   {
+    "x": 850.0,
+    "y": 342.0,
+    "w": 18.0,
+    "h": 20,
+    "material": "brick",
+    "showpiece": true
+   },
+   {
+    "x": 850.0,
+    "y": 322.0,
+    "w": 18.0,
+    "h": 20,
+    "material": "brick",
+    "showpiece": true
+   },
+   {
+    "x": 850.0,
+    "y": 302.0,
+    "w": 18.0,
+    "h": 20,
+    "material": "brick",
+    "showpiece": true
+   },
+   {
+    "x": 884.0,
+    "y": 342.0,
+    "w": 18.0,
+    "h": 20,
+    "material": "brick",
+    "showpiece": true
+   },
+   {
+    "x": 884.0,
+    "y": 322.0,
+    "w": 18.0,
+    "h": 20,
+    "material": "brick",
+    "showpiece": true
+   },
+   {
+    "x": 884.0,
+    "y": 302.0,
+    "w": 18.0,
+    "h": 20,
+    "material": "brick",
+    "showpiece": true
+   },
+   {
+    "x": 799.0,
+    "y": 322.0,
+    "w": 14,
+    "h": 60,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 833.0,
+    "y": 322.0,
+    "w": 14,
+    "h": 60,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 867.0,
+    "y": 322.0,
+    "w": 14,
+    "h": 60,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 901.0,
+    "y": 322.0,
+    "w": 14,
+    "h": 60,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 850.0,
+    "y": 283.0,
+    "w": 132.0,
+    "h": 18,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 850.0,
+    "y": 266.5,
+    "w": 92.0,
+    "h": 15,
+    "material": "brick",
+    "showpiece": true
+   },
+   {
+    "x": 850.0,
+    "y": 251.5,
+    "w": 92.0,
+    "h": 15,
+    "material": "brick",
+    "showpiece": true
+   },
+   {
+    "x": 850.0,
+    "y": 236.5,
+    "w": 92.0,
+    "h": 15,
+    "material": "brick",
+    "showpiece": true
    }
   ],
   "barrels": [],
@@ -1093,6 +1275,6 @@
    ],
    "fireAt": 4.0
   },
-  "hint": "Üst hattaki tramvay ve sağdaki ev korunuyor. Alttaki tramvayı ve kuleyi indir."
+  "hint": "Üst hattaki tramvay ve soldaki kapı korunuyor. Alttaki tramvayı ve kuleyi indir; yedek şarj sağdaki gösteri binası için."
  }
 ]

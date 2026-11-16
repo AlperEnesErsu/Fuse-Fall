@@ -34,14 +34,14 @@ class L:
 
     def zone(s, x, y, w, h): s.d['zones'].append(dict(x=x, y=y, w=w, h=h))
 
-    def showpiece(s, cx, storeys=1, bays=2, bay=40, colw=16, course=30, roof=30):
+    def showpiece(s, cx, storeys=1, bays=2, bay=40, colw=16, course=30, roof=30, ground=110):
         """A city finale's showpiece: a condemned brick block of `bays` bays on an open timber ground
         floor, with its own charge zone at the posts' feet. It is not a target: the job is won without
         it, and bringing it down is the spectacle and the collapse star. Wide rather than tall: a tall
         stack of bodies settles under its own weight before anything is fired. Returns its top."""
         first = len(s.d['blocks'])
         xs = [cx - bays * bay / 2 + i * bay for i in range(bays + 1)]
-        top = frame(s, xs, G, 110, colw=colw, col_m='wood', deck_m='wood')
+        top = frame(s, xs, G, ground, colw=colw, col_m='wood', deck_m='wood')
         for _ in range(storeys):
             for i in range(bays): infill(s, xs[i] + colw / 2 + 1, xs[i + 1] - colw / 2 - 1, top, 60, course)
             top = frame(s, xs, top, 60, colw=colw, col_m='wood', deck_m='wood')
@@ -157,12 +157,16 @@ def ankara():
     l.col(550, G, 60, 60, 'glass')
     l.zone(360, 380, 380, 100); l.sol((450, 470), (650, 470)); out.append(l)
 
-    l = L(1, 10, 'Kızılay Operasyonu', 3, 2, 0.5, 'Üç hedef, bir korunan bina. Sıralamayı iyi planla.')
-    top = tower(l, 420, G, 80, 120, 'concrete', 'wood', colw=26); l.col(420, top, 36, 36, 'wood', True)
+    l = L(1, 10, 'Kızılay Operasyonu', 3, 2, 0.5, 'Üç hedef, bir korunan anıt. Sıralamayı iyi planla; yedek şarj soldaki gösteri binası için.')
+    # Timber posts: concrete ones survive a near miss and hold the deck as a cantilever (see docs/level-balance.md).
+    top = tower(l, 420, G, 80, 120); l.col(420, top, 36, 36, 'wood', True)
     top = tower(l, 760, G, 80, 140, 'glass', 'wood'); l.col(760, top, 36, 36, 'wood', True)
-    top = tower(l, 590, G, 60, 100); top = tower(l, 590, top, 60, 80); l.col(590, top, 36, 36, 'wood', True)
-    l.barrel(680); l.house(150, 80, 100, landmark=True)
-    l.zone(300, 380, 360, 100); l.sol((420, 470), (600, 470)); out.append(l)
+    # A tall ground floor under a short upper storey: even landing upright, the top storey has really fallen.
+    top = tower(l, 590, G, 60, 140); top = tower(l, 590, top, 60, 40); l.col(590, top, 36, 36, 'wood', True)
+    l.barrel(680); l.house(905, 60, 80, landmark=True)
+    # The spare charge is for the showpiece on the far left, well clear of the three targets.
+    l.showpiece(60)
+    l.zone(300, 380, 360, 100); l.sol((420, 460), (600, 470)); out.append(l)
     return out
 
 
@@ -445,14 +449,18 @@ def rome():
     l.sol((470, 430, None, P), (570, 430, None, P)); out.append(l)
 
     # 10. Finale: two buildings, one tight site, ancient neighbour.
-    l = L(4, 10, 'Roma Finali', 4, 3, 0.5, 'İki yapı, dar şantiye, yanında tarihi yapı. Her şarjın tipini ve yerini seç.')
+    l = L(4, 10, 'Roma Finali', 4, 3, 0.5, 'İki yapı, dar şantiye, yanında tarihi yapı. Her şarjın tipini ve yerini seç; son şarj soldaki gösteri binası için.')
     l.d['chargeKinds'] = ['standard', 'precision']
     # Legs close enough for one precision charge to cut both; the tower's tall ground floor makes
     # the drop of its short upper storey a real fall, even when it lands upright.
     top = frame(l, [400, 480], G, 120, col_m='wood', deck_m='wood'); l.col(440, top, 34, 34, 'wood', True)
     top = tower(l, 620, G, 60, 140); top = tower(l, 620, top, 50, 40); l.col(620, top, 32, 32, 'wood', True)
     l.house(820, 60, 80, landmark=True)
-    l.d['footprint'] = dict(**{'from': 310}, to=730, ratio=0.88)
+    # The site ratio sits between what precision charges keep on site (0.87) and what standard ones do
+    # (0.79), with room on both sides: standard charges must lose this job, precision ones must win it.
+    l.d['footprint'] = dict(**{'from': 310}, to=730, ratio=0.97)
+    # Outside the site, on its own lot: its rubble is not judged (see LevelSession.containment).
+    l.showpiece(110, bays=3, bay=34, colw=14, course=20, roof=45)
     l.zone(370, 380, 300, 100)
     l.sol((430, 445, None, P), (650, 440, None, P)); out.append(l)
     return out
@@ -595,12 +603,14 @@ def tokyo():
     l.sol((320, road_top - 12, 0), (355, road_top - 12, d2), fireAt=t); out.append(l)
 
     # 10. Finale: a tight site, a protected kiosk, a live line.
-    l = L(5, 10, 'Tokyo Finali', 3, 2, 0.45, 'Dar şantiye, korunan büfe ve sefer saati. Hepsini birlikte düşün.')
+    l = L(5, 10, 'Tokyo Finali', 3, 2, 0.45, 'Dar şantiye, korunan büfe ve sefer saati. Hepsini birlikte düşün; soldaki gösteri binasını standart şarj yıkar.')
     l.d['chargeKinds'] = S
     viaduct(l); c = train(l, 300)
     top = frame(l, [620, 720, 820], G, 150, col_m='wood', deck_m='wood'); l.col(720, top, 32, 32, 'wood', True)
     l.house(420, 50, 60, landmark=True)
     l.d['footprint'] = dict(**{'from': 560}, to=900, ratio=0.75)
+    # Under the viaduct, left of the kiosk; a low ground floor keeps it clear of the deck.
+    l.showpiece(140, bays=3, bay=34, colw=14, course=20, roof=45, ground=80)
     l.zone(590, 300, 260, 60)
     t = window_for(c, [(720, 0)]); l.sol((720, 330), fireAt=t); out.append(l)
     return out
@@ -975,13 +985,15 @@ def madrid():
     l.sol((480, top - 12, 0), (510, top - 12, d2), fireAt=t); out.append(l)
 
     # 10. Finale: a tram below a protected line, a tower beside a protected house.
-    l = L(8, 10, 'Madrid Finali', 3, 2, 0.45, 'Üst hattaki tramvay ve sağdaki ev korunuyor. Alttaki tramvayı ve kuleyi indir.')
+    l = L(8, 10, 'Madrid Finali', 3, 2, 0.45, 'Üst hattaki tramvay ve soldaki kapı korunuyor. Alttaki tramvayı ve kuleyi indir; yedek şarj sağdaki gösteri binası için.')
     top = tram_viaduct(l, 200, piers=(40, 600, 940))
     guard = tram(l, -100, top, -300, 1260, 200, target=False, guarded=True, mode='flow')
     deck = tram_line(l, 120, 500, 110)
     c = tram(l, 200, deck, 180, 440, 90)
     tt = tower(l, 700, G, 60, 120); l.col(700, tt, 32, 32, 'wood', True)
-    l.house(880, 50, 60, landmark=True)
+    # The city gate stands between the two piers on the left, clear of the lower line's blasts.
+    l.house(75, 34, 60, landmark=True)
+    l.showpiece(850, bays=3, bay=34, colw=14, course=20, roof=45)
     l.zone(270, deck - 40, 80, 38); l.zone(650, 400, 140, 80)
     # Fire as the low tram crosses the zone with the protected tram well away overhead.
     t = 0.0
@@ -1078,17 +1090,19 @@ def newyork():
     l.sol((420, Y, None, R, -1), (540, Y, None, R, 1), (480, 466)); out.append(l)
 
     # 10. Finale: one of each. Implosion for the block between the neighbours, the cart for the far mast.
-    l = L(9, 10, 'New York Finali', 3, 2, 0.45, 'Her türden bir tane. Komşular arasındaki bloğu içe çökert, uzaktaki direğe yürüyen şarj.')
+    l = L(9, 10, 'New York Finali', 3, 2, 0.45, 'Her türden bir tane. Komşular arasındaki bloğu içe çökert, uzaktaki direğe yürüyen şarj; standart şarj soldaki gösteri binası için.')
     l.d['chargeKinds'] = ['standard', I, R]
     l.d['charges']['stock'] = {'standard': 1, I: 1, R: 1}
-    l.house(200, 60, 90)
-    l.house(520, 60, 90)
-    base = frame(l, [330, 390], G, 70, col_m='wood', deck_m='wood')
-    l.col(360, base, 30, 30, 'wood', True)
+    l.house(300, 60, 90)
+    l.house(620, 60, 90)
+    base = frame(l, [430, 490], G, 70, col_m='wood', deck_m='wood')
+    l.col(460, base, 30, 30, 'wood', True)
     top = tower(l, 850, G, 50, 110); l.col(850, top, 30, 30, 'wood', True)
-    l.zone(320, 420, 80, 60)
-    l.zone(580, 430, 120, 50)
-    l.sol((360, 440, None, I), (620, Y, None, R, 1)); out.append(l)
+    # The standard charge is free: it is for the showpiece on the far left.
+    l.showpiece(90, bays=3, bay=34, colw=14, course=20, roof=45)
+    l.zone(420, 420, 80, 60)
+    l.zone(670, 430, 90, 50)
+    l.sol((460, 440, None, I), (690, Y, None, R, 1)); out.append(l)
     return out
 
 

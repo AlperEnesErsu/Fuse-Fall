@@ -209,6 +209,24 @@ describe('what the field shows', () => {
 });
 
 describe('outcome', () => {
+  it('leaves a showpiece out of the debris site: standing outside it, it does not fail the job', () => {
+    const { session, physics, run } = setup({
+      footprint: { from: 400, to: 800, ratio: 0.9 },
+      blocks: [
+        { x: 500, y: 300, w: 40, h: 40, angle: 0, material: 'wood', target: true, protected: false, anchored: false },
+        { x: 700, y: 455, w: 40, h: 50, angle: 0, material: 'concrete', target: false, protected: false, anchored: false },
+        // A showpiece outside the site, bigger than everything inside it, and out of the charge's reach.
+        { x: 900, y: 430, w: 80, h: 100, angle: 0, material: 'brick', target: false, protected: false, anchored: false, showpiece: true },
+      ],
+    });
+    session.placeCharge({ x: 100, y: 450 });
+    session.fire();
+    physics.place('block-1', { position: { x: 520, y: WORLD.groundY - 20 } });
+    run(TUNING.settle.hold + 0.2);
+    expect(session.result).toMatchObject({ cleared: true, failure: undefined });
+    expect(session.result?.footprint?.achieved).toBe(1);
+  });
+
   it('counts a target as down when it reaches the ground and scores at settle', () => {
     const { session, physics, log, run } = setup();
     session.placeCharge({ x: 100, y: 450 });

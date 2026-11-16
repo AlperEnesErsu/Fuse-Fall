@@ -222,6 +222,14 @@ describe('city finale showpieces', () => {
     }
   });
 
+  // Every city ends on its biggest collapse: a showpiece where the finale itself is small.
+  it('make every city finale at least 25 blocks of structure', () => {
+    for (const world of campaign.worlds) {
+      const finale = levelsOf(campaign, world.world).at(-1);
+      expect(finale && structural(finale), world.key).toBeGreaterThanOrEqual(25);
+    }
+  });
+
   // The showpiece is the spectacle, never the condition: the job is won without it,
   // and the spare charge at its feet brings it down without costing the win.
   it.each(finales.map((l) => [l.id, l] as const))('%s: won without the showpiece, and still won with it brought down', (_id, level) => {

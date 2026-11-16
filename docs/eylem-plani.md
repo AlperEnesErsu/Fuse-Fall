@@ -48,9 +48,9 @@ Kayıtlı çözümler gerçek fizikle oynatılarak ölçüldü (`tests/play.ts` 
 | Simge yapı korunan komşu olsun | Her şehirde en az 2 görev | O | Yapıldı (20 görev; testle doğrulanır) |
 | Şehre özgü bina oranları ve dokular | Ekran görüntüsünden şehir anlaşılıyor | B | Çatı, kat süsü ve pencere yapıldı (9 şehir). Bina oranları (dikeye göre dar ve yüksek yapılar) yapılmadı: görev düzeni ve denge işi |
 | Yıkım sonrası yenilenen arsa | Raporda ve şehir haritasında görünüyor | O | Yapıldı |
-| Şehir sonu gösteri görevi | 25+ blok, ölçülen FPS hedefin üstünde | O | Kısmen: Paris (25) ve Londra (26) gösteri binası aldı; İstanbul (31) ve Berlin (25) zaten büyüktü. Ankara, Roma, Tokyo, Madrid, New York açık: aşağıdaki nota bakın |
+| Şehir sonu gösteri görevi | 25+ blok, ölçülen FPS hedefin üstünde | O | Yapıldı: dokuz finalin hepsi 25+ blok (testle doğrulanır); en büyük yeni finallerde (Roma 33, New York 30) kare hızı Berlin 10'un üstünde |
 
-**Gösteri binası neden beş finalde yok:** bina hedeflerden uzakta durmalı, yoksa ya düşen hedefi ayakta tutuyor ya da yedek şarjın patlaması zinciri bozuyor (Ankara'da denendi: hedef rafta kaldı). Ankara'da boş zemin korunan yapının yanında, Madrid ve New York'ta korunan yapının ya da yürüyen şarjın yolunda; Roma ve Tokyo'da enkaz alanı kuralı var ve alanın dışında duran bina ateşlenmeden görevi düşürür. Bu beşi, simge yapının yerini ya da yapı düzenini değiştiren bir görev tasarımı işi.
+**Gösteri binası:** hedeflerden ve korunan yapılardan uzakta, kendi parselinde duran, isteğe bağlı yıkılacak bina. Yerleştirme kuralları ve neyin işe yaramadığı: [seviye dengesi](level-balance.md).
 
 **Kapı B:** mağazada kapalı ya da açık test.
 

@@ -166,7 +166,7 @@ Yapıyı incele → Patlayıcı yerleştir → Ateşle → Yıkımı izle → Pu
 | ID | Gereksinim | Öncelik |
 |---|---|---|
 | FR-42 | **Hassas şarj:** standart şarjla aynı kesme gücü, küçük çember (85 px) ve az savurma. Görev hangi şarj tiplerinin kullanılabileceğini belirler; HUD'da tip seçici. | M |
-| FR-43 | **Şantiye alanı (enkaz ayak izi):** yerde işaretli bir şerit. Yapı malzemesinin (alan ağırlıklı; ayakta kalan bloklar, kırılan parçaları ve bütçe nedeniyle kaldırılan ama alanın içinde duran enkaz) en az belirtilen oranı alanın içinde kalmalı. Aksi halde görev "enkaz alan dışına taştı" nedeniyle başarısız. | M |
+| FR-43 | **Şantiye alanı (enkaz ayak izi):** yerde işaretli bir şerit. Yapı malzemesinin (alan ağırlıklı; ayakta kalan bloklar, kırılan parçaları ve bütçe nedeniyle kaldırılan ama alanın içinde duran enkaz) en az belirtilen oranı alanın içinde kalmalı. Aksi halde görev "enkaz alan dışına taştı" nedeniyle başarısız. Şehir finalindeki gösteri binası bu hesaba girmez: alanın dışında kendi parselinde durur. | M |
 | FR-44 | Raporda "alan içindeki enkaz" satırı (elde edilen / gereken). | M |
 | FR-45 | Roma (Bölüm 4): 10 görev. Hassas şarj kullanan her görevde, aynı yerleşim standart şarjla kazanılamaz (testle doğrulanır). | M |
 | FR-46 | Uygulama ikonu ve açılış ekranı; Türkçe ve İngilizce dil desteği (cihaz diline göre otomatik). | M |
