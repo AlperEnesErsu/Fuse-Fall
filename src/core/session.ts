@@ -46,6 +46,8 @@ export interface EntityView {
   readonly compromised: boolean;
   /** A protected building that is the city's landmark. */
   readonly landmark: boolean;
+  /** Part of a finale's showpiece: condemned, though not a target. */
+  readonly showpiece: boolean;
   readonly anchored: boolean;
   /** 0 = intact, 1 = about to break. */
   readonly damage: number;
@@ -88,6 +90,7 @@ interface Entity {
   readonly structural: boolean;
   readonly guarded: boolean;
   readonly landmark: boolean;
+  readonly showpiece: boolean;
   readonly anchored: boolean;
   readonly fromStructure: boolean;
   compromised: boolean;
@@ -146,6 +149,7 @@ interface SpawnSpec {
   readonly structural?: boolean;
   readonly guarded?: boolean;
   readonly landmark?: boolean;
+  readonly showpiece?: boolean;
   readonly anchored?: boolean;
   readonly motion?: { readonly velocity: Vec2; readonly angularVelocity: number };
   readonly driver?: Driver;
@@ -269,6 +273,7 @@ export class LevelSession {
         target: b.target,
         guarded: b.protected,
         landmark: b.landmark === true,
+        showpiece: b.showpiece === true,
         anchored: b.anchored,
         structural: !b.protected && !b.anchored,
       });
@@ -414,6 +419,7 @@ export class LevelSession {
         protected: e.guarded,
         compromised: e.compromised,
         landmark: e.landmark,
+        showpiece: e.showpiece,
         anchored: e.anchored,
         damage: Number.isFinite(e.maxHp) ? 1 - Math.max(0, e.hp) / e.maxHp : 0,
         state,
@@ -1172,6 +1178,7 @@ export class LevelSession {
       structural: spec.structural ?? false,
       guarded: spec.guarded ?? false,
       landmark: spec.landmark ?? false,
+      showpiece: spec.showpiece ?? false,
       anchored: spec.anchored ?? false,
       fromStructure: spec.fromStructure ?? false,
       compromised: false,

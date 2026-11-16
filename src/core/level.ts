@@ -31,6 +31,11 @@ export interface BlockDef {
   readonly protected: boolean;
   /** A protected building that is the city's landmark: the same rule, drawn as the monument it is. */
   readonly landmark?: true;
+  /**
+   * Part of a city finale's showpiece: a condemned building that is not a target. Winning does not
+   * need it; bringing it down is the spectacle, and counts toward the collapse like any structure.
+   */
+  readonly showpiece?: true;
   /** Fixed infrastructure (road decks, bridge piers): immovable, indestructible, not part of the job. */
   readonly anchored: boolean;
 }
@@ -197,6 +202,8 @@ const block = (v: unknown, path: string): BlockDef => {
   }
   const landmark = o.landmark === undefined ? false : typeof o.landmark === 'boolean' ? o.landmark : fail(`${path}.landmark`, 'expected boolean');
   if (landmark && !guarded) fail(path, 'a landmark is a protected building');
+  const showpiece = o.showpiece === undefined ? false : typeof o.showpiece === 'boolean' ? o.showpiece : fail(`${path}.showpiece`, 'expected boolean');
+  if (showpiece && (target || guarded || anchored)) fail(path, 'a showpiece block is plain structure: not a target, protected or anchored');
   const def: BlockDef = {
     x: num(o.x, `${path}.x`, 0, WORLD.width),
     y: num(o.y, `${path}.y`, 0, WORLD.groundY),
@@ -208,6 +215,7 @@ const block = (v: unknown, path: string): BlockDef => {
     protected: guarded,
     anchored,
     ...(landmark ? { landmark: true as const } : {}),
+    ...(showpiece ? { showpiece: true as const } : {}),
   };
   if (def.target && !startsClear(def.y, def.w, def.h)) fail(path, 'target must start clear of the ground');
   return def;

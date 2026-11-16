@@ -210,6 +210,34 @@ describe('campaign content', () => {
   });
 });
 
+describe('city finale showpieces', () => {
+  const finales = levels.filter((l) => l.blocks.some((b) => b.showpiece));
+  const structural = (l: LevelDefinition) => l.blocks.filter((b) => !b.anchored && !b.protected).length;
+
+  it('stand only in city finales, and make each one a big collapse', () => {
+    expect(finales.length).toBeGreaterThanOrEqual(2);
+    for (const l of finales) {
+      expect(l.order, l.id).toBe(10);
+      expect(structural(l), l.id).toBeGreaterThanOrEqual(25);
+    }
+  });
+
+  // The showpiece is the spectacle, never the condition: the job is won without it,
+  // and the spare charge at its feet brings it down without costing the win.
+  it.each(finales.map((l) => [l.id, l] as const))('%s: won without the showpiece, and still won with it brought down', (_id, level) => {
+    const without = playSolution(level).result;
+    expect(without?.cleared).toBe(true);
+    expect(level.charges.max, 'a spare charge for the showpiece').toBeGreaterThan(level.solution.charges.length);
+    const parts = level.blocks.filter((b) => b.showpiece);
+    const x = Math.round(parts.reduce((sum, b) => sum + b.x, 0) / parts.length / 5) * 5;
+    const spare = { x, y: 470, delay: 0.6, kind: 'standard' as const };
+    const withIt = playSolution(level, level.solution.fireAt, [...level.solution.charges, spare]).result;
+    expect(withIt?.cleared, JSON.stringify(withIt)).toBe(true);
+    expect(withIt?.collapseRatio ?? 0).toBeGreaterThanOrEqual(level.bonusCollapse);
+    expect(withIt?.collapseRatio ?? 0).toBeGreaterThan(without?.collapseRatio ?? 1);
+  });
+});
+
 describe('New York: rolling charges and loadouts', () => {
   // A cart is the point: the same spots with standard charges do not clear the job.
   it.each(['w9-01', 'w9-02', 'w9-05', 'w9-06', 'w9-10'])('%s needs the rolling charge', (id) => {

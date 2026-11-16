@@ -51,7 +51,8 @@ export const planBuildings = (entities: readonly EntityView[]): Map<string, Buil
   const top = new Map<number, number>();
   blocks.forEach((e, i) => {
     const g = find(i);
-    if (e.target) condemned.add(g);
+    // The building to bring down: one that holds a target, or a finale's showpiece.
+    if (e.target || e.showpiece) condemned.add(g);
     top.set(g, Math.min(top.get(g) ?? Infinity, boxes[i]?.y0 ?? Infinity));
   });
   const plan = new Map<string, BuildingPart>();

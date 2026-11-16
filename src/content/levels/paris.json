@@ -767,6 +767,12 @@
   "bonusCollapse": 0.45,
   "zones": [
    {
+    "x": 0,
+    "y": 403,
+    "w": 116,
+    "h": 77
+   },
+   {
     "x": 163,
     "y": 296,
     "w": 205,
@@ -858,6 +864,118 @@
     "h": 36,
     "material": "wood",
     "target": true
+   },
+   {
+    "x": 12.0,
+    "y": 425.0,
+    "w": 16,
+    "h": 110,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 48.0,
+    "y": 425.0,
+    "w": 16,
+    "h": 110,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 84.0,
+    "y": 425.0,
+    "w": 16,
+    "h": 110,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 48.0,
+    "y": 361.0,
+    "w": 104.0,
+    "h": 18,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 30.0,
+    "y": 337.0,
+    "w": 18.0,
+    "h": 30,
+    "material": "brick",
+    "showpiece": true
+   },
+   {
+    "x": 30.0,
+    "y": 307.0,
+    "w": 18.0,
+    "h": 30,
+    "material": "brick",
+    "showpiece": true
+   },
+   {
+    "x": 66.0,
+    "y": 337.0,
+    "w": 18.0,
+    "h": 30,
+    "material": "brick",
+    "showpiece": true
+   },
+   {
+    "x": 66.0,
+    "y": 307.0,
+    "w": 18.0,
+    "h": 30,
+    "material": "brick",
+    "showpiece": true
+   },
+   {
+    "x": 12.0,
+    "y": 322.0,
+    "w": 16,
+    "h": 60,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 48.0,
+    "y": 322.0,
+    "w": 16,
+    "h": 60,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 84.0,
+    "y": 322.0,
+    "w": 16,
+    "h": 60,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 48.0,
+    "y": 283.0,
+    "w": 104.0,
+    "h": 18,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 48.0,
+    "y": 266.5,
+    "w": 62.0,
+    "h": 15,
+    "material": "brick",
+    "showpiece": true
+   },
+   {
+    "x": 48.0,
+    "y": 251.5,
+    "w": 62.0,
+    "h": 15,
+    "material": "brick",
+    "showpiece": true
    }
   ],
   "barrels": [
@@ -891,6 +1009,6 @@
    ],
    "fireAt": 1.3
   },
-  "hint": "Trafik, cam ve ahşap. Üç hedefi de indir."
+  "hint": "Trafik, cam ve ahşap. Üç hedefi de indir; yedek şarj en soldaki gösteri binası için."
  }
 ]

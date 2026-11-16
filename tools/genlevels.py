@@ -34,6 +34,22 @@ class L:
 
     def zone(s, x, y, w, h): s.d['zones'].append(dict(x=x, y=y, w=w, h=h))
 
+    def showpiece(s, cx, storeys=1, bays=2, bay=40, colw=16, course=30, roof=30):
+        """A city finale's showpiece: a condemned brick block of `bays` bays on an open timber ground
+        floor, with its own charge zone at the posts' feet. It is not a target: the job is won without
+        it, and bringing it down is the spectacle and the collapse star. Wide rather than tall: a tall
+        stack of bodies settles under its own weight before anything is fired. Returns its top."""
+        first = len(s.d['blocks'])
+        xs = [cx - bays * bay / 2 + i * bay for i in range(bays + 1)]
+        top = frame(s, xs, G, 110, colw=colw, col_m='wood', deck_m='wood')
+        for _ in range(storeys):
+            for i in range(bays): infill(s, xs[i] + colw / 2 + 1, xs[i + 1] - colw / 2 - 1, top, 60, course)
+            top = frame(s, xs, top, 60, colw=colw, col_m='wood', deck_m='wood')
+        top = penthouse(s, cx, top, bays * bay - 10, roof)
+        for blk in s.d['blocks'][first:]: blk['showpiece'] = True
+        s.zone(xs[0] - colw / 2 - 12, G - 70, xs[-1] - xs[0] + colw + 24, 70)
+        return top
+
     def barrel(s, x, base=G): s.d['barrels'].append(dict(x=x, y=base - 16))
 
     def car(s, x, top, frm, to, speed, target=True, mode=None):
@@ -215,12 +231,14 @@ def paris():
     l.col(600, base, 36, 36, 'wood', True)
     l.zone(420, 400, 100, 80); l.zone(680, 400, 100, 80); l.sol((510, 465)); out.append(l)
 
-    l = L(2, 10, 'Seine Operasyonu', 3, 2, 0.45, 'Trafik, cam ve ahşap. Üç hedefi de indir.')
+    l = L(2, 10, 'Seine Operasyonu', 3, 2, 0.45, 'Trafik, cam ve ahşap. Üç hedefi de indir; yedek şarj en soldaki gösteri binası için.')
     deck = road(l, 120, 400, 120)
     c = l.car(160, deck, 150, 370, 80)
     top = tower(l, 560, G, 70, 120, 'glass', 'wood'); l.col(560, top, 36, 36, 'wood', True)
     top = tower(l, 760, G, 80, 120); l.col(760, top, 36, 36, 'wood', True)
     l.barrel(660)
+    # The spare charge is for the showpiece on the far left, well clear of both towers.
+    l.showpiece(48, bay=36)
     l.zone(180, deck - 40, 170, 38); l.zone(480, 400, 160, 80)
     t = 1.3
     l.sol((car_x(c, t), deck - 12), (580, 470), fireAt=t); out.append(l)
@@ -327,11 +345,12 @@ def london():
     l.sol((395, 436)); out.append(l)
 
     # 10. Finale: convoy plus a building, with a protected neighbour.
-    l = L(3, 10, 'Londra Finali', 3, 3, 0.4, 'Konvoy ve bina. Üç gecikmeyi tek ateşlemede kur.')
+    l = L(3, 10, 'Londra Finali', 4, 3, 0.4, 'Konvoy ve bina. Üç gecikmeyi tek ateşlemede kur; dördüncü şarj gösteri binası için.')
     deck = road(l, 60, 500, 120, anchored=True)
     a = l.car(240, deck, 40, 520, 120, mode='flow')
     b = l.car(40, deck, 40, 520, 120, mode='flow')
     top = frame(l, [780, 880], G, 110, col_m='wood', deck_m='wood'); l.col(830, top, 36, 36, 'wood', True)
+    l.showpiece(630, bays=3, bay=45, colw=18, course=20, roof=45)
     l.zone(340, deck - 40, 90, 38); l.zone(750, 400, 160, 80)
     t = time_to(a, 360 + BEHIND); d2 = q(time_to(b, 395 + BEHIND, t) - t)
     l.sol((360, deck - 12, 0), (395, deck - 12, d2), (790, 440, 0), fireAt=t); out.append(l)
@@ -595,6 +614,19 @@ def infill(l, frm, to, base, h, course=18):
         l.col((frm + to) / 2, y, to - frm, hh, 'brick')
         y -= hh
     return base - h
+
+
+def brick_storey(l, cx, base, span, h, colw=20, course=30):
+    """A storey of two timber posts with a brick wall laid between them and a deck on top; returns the deck top.
+    Put it above an open ground floor: the posts below are what a charge cuts, and the heavy storey drops.
+    The wall stands 1 px clear of each post (still close enough to be bonded) so the courses settle without wedging."""
+    infill(l, cx - span / 2 + colw / 2 + 1, cx + span / 2 - colw / 2 - 1, base, h, course)
+    return tower(l, cx, base, span, h, colw=colw)
+
+
+def penthouse(l, cx, base, w, h, course=15):
+    """A brick room on a roof; returns its top."""
+    return infill(l, cx - w / 2, cx + w / 2, base, h, course)
 
 
 def pitched(l, cx, beam_top, widths=(100, 60)):
