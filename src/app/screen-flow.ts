@@ -272,6 +272,7 @@ export class ScreenFlow implements Navigator {
           stars: worldStars(progress, campaign, world.world),
           maxStars: levelsOf(campaign, world.world).length * 3,
           previousCity: previous && text.city(previous),
+          lots: levelsOf(campaign, world.world).map((l) => ({ id: l.id, cleared: (progress.stars[l.id] ?? 0) > 0 })),
         };
       }),
       Math.max(
