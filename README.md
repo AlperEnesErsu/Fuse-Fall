@@ -14,6 +14,7 @@ npm run preview    # derlemeyi yerelde sun (çevrimdışı mod sadece burada ça
 npm run check      # tsc + eslint + testler
 npm run coverage   # core, infrastructure ve satın alma masası kapsamı (eşik %80)
 npm run levels     # tools/genlevels.py ile görev JSON'larını yeniden üret (Python)
+npm run mastery    # MASTERY=write ile: her göreve üçüncü yıldız hedefi ve onu tutturan oyunu arar, src/content/mastery.json'a yazar (MASTERY_ONLY=w1-01,... yalnız bazılarını)
 npm run balance    # her görevin yakın ıskalarda yeterince kazanıldığını ölçer (kolay ≥ %80, orta ≥ %65, zor ≥ %50); yaklaşık bir dakika
 npm run e2e        # oyunu dokunmatik telefon profilleriyle iki mobil motorda oynar: Chromium (Android) ve WebKit (iOS); ilk seferde `npx playwright install chromium webkit`
 npm run smoke      # ana ekranları tarayıcıda oyna, görüntü ve rapor: docs/qa/smoke/<tarih>/ (dev sunucusu + BROWSER)
@@ -49,6 +50,7 @@ Bağımlılıklar içe doğru akar ve ESLint ile zorlanır. `core` Matter.js'i y
 - `src/content/cities.json`: bölümler (başkentler) ve açılma eşikleri. Seviyesi olmayan şehir "Yakında" görünür.
 - `tools/genlevels.py`: görevlerin kaynağı. Görevi orada değiştir, `npm run levels` ile JSON'u yeniden üret, `npm test` ile doğrula.
 - `src/content/levels/<şehir>.json`: şehrin seviyeleri. Bloklar (`target`, `protected` ya da `anchored`), variller, arabalar (`cars`: rota `from`/`to`, `speed`, `mode`: `patrol`/`flow`) ve bir `solution` (`charges` + her şarjın `delay` değeri + ateşleme anı `fireAt`).
+- `src/content/mastery.json`: her görevin üçüncü yıldız hedefi (`goal`) ve onu tutturan oyun (`solution`). Görev ya da çözüm değişince `MASTERY=write npm run mastery` ile yeniden üret; `free: true` kayıtlı çözümün zaten tutturduğu hedeftir (elle tasarlanmaya aday).
 - `src/content/tutorials.ts`: yeni fikir getiren görevlerin adım adım eğitimleri.
 - `src/content/text.ts`: görev ve şehir adlarının İngilizce karşılıkları (Türkçe kaynak seviye verisinde). Arayüz metinleri `src/presentation/i18n/`.
 - Görev alanları: `chargeKinds` (`standard`, `precision`, `implosion`, `bomb`; enkaz alanı olan görevlere üretici `implosion` ekler), `footprint` (`from`, `to`, `ratio`) ve `dropZones` (bombaların asıldığı gökyüzü alanları). Bombalı çözümler `solution.detonateAt` ile PATLAT anlarını (ATEŞLE'den sonra saniye) verir.

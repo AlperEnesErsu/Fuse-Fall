@@ -865,7 +865,7 @@
   "order": 10,
   "charges": {
    "max": 3,
-   "par": 2,
+   "par": 3,
    "stock": {
     "standard": 1,
     "implosion": 1,

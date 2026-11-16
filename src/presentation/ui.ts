@@ -15,6 +15,7 @@ import { TUNING } from '../core/tuning';
 import type { ChargeKind } from '../core/level';
 import { paintScene, skyAt } from './scenery';
 import { drawRenewal, paintStreet, renewalOf } from './renewal';
+import { masteryMet, type MasteryGoal } from '../core/mastery';
 import { T } from './strings';
 
 type Child = Node | string | false | undefined;
@@ -39,6 +40,10 @@ const starRow = (stars: Stars, size: 'sm' | 'lg'): HTMLElement =>
     { class: `stars stars-${size}`, 'aria-label': `${stars} / 3` },
     ...[1, 2, 3].map((n) => h('span', { class: n <= stars ? 'star on' : 'star' }, '★')),
   );
+
+/** A job's third-star goal in words: a charge count for 'one-less', seconds for 'quick', a share in percent for the others. */
+const masteryText = (goal: MasteryGoal, par: number): string =>
+  T.mastery[goal.kind](goal.kind === 'one-less' ? par - 1 : goal.kind === 'quick' ? (goal.at ?? 0) : Math.round((goal.at ?? 0.95) * 100));
 
 /** A small painting of the city for its card: the skyline, and its street of lots, renewed where jobs are won. */
 const cityThumbnail = (key: string, progress: number, lots: CityCard['lots']): HTMLCanvasElement => {
@@ -141,6 +146,10 @@ export interface ReportInfo {
   readonly workshopPick: { readonly name: string; readonly cost: number; readonly onOpen: () => void } | undefined;
   /** A won job: whose lot it was, so the report can show what it became. */
   readonly renewal?: { readonly city: string; readonly levelId: string } | undefined;
+  /** The job's own third-star goal, if it has one. */
+  readonly mastery?: MasteryGoal | undefined;
+  /** The score means something only in the daily job: elsewhere it is not shown. */
+  readonly showScore?: boolean;
 }
 
 /** What the offer store has: rewarded ads (with today's count) and packs; `demo` marks the development stand-in. */
@@ -815,7 +824,10 @@ export class Ui {
               h('span', { class: 'name' }, c.name),
               c.unlocked ? h('span', { class: `difficulty ${difficultyOf(c.level)}` }, T.difficulty[difficultyOf(c.level)]) : undefined,
               starRow(c.stars, 'sm'),
-              c.best ? h('span', { class: 'best' }, String(c.best)) : undefined,
+              // What the third star asks for, so the player knows before playing.
+              c.unlocked && c.level.mastery
+                ? h('span', { class: `mastery${c.stars === 3 ? ' done' : ''}` }, `★ ${masteryText(c.level.mastery, c.level.charges.par)}`)
+                : undefined,
             ),
           ),
         ),
@@ -1028,7 +1040,7 @@ export class Ui {
         h('strong', {}, value, note ? h('small', {}, ` ${note}`) : undefined),
       );
     const styleKeys = ['surgical', 'demolition', 'domino'] as const;
-    // A style that held on a failed job shows as held, not met: it earns no star until the job is won.
+    // A star that held on a failed job shows as held, not met: it is earned only when the job is won.
     const criterion = (state: 'met' | 'held' | 'missed', ...label: (string | HTMLElement)[]) =>
       h('li', { class: state === 'missed' ? '' : state }, state === 'missed' ? ICONS.cross(14) : ICONS.check(14), h('span', {}, ...label));
     const protectedValue =
@@ -1076,15 +1088,17 @@ export class Ui {
                 )
               : undefined,
             info.promotedTo !== undefined ? h('span', { class: 'badge promoted' }, R.promoted(T.ranks[info.promotedTo] ?? '')) : undefined,
-            h(
-              'div',
-              { class: 'score' },
-              h('span', { class: 'label' }, R.score),
-              h('span', { class: 'value' }, String(r.score)),
-              info.newBest && r.score > 0
-                ? h('span', { class: 'badge' }, R.newBest)
-                : h('span', { class: 'meta' }, T.best(info.best)),
-            ),
+            info.showScore
+              ? h(
+                  'div',
+                  { class: 'score' },
+                  h('span', { class: 'label' }, R.score),
+                  h('span', { class: 'value' }, String(r.score)),
+                  info.newBest && r.score > 0
+                    ? h('span', { class: 'badge' }, R.newBest)
+                    : h('span', { class: 'meta' }, T.best(info.best)),
+                )
+              : undefined,
           ),
           h(
             'div',
@@ -1105,11 +1119,19 @@ export class Ui {
               'ul',
               { class: 'criteria' },
               criterion(r.cleared ? 'met' : 'missed', R.goal),
-              ...styleKeys.map((k) =>
-                criterion(!r.styles[k] ? 'missed' : r.cleared ? 'met' : 'held', h('strong', {}, R.styles[k].name), ` · ${R.styles[k].how}`),
-              ),
+              criterion(!r.underPar ? 'missed' : r.cleared ? 'met' : 'held', R.withinPar(info.par)),
+              info.mastery
+                ? criterion(
+                    !masteryMet(info.mastery, r, info.par) ? 'missed' : r.cleared ? 'met' : 'held',
+                    h('strong', {}, masteryText(info.mastery, info.par)),
+                  )
+                : undefined,
             ),
             h('p', { class: 'styles-note' }, r.cleared ? R.stylesNote : R.stylesOnWin),
+            // The play styles still pay scrap; say which ones did.
+            r.cleared && styleKeys.some((k) => r.styles[k])
+              ? h('p', { class: 'styles-note' }, R.stylesPaid(styleKeys.filter((k) => r.styles[k]).map((k) => R.styles[k].name).join(', ')))
+              : undefined,
           ),
         ),
         h(

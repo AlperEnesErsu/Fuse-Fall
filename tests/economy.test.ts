@@ -21,6 +21,7 @@ const outcome = {
   protectedDamaged: 0,
   duration: 3,
   footprint: undefined,
+  barrels: { blown: 0, total: 0 },
   dominoes: 0,
   // 10 000 px² of concrete (4/1000) and 5 000 px² of wood (2/1000): 50 scrap of salvage.
   demolished: { concrete: 10_000, wood: 5_000 },

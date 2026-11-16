@@ -89,10 +89,11 @@ describe('achievements', () => {
     protectedDamaged: 0,
     duration: 3,
     footprint: undefined,
+    barrels: { blown: 0, total: 0 },
     dominoes: 0,
     demolished: {},
   };
-  const result = scoreLevel(outcome, { par: 1, bonusCollapse: 0.5 });
+  const result = scoreLevel(outcome, { par: 1, bonusCollapse: 0.5, mastery: { kind: 'whole' } });
   const stats = { barrelsBlown: 3, carsWrecked: 0, implosions: 0, detonations: 0 };
 
   it('unlocks every earned achievement once', () => {

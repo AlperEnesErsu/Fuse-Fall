@@ -1,3 +1,4 @@
+import type { MasteryGoal } from './mastery';
 import { isMaterialId, type MaterialId } from './materials';
 
 export const CHARGE_KINDS = ['standard', 'precision', 'implosion', 'bomb', 'roller', 'directional'] as const;
@@ -120,6 +121,8 @@ export interface LevelDefinition {
   readonly charges: { readonly max: number; readonly par: number; readonly stock?: ChargeStock };
   /** Fraction of blocks that must collapse for the third star. */
   readonly bonusCollapse: number;
+  /** The job's own goal for the third star (merged from src/content/mastery.json at load). */
+  readonly mastery?: MasteryGoal | undefined;
   readonly zones: readonly Rect[];
   /** Where free-fall bombs may be hung (usually sky above the structure). */
   readonly dropZones: readonly Rect[];

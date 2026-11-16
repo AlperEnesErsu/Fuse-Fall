@@ -1,0 +1,1740 @@
+{
+ "w1-01": {
+  "goal": {
+   "kind": "whole",
+   "at": 1
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 600,
+     "y": 470,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  },
+  "free": true
+ },
+ "w1-02": {
+  "goal": {
+   "kind": "domino"
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 490,
+     "y": 475,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  }
+ },
+ "w1-03": {
+  "goal": {
+   "kind": "domino"
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 540,
+     "y": 470,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  },
+  "free": true
+ },
+ "w1-04": {
+  "goal": {
+   "kind": "domino"
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 570,
+     "y": 470,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  },
+  "free": true
+ },
+ "w1-05": {
+  "goal": {
+   "kind": "one-less"
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 590,
+     "y": 455,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  }
+ },
+ "w1-06": {
+  "goal": {
+   "kind": "quick",
+   "at": 3
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 540,
+     "y": 450,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  }
+ },
+ "w1-07": {
+  "goal": {
+   "kind": "quick",
+   "at": 3
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 385,
+     "y": 455,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  }
+ },
+ "w1-08": {
+  "goal": {
+   "kind": "domino"
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 360,
+     "y": 435,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  },
+  "free": true
+ },
+ "w1-09": {
+  "goal": {
+   "kind": "quick",
+   "at": 3.5
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 455,
+     "y": 470,
+     "kind": "standard"
+    },
+    {
+     "x": 650,
+     "y": 470,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  }
+ },
+ "w1-10": {
+  "goal": {
+   "kind": "whole",
+   "at": 1
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 420,
+     "y": 460,
+     "kind": "standard"
+    },
+    {
+     "x": 600,
+     "y": 470,
+     "kind": "standard"
+    },
+    {
+     "x": 10,
+     "y": 470,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  }
+ },
+ "w2-01": {
+  "goal": {
+   "kind": "domino"
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 555,
+     "y": 475,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  }
+ },
+ "w2-02": {
+  "goal": {
+   "kind": "quick",
+   "at": 3.5
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 525,
+     "y": 455,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  }
+ },
+ "w2-03": {
+  "goal": {
+   "kind": "whole",
+   "at": 1
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 545,
+     "y": 465,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  }
+ },
+ "w2-04": {
+  "goal": {
+   "kind": "quick",
+   "at": 2.5
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 580,
+     "y": 330,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 1.5,
+   "detonateAt": []
+  },
+  "free": true
+ },
+ "w2-05": {
+  "goal": {
+   "kind": "domino"
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 415,
+     "y": 470,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  }
+ },
+ "w2-06": {
+  "goal": {
+   "kind": "quick",
+   "at": 2.5
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 385,
+     "y": 350,
+     "kind": "standard"
+    },
+    {
+     "x": 705,
+     "y": 280,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 1.1,
+   "detonateAt": []
+  }
+ },
+ "w2-07": {
+  "goal": {
+   "kind": "whole",
+   "at": 0.7
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 460,
+     "y": 340,
+     "kind": "standard"
+    },
+    {
+     "x": 730,
+     "y": 465,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 2.5,
+   "detonateAt": []
+  }
+ },
+ "w2-08": {
+  "goal": {
+   "kind": "chain"
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 660,
+     "y": 340,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 3.4,
+   "detonateAt": []
+  },
+  "free": true
+ },
+ "w2-09": {
+  "goal": {
+   "kind": "quick",
+   "at": 3
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 530,
+     "y": 465,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  }
+ },
+ "w2-10": {
+  "goal": {
+   "kind": "whole",
+   "at": 0.85
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 265,
+     "y": 330,
+     "kind": "standard"
+    },
+    {
+     "x": 580,
+     "y": 470,
+     "kind": "standard"
+    },
+    {
+     "x": 10,
+     "y": 470,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 1.3,
+   "detonateAt": []
+  }
+ },
+ "w3-01": {
+  "goal": {
+   "kind": "domino"
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 480,
+     "y": 450,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  },
+  "free": true
+ },
+ "w3-02": {
+  "goal": {
+   "kind": "quick",
+   "at": 2.5
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 515,
+     "y": 435,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  }
+ },
+ "w3-03": {
+  "goal": {
+   "kind": "quick",
+   "at": 3.5
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 420,
+     "y": 340,
+     "delay": 0,
+     "kind": "standard"
+    },
+    {
+     "x": 455,
+     "y": 340,
+     "delay": 1.55,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 1.3666666666666667,
+   "detonateAt": []
+  }
+ },
+ "w3-04": {
+  "goal": {
+   "kind": "quick",
+   "at": 3
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 505,
+     "y": 415,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  }
+ },
+ "w3-05": {
+  "goal": {
+   "kind": "quick",
+   "at": 4
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 740,
+     "y": 260,
+     "delay": 0,
+     "kind": "standard"
+    },
+    {
+     "x": 340,
+     "y": 360,
+     "delay": 1.85,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 1.3833333333333333,
+   "detonateAt": []
+  },
+  "free": true
+ },
+ "w3-06": {
+  "goal": {
+   "kind": "quick",
+   "at": 3
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 550,
+     "y": 470,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  }
+ },
+ "w3-07": {
+  "goal": {
+   "kind": "one-less"
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 800,
+     "y": 450,
+     "delay": 0.35,
+     "kind": "standard"
+    },
+    {
+     "x": 590,
+     "y": 350,
+     "delay": 1.75,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  }
+ },
+ "w3-08": {
+  "goal": {
+   "kind": "one-less"
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 430,
+     "y": 340,
+     "delay": 0.95,
+     "kind": "standard"
+    },
+    {
+     "x": 495,
+     "y": 340,
+     "delay": 1.9,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0.03333333333333333,
+   "detonateAt": []
+  }
+ },
+ "w3-09": {
+  "goal": {
+   "kind": "quick",
+   "at": 3
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 415,
+     "y": 425,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  }
+ },
+ "w3-10": {
+  "goal": {
+   "kind": "whole",
+   "at": 1
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 360,
+     "y": 330,
+     "delay": 0,
+     "kind": "standard"
+    },
+    {
+     "x": 395,
+     "y": 330,
+     "delay": 1.95,
+     "kind": "standard"
+    },
+    {
+     "x": 790,
+     "y": 440,
+     "delay": 0,
+     "kind": "standard"
+    },
+    {
+     "x": 540,
+     "y": 470,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 1.1333333333333333,
+   "detonateAt": []
+  }
+ },
+ "w4-01": {
+  "goal": {
+   "kind": "whole",
+   "at": 1
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 480,
+     "y": 420,
+     "kind": "precision"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  }
+ },
+ "w4-02": {
+  "goal": {
+   "kind": "site",
+   "at": 0.95
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 485,
+     "y": 460,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  }
+ },
+ "w4-03": {
+  "goal": {
+   "kind": "site",
+   "at": 0.95
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 495,
+     "y": 400,
+     "kind": "implosion"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  }
+ },
+ "w4-04": {
+  "goal": {
+   "kind": "one-less"
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 580,
+     "y": 430,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  }
+ },
+ "w4-05": {
+  "goal": {
+   "kind": "site",
+   "at": 0.95
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 405,
+     "y": 450,
+     "kind": "precision"
+    },
+    {
+     "x": 640,
+     "y": 450,
+     "kind": "precision"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  }
+ },
+ "w4-06": {
+  "goal": {
+   "kind": "whole",
+   "at": 1
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 680,
+     "y": 450,
+     "kind": "standard"
+    },
+    {
+     "x": 385,
+     "y": 470,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  }
+ },
+ "w4-07": {
+  "goal": {
+   "kind": "site",
+   "at": 0.95
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 525,
+     "y": 470,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  }
+ },
+ "w4-08": {
+  "goal": {
+   "kind": "one-less"
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 575,
+     "y": 450,
+     "kind": "precision"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  }
+ },
+ "w4-09": {
+  "goal": {
+   "kind": "one-less"
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 575,
+     "y": 430,
+     "kind": "precision"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  }
+ },
+ "w4-10": {
+  "goal": {
+   "kind": "site",
+   "at": 0.95
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 440,
+     "y": 450,
+     "kind": "precision"
+    },
+    {
+     "x": 650,
+     "y": 440,
+     "kind": "precision"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  }
+ },
+ "w5-01": {
+  "goal": {
+   "kind": "quick",
+   "at": 2
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 265,
+     "y": 330,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  }
+ },
+ "w5-02": {
+  "goal": {
+   "kind": "whole",
+   "at": 1
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 220,
+     "y": 330,
+     "kind": "standard"
+    },
+    {
+     "x": 700,
+     "y": 330,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 2.466666666666667,
+   "detonateAt": []
+  },
+  "free": true
+ },
+ "w5-03": {
+  "goal": {
+   "kind": "quick",
+   "at": 2
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 360,
+     "y": 325,
+     "kind": "precision"
+    }
+   ],
+   "fireAt": 0.5,
+   "detonateAt": []
+  }
+ },
+ "w5-04": {
+  "goal": {
+   "kind": "whole",
+   "at": 1
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 270,
+     "y": 335,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  }
+ },
+ "w5-05": {
+  "goal": {
+   "kind": "quick",
+   "at": 2
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 750,
+     "y": 450,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  }
+ },
+ "w5-06": {
+  "goal": {
+   "kind": "quick",
+   "at": 1.5
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 310,
+     "y": 360,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 2.0833333333333335,
+   "detonateAt": []
+  },
+  "free": true
+ },
+ "w5-07": {
+  "goal": {
+   "kind": "quick",
+   "at": 3
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 260,
+     "y": 340,
+     "kind": "standard"
+    },
+    {
+     "x": 620,
+     "y": 330,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 1.65,
+   "detonateAt": []
+  }
+ },
+ "w5-08": {
+  "goal": {
+   "kind": "whole",
+   "at": 1
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 600,
+     "y": 465,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 1.2,
+   "detonateAt": []
+  }
+ },
+ "w5-09": {
+  "goal": {
+   "kind": "one-less"
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 355,
+     "y": 360,
+     "delay": 1.8,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0.55,
+   "detonateAt": []
+  }
+ },
+ "w5-10": {
+  "goal": {
+   "kind": "whole",
+   "at": 0.95
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 720,
+     "y": 330,
+     "kind": "standard"
+    },
+    {
+     "x": 80,
+     "y": 470,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  }
+ },
+ "w6-01": {
+  "goal": {
+   "kind": "whole",
+   "at": 0.7
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 460,
+     "y": 60,
+     "delay": 0,
+     "kind": "bomb"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": [
+    0.6
+   ]
+  },
+  "free": true
+ },
+ "w6-02": {
+  "goal": {
+   "kind": "whole",
+   "at": 0.65
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 535,
+     "y": 60,
+     "delay": 0,
+     "kind": "bomb"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": [
+    0.7
+   ]
+  }
+ },
+ "w6-03": {
+  "goal": {
+   "kind": "domino"
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 540,
+     "y": 40,
+     "delay": 0,
+     "kind": "bomb"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": [
+    1.2
+   ]
+  }
+ },
+ "w6-04": {
+  "goal": {
+   "kind": "one-less"
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 700,
+     "y": 60,
+     "delay": 0.35,
+     "kind": "bomb"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": [
+    1.5
+   ]
+  }
+ },
+ "w6-05": {
+  "goal": {
+   "kind": "one-less"
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 520,
+     "y": 60,
+     "delay": 0.35,
+     "kind": "bomb"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": [
+    1.1
+   ]
+  }
+ },
+ "w6-06": {
+  "goal": {
+   "kind": "domino"
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 490,
+     "y": 60,
+     "delay": 0,
+     "kind": "bomb"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": [
+    1
+   ]
+  }
+ },
+ "w6-07": {
+  "goal": {
+   "kind": "quick",
+   "at": 3
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 460,
+     "y": 60,
+     "delay": 0,
+     "kind": "bomb"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": [
+    1
+   ]
+  },
+  "free": true
+ },
+ "w6-08": {
+  "goal": {
+   "kind": "one-less"
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 735,
+     "y": 40,
+     "delay": 0.35,
+     "kind": "bomb"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": [
+    1.4
+   ]
+  }
+ },
+ "w6-09": {
+  "goal": {
+   "kind": "quick",
+   "at": 3.5
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 560,
+     "y": 80,
+     "delay": 0,
+     "kind": "bomb"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": [
+    0.9
+   ]
+  }
+ },
+ "w6-10": {
+  "goal": {
+   "kind": "one-less"
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 310,
+     "y": 435,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": [
+    1
+   ]
+  }
+ },
+ "w7-01": {
+  "goal": {
+   "kind": "whole",
+   "at": 1
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 455,
+     "y": 470,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  }
+ },
+ "w7-02": {
+  "goal": {
+   "kind": "whole",
+   "at": 1
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 320,
+     "y": 150,
+     "delay": 1.15,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  }
+ },
+ "w7-03": {
+  "goal": {
+   "kind": "whole",
+   "at": 1
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 325,
+     "y": 465,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  }
+ },
+ "w7-04": {
+  "goal": {
+   "kind": "whole",
+   "at": 1
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 445,
+     "y": 465,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  }
+ },
+ "w7-05": {
+  "goal": {
+   "kind": "whole",
+   "at": 1
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 430,
+     "y": 450,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  },
+  "free": true
+ },
+ "w7-06": {
+  "goal": {
+   "kind": "whole",
+   "at": 1
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 475,
+     "y": 465,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  }
+ },
+ "w7-07": {
+  "goal": {
+   "kind": "domino"
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 300,
+     "y": 130,
+     "delay": 1.2,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  },
+  "free": true
+ },
+ "w7-08": {
+  "goal": {
+   "kind": "whole",
+   "at": 1
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 425,
+     "y": 465,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  }
+ },
+ "w7-09": {
+  "goal": {
+   "kind": "chain"
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 300,
+     "y": 140,
+     "delay": 1.15,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  },
+  "free": true
+ },
+ "w7-10": {
+  "goal": {
+   "kind": "one-less"
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 580,
+     "y": 435,
+     "delay": 0.3,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  }
+ },
+ "w8-01": {
+  "goal": {
+   "kind": "quick",
+   "at": 1
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 480,
+     "y": 340,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 2.25,
+   "detonateAt": []
+  },
+  "free": true
+ },
+ "w8-02": {
+  "goal": {
+   "kind": "quick",
+   "at": 2.5
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 720,
+     "y": 250,
+     "delay": 0,
+     "kind": "standard"
+    },
+    {
+     "x": 340,
+     "y": 350,
+     "delay": 1.7,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0.85,
+   "detonateAt": []
+  },
+  "free": true
+ },
+ "w8-03": {
+  "goal": {
+   "kind": "quick",
+   "at": 1
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 570,
+     "y": 320,
+     "kind": "precision"
+    }
+   ],
+   "fireAt": 3.066666666666667,
+   "detonateAt": []
+  },
+  "free": true
+ },
+ "w8-04": {
+  "goal": {
+   "kind": "domino"
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 290,
+     "y": 340,
+     "delay": 0,
+     "kind": "standard"
+    },
+    {
+     "x": 700,
+     "y": 480,
+     "delay": 0.35,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 2.1,
+   "detonateAt": []
+  }
+ },
+ "w8-05": {
+  "goal": {
+   "kind": "quick",
+   "at": 2
+  },
+  "solution": {
+   "charges": [],
+   "fireAt": 4.1,
+   "detonateAt": []
+  }
+ },
+ "w8-06": {
+  "goal": {
+   "kind": "quick",
+   "at": 2
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 480,
+     "y": 60,
+     "delay": 0,
+     "kind": "bomb"
+    }
+   ],
+   "fireAt": 1.25,
+   "detonateAt": [
+    0.8
+   ]
+  },
+  "free": true
+ },
+ "w8-07": {
+  "goal": {
+   "kind": "quick",
+   "at": 3
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 710,
+     "y": 250,
+     "delay": 0,
+     "kind": "standard"
+    },
+    {
+     "x": 380,
+     "y": 345,
+     "delay": 1.6,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0.9,
+   "detonateAt": []
+  }
+ },
+ "w8-08": {
+  "goal": {
+   "kind": "chain"
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 245,
+     "y": 280,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 3.6,
+   "detonateAt": []
+  },
+  "free": true
+ },
+ "w8-09": {
+  "goal": {
+   "kind": "quick",
+   "at": 2.5
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 480,
+     "y": 290,
+     "delay": 0,
+     "kind": "standard"
+    },
+    {
+     "x": 510,
+     "y": 290,
+     "delay": 1.6,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0.9333333333333333,
+   "detonateAt": []
+  },
+  "free": true
+ },
+ "w8-10": {
+  "goal": {
+   "kind": "whole",
+   "at": 1
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 320,
+     "y": 340,
+     "delay": 0,
+     "kind": "standard"
+    },
+    {
+     "x": 700,
+     "y": 460,
+     "delay": 0.35,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 4,
+   "detonateAt": []
+  }
+ },
+ "w9-01": {
+  "goal": {
+   "kind": "quick",
+   "at": 6.5
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 185,
+     "y": 465,
+     "kind": "roller"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  }
+ },
+ "w9-02": {
+  "goal": {
+   "kind": "quick",
+   "at": 6
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 260,
+     "y": 460,
+     "kind": "roller"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  }
+ },
+ "w9-03": {
+  "goal": {
+   "kind": "whole",
+   "at": 1
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 450,
+     "y": 470,
+     "kind": "roller",
+     "direction": -1
+    },
+    {
+     "x": 510,
+     "y": 470,
+     "kind": "roller",
+     "direction": 1
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  },
+  "free": true
+ },
+ "w9-04": {
+  "goal": {
+   "kind": "one-less"
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 300,
+     "y": 445,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  }
+ },
+ "w9-05": {
+  "goal": {
+   "kind": "quick",
+   "at": 5.5
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 190,
+     "y": 470,
+     "kind": "roller"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  }
+ },
+ "w9-06": {
+  "goal": {
+   "kind": "domino"
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 200,
+     "y": 370,
+     "kind": "roller"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  },
+  "free": true
+ },
+ "w9-07": {
+  "goal": {
+   "kind": "whole",
+   "at": 1
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 420,
+     "y": 470,
+     "kind": "roller",
+     "direction": 1
+    },
+    {
+     "x": 365,
+     "y": 465,
+     "kind": "precision"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  }
+ },
+ "w9-08": {
+  "goal": {
+   "kind": "domino"
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 200,
+     "y": 465,
+     "kind": "roller",
+     "direction": 1
+    },
+    {
+     "x": 130,
+     "y": 465,
+     "kind": "roller",
+     "direction": 1
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  },
+  "free": true
+ },
+ "w9-09": {
+  "goal": {
+   "kind": "one-less"
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 540,
+     "y": 470,
+     "kind": "roller",
+     "direction": 1
+    },
+    {
+     "x": 480,
+     "y": 480,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  }
+ },
+ "w9-10": {
+  "goal": {
+   "kind": "whole",
+   "at": 1
+  },
+  "solution": {
+   "charges": [
+    {
+     "x": 460,
+     "y": 440,
+     "kind": "implosion"
+    },
+    {
+     "x": 690,
+     "y": 470,
+     "kind": "roller",
+     "direction": 1
+    },
+    {
+     "x": 45,
+     "y": 460,
+     "kind": "standard"
+    }
+   ],
+   "fireAt": 0,
+   "detonateAt": []
+  }
+ }
+}

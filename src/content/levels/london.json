@@ -906,7 +906,7 @@
   "order": 10,
   "charges": {
    "max": 4,
-   "par": 3
+   "par": 4
   },
   "bonusCollapse": 0.4,
   "zones": [

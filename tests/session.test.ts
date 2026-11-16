@@ -235,7 +235,17 @@ describe('outcome', () => {
     run(TUNING.settle.hold + 0.2);
     expect(log.some((e) => e.type === 'targetDown')).toBe(true);
     expect(session.phase).toBe('finished');
-    expect(session.result).toMatchObject({ cleared: true, chargesUsed: 1, blocksCollapsed: 1, stars: 3 });
+    // A win within par: two stars. This test level has no mastery goal, so two is its most.
+    expect(session.result).toMatchObject({ cleared: true, chargesUsed: 1, blocksCollapsed: 1, stars: 2, masteryMet: false });
+  });
+
+  it("gives the third star for the job's own goal", () => {
+    const { session, physics, run } = setup({ mastery: { kind: 'one-less' }, charges: { max: 3, par: 2 } });
+    session.placeCharge({ x: 100, y: 450 });
+    session.fire();
+    physics.place('block-1', { position: { x: 520, y: WORLD.groundY - 20 } });
+    run(TUNING.settle.hold + 0.2);
+    expect(session.result).toMatchObject({ cleared: true, chargesUsed: 1, stars: 3, masteryMet: true });
   });
 
   it('counts a target that falls without any blast reaching it as a domino', () => {

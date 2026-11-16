@@ -35,7 +35,7 @@ Yapıyı incele → Patlayıcı yerleştir → Ateşle → Yıkımı izle → Pu
 | FR-06 | Patlayıcı variller ateşlenmeden zincirleme patlama başlatabilir. | S |
 | FR-07 | Seviye hedefleri: (a) hedef blokları zemine indir, (b) yapının %X'ini yık, (c) korunan blokları sağlam bırak. | M (a), S (b, c) |
 | FR-08 | Fizik durulduğunda veya zaman aşımında (son patlamadan 8 sn sonra) seviye değerlendirilir. Durulma: cisimler yavaşladığında, ya da 1 sn boyunca hiçbiri durduğu yerden ayrılmadığında (titreme ve yavaş sürünme hareket sayılmaz; düşmemiş bir hedef için sınır dardır). Oyuncu çöküşü "Atla" ile izlemeden bitirebilir. | M |
-| FR-09 | Yıldız puanlama: tam başarı 1 yıldız, ardından üç oyun tarzından (*Cerrahi*: par içinde, *Yıkım*: bonus yıkım oranı, *Domino*: patlamanın dokunmadığı bir hedefi devirmek) her biri +1, en fazla 3. Yani herhangi iki tarz 3 yıldız verir. Hedef ayakta kalırsa görev başarısızdır ve yıldız vermez (ayrıntı: FR-60, FR-73). Rapor hangi tarzların tuttuğunu tek tek gösterir. | M |
+| FR-09 | Yıldız puanlama: görevi kazanmak 1 yıldız, par içinde kazanmak +1, görevin kendi ustalık hedefi +1 (en fazla 3). Hedef türleri: bir şarj eksiğiyle kazanmak, domino (patlamanın değmediği bir hedefi devirmek), bütün varilleri patlatmak, enkazın %95'ini alanda tutmak, yapının göreve özgü bir oranını indirmek. Her kampanya görevinin hedefi ve onu tutturan bir çözüm `src/content/mastery.json` içindedir ve testle doğrulanır. Oyun tarzları (Cerrahi, Tam yıkım, Domino) yıldız vermez, hurda öder. Hedef ayakta kalırsa görev başarısızdır ve yıldız vermez (ayrıntı: FR-60, FR-73). | M |
 | FR-10 | Tek dokunuşla yeniden deneme, 300 ms içinde. Ateşlenmiş bir denemeden sonra şarjlar yerlerinde geri gelir; yerleştirirken yeniden basmak sahayı temizler. | M |
 
 ### İlerleme ve içerik
@@ -141,7 +141,7 @@ Yapıyı incele → Patlayıcı yerleştir → Ateşle → Yıkımı izle → Pu
 | FR-27 | **Korunan yapılar:** bazı seviyelerde komşu bina korunur. Herhangi bir patlama çemberi ona değerse, ya da yer değiştirir/eğilir/dayanımının yarısını kaybederse sözleşme iptal olur (görev başarısız). Her şehrin simge yapısı en az iki görevde korunan komşu olarak yer alır (aynı kural, anıt olarak çizilir; testle doğrulanır). | M |
 | FR-28 | Yerleştirme sırasında her şarjın patlama çemberi gösterilir. Korunan yapıya değen çember ve o yapı kırmızıya döner. Önizleme ile hasar kuralı core'daki aynı fonksiyonu kullanır. | M |
 | FR-29 | **Yıkım raporu:** sonuç (BAŞARILI/BAŞARISIZ ve nedeni), hedefler, kullanılan şarj/par, yıkım oranı/eşik, korunan yapı durumu, süre, puan, en iyi puan ve üç kriter. | M |
-| FR-30 | Puan = 1000 + kullanılmayan şarj başına 300 + 500 × yıkım oranı. Seviye başına en iyi puan cihazda saklanır (eski kayıtlarla uyumlu). | M |
+| FR-30 | Puan yalnız günlük görevde gösterilir: 1000 + kullanılmayan şarj başına 300 + 500 × yıkım oranı + patlayan varil başına 150 + domino başına 200 + 6 saniyenin altında durulan her saniye için 100. Seviye başına en iyi puan cihazda saklanır (eski kayıtlarla uyumlu). | M |
 | FR-31 | Endüstriyel görsel dil: kömür/çelik tonları, tek vurgu rengi olarak tehlike sarısı, dar büyük harfli başlıklar, SVG ikonlar, plastik patlayıcı görünümlü şarj, şerit desenli fünye düğmesi. | M |
 | FR-32 | Ortam müziği yok; katmanlı patlama sesi (çatlama, gürleme, alt bas, yankı, düşen moloz) ve mekanik arayüz sesleri. | M |
 

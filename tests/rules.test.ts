@@ -1,3 +1,4 @@
+import type { MasteryGoal } from '../src/core/mastery';
 import { describe, expect, it } from 'vitest';
 import { EventBus } from '../src/core/events';
 import { LEVEL_LIMITS, parseLevel, parseLevelPack } from '../src/core/level';
@@ -14,7 +15,7 @@ import {
   worldStatus,
 } from '../src/core/progress';
 import { parseWorlds } from '../src/core/world';
-import { scoreLevel } from '../src/core/scoring';
+import { scoreLevel, type LevelOutcome } from '../src/core/scoring';
 import { difficultyOf } from '../src/core/difficulty';
 import { loadCampaign } from '../src/content/levels';
 import { shatter } from '../src/core/shatter';
@@ -130,26 +131,45 @@ describe('scoring', () => {
     protectedDamaged: 0,
     duration: 3,
     footprint: undefined,
+    barrels: { blown: 0, total: 0 },
     dominoes: 0,
     demolished: {},
   };
   const rules = { par: 1, bonusCollapse: 0.5 };
-  it('awards a star per play style on top of success', () => {
-    expect(scoreLevel(base, rules).stars).toBe(3);
-    expect(scoreLevel({ ...base, chargesUsed: 2 }, rules).stars).toBe(2);
-    expect(scoreLevel({ ...base, blocksCollapsed: 1 }, rules).stars).toBe(2);
-    expect(scoreLevel({ ...base, chargesUsed: 2, blocksCollapsed: 1 }, rules).stars).toBe(1);
+  it("gives one star for the win, one within par, one for the job's own goal", () => {
+    const domino = { ...rules, mastery: { kind: 'domino' as const } };
+    expect(scoreLevel({ ...base, dominoes: 1 }, domino)).toMatchObject({ stars: 3, masteryMet: true });
+    expect(scoreLevel(base, domino)).toMatchObject({ stars: 2, masteryMet: false });
+    expect(scoreLevel({ ...base, chargesUsed: 2, dominoes: 1 }, domino)).toMatchObject({ stars: 2, underPar: false, masteryMet: true });
+    expect(scoreLevel({ ...base, chargesUsed: 2 }, domino).stars).toBe(1);
   });
 
-  it('lets a domino finish stand in for either other style', () => {
-    const brute = { ...base, chargesUsed: 2 };
-    expect(scoreLevel({ ...brute, dominoes: 1 }, rules)).toMatchObject({ stars: 3, styles: { surgical: false, demolition: true, domino: true } });
-    expect(scoreLevel({ ...brute, blocksCollapsed: 1, dominoes: 1 }, rules).stars).toBe(2);
-    expect(scoreLevel({ ...brute, blocksCollapsed: 1 }, rules).stars).toBe(1);
+  it('tops out at two stars on a job without a goal, and play styles no longer add stars', () => {
+    expect(scoreLevel({ ...base, dominoes: 1, blocksCollapsed: 10 }, rules)).toMatchObject({ stars: 2, styles: { surgical: true, demolition: true, domino: true } });
+  });
+
+  it('judges each kind of goal by what the attempt did', () => {
+    const met = (mastery: MasteryGoal, patch: Partial<LevelOutcome>, par = 1) => scoreLevel({ ...base, ...patch }, { par, bonusCollapse: 0.5, mastery }).masteryMet;
+    expect(met({ kind: 'one-less' }, { chargesUsed: 1 }, 2)).toBe(true);
+    expect(met({ kind: 'one-less' }, { chargesUsed: 2 }, 2)).toBe(false);
+    expect(met({ kind: 'whole' }, { blocksCollapsed: 10 })).toBe(true);
+    expect(met({ kind: 'whole' }, { blocksCollapsed: 9 })).toBe(false);
+    // A job's own share: 80% of the structure.
+    expect(met({ kind: 'whole', at: 0.8 }, { blocksCollapsed: 8 })).toBe(true);
+    expect(met({ kind: 'whole', at: 0.8 }, { blocksCollapsed: 7 })).toBe(false);
+    expect(met({ kind: 'site' }, { footprint: { achieved: 0.96, required: 0.6 } })).toBe(true);
+    expect(met({ kind: 'site' }, { footprint: { achieved: 0.9, required: 0.6 } })).toBe(false);
+    expect(met({ kind: 'chain' }, { barrels: { blown: 2, total: 2 } })).toBe(true);
+    expect(met({ kind: 'chain' }, { barrels: { blown: 1, total: 2 } })).toBe(false);
+    expect(met({ kind: 'domino' }, { dominoes: 1 })).toBe(true);
+    expect(met({ kind: 'quick', at: 3 }, { duration: 3 })).toBe(true);
+    expect(met({ kind: 'quick', at: 2.5 }, { duration: 3 })).toBe(false);
+    // Only a won job meets a goal.
+    expect(met({ kind: 'domino' }, { dominoes: 1, targetsDown: 0 })).toBe(false);
   });
 
   it('never gives more than three stars', () => {
-    expect(scoreLevel({ ...base, dominoes: 2 }, rules).stars).toBe(3);
+    expect(scoreLevel({ ...base, dominoes: 2 }, { ...rules, mastery: { kind: 'domino' } }).stars).toBe(3);
   });
 
   it('fails the job while a target stands, however much of the structure came down', () => {
@@ -174,9 +194,11 @@ describe('scoring', () => {
     expect(r).toMatchObject({ cleared: false, failure: 'collateral-damage', stars: 0, score: 0 });
   });
 
-  it('scores spare charges and collapse', () => {
-    // 1000 base + 300 for one unused charge + 500 × 0.6 collapse.
-    expect(scoreLevel(base, { par: 1, bonusCollapse: 0.5 }).score).toBe(1600);
+  it('scores spare charges, collapse, the chain, a domino and a quick finish', () => {
+    // 1000 base + 300 for one unused charge + 500 × 0.6 collapse + 100 × (6 − 3) seconds quicker.
+    expect(scoreLevel(base, { par: 1, bonusCollapse: 0.5 }).score).toBe(1900);
+    // Two barrels and a domino add 2 × 150 + 200; a slow collapse adds nothing for time.
+    expect(scoreLevel({ ...base, barrels: { blown: 2, total: 2 }, dominoes: 1, duration: 9 }, { par: 1, bonusCollapse: 0.5 }).score).toBe(2100);
   });
 });
 

@@ -1,3 +1,4 @@
+import { masteryMet, type MasteryGoal } from './mastery';
 import type { MaterialId } from './materials';
 
 export type Stars = 0 | 1 | 2 | 3;
@@ -20,11 +21,15 @@ export interface LevelOutcome {
   readonly demolished: Readonly<Partial<Record<MaterialId, number>>>;
   /** For footprint jobs: the share of the structure's material that ended up inside the site, and the share required. */
   readonly footprint: { readonly achieved: number; readonly required: number } | undefined;
+  /** Explosive barrels on site, and how many went off. */
+  readonly barrels: { readonly blown: number; readonly total: number };
 }
 
 export interface ScoringRules {
   readonly par: number;
   readonly bonusCollapse: number;
+  /** The job's own goal for the third star; a job without one (Free Site, a shared mission) tops out at two. */
+  readonly mastery?: MasteryGoal | undefined;
 }
 
 /**
@@ -51,13 +56,25 @@ export interface LevelResult extends LevelOutcome {
   readonly collapseRatio: number;
   readonly underPar: boolean;
   readonly bonusMet: boolean;
+  /** The job's mastery goal was met (always false without one, or on a failure). */
+  readonly masteryMet: boolean;
   readonly styles: PlayStyles;
 }
 
+/**
+ * The score is shown only in the daily job, where everyone plays the same mission:
+ * it rewards spare charges, a full collapse, a long chain, a domino and a quick finish,
+ * so two wins with the same stars still compare.
+ */
 export const SCORE = {
   base: 1000,
   perSpareCharge: 300,
   collapse: 500,
+  perBarrel: 150,
+  perDomino: 200,
+  /** Per second the collapse settles under `quickWithin`. */
+  perQuickSecond: 100,
+  quickWithin: 6,
 } as const;
 
 /**
@@ -66,8 +83,9 @@ export const SCORE = {
  * contract, whatever else happened. Anything less is a failure: bringing most
  * of the structure down while a target still stands does not win the job.
  *
- * Stars: a cleared job earns 1, +1 for each play style met (surgical,
- * demolition, domino), at most 3. A failure earns none.
+ * Stars: a cleared job earns 1, +1 within par, +1 for the job's own mastery
+ * goal. A failure earns none. The play styles (surgical, demolition, domino)
+ * no longer give stars; they still pay scrap and move contracts.
  * Score: base + a bonus for each unused charge + the collapse ratio; 0 for a failure.
  */
 /**
@@ -76,7 +94,7 @@ export const SCORE = {
  */
 export const assistedResult = (result: LevelResult): LevelResult =>
   result.cleared
-    ? { ...result, stars: Math.min(result.stars, 1) as Stars, styles: { surgical: false, demolition: false, domino: false } }
+    ? { ...result, stars: Math.min(result.stars, 1) as Stars, masteryMet: false, styles: { surgical: false, demolition: false, domino: false } }
     : result;
 
 export const scoreLevel = (outcome: LevelOutcome, rules: ScoringRules): LevelResult => {
@@ -100,12 +118,15 @@ export const scoreLevel = (outcome: LevelOutcome, rules: ScoringRules): LevelRes
     demolition: bonusMet,
     domino: outcome.dominoes > 0,
   };
-  const met = Number(styles.surgical) + Number(styles.demolition) + Number(styles.domino);
-  const stars = (cleared ? 1 + Math.min(2, met) : 0) as Stars;
+  const mastered = cleared && rules.mastery !== undefined && masteryMet(rules.mastery, outcome, rules.par);
+  const stars = (cleared ? 1 + Number(underPar) + Number(mastered) : 0) as Stars;
   const score = cleared
     ? SCORE.base +
       SCORE.perSpareCharge * Math.max(0, outcome.chargesMax - outcome.chargesUsed) +
-      Math.round(SCORE.collapse * collapseRatio)
+      Math.round(SCORE.collapse * collapseRatio) +
+      SCORE.perBarrel * outcome.barrels.blown +
+      SCORE.perDomino * outcome.dominoes +
+      Math.round(SCORE.perQuickSecond * Math.max(0, SCORE.quickWithin - outcome.duration))
     : 0;
-  return { ...outcome, cleared, failure, stars, score, collapseRatio, underPar, bonusMet, styles };
+  return { ...outcome, cleared, failure, stars, score, collapseRatio, underPar, bonusMet, masteryMet: mastered, styles };
 };

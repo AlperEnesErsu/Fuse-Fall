@@ -8,6 +8,8 @@ Biçim [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) düzenine yak
 
 ### Eklendi
 
+- Yıldızlar ustalığı ölçer: görevi kazanmak 1 yıldız, par içinde kazanmak 1 yıldız, görevin kendi hedefi 1 yıldız. Hedef görev kartında ve raporda yazar: bir şarj eksiğiyle kazan, domino, bütün varilleri patlat, enkazı alanda tut ya da yapının belirli bir oranını indir. Her görevin hedefi bir aramayla seçildi: kayıtlı çözümün kendiliğinden tutturmadığı, ama daha iyi bir oyunun tutturduğu hedef; o oyun `src/content/mastery.json` içinde saklanır ve her test koşusunda yeniden oynatılır. Kazanılmış yıldızlar düşmez.
+- Puan yalnız günlük görevde gösterilir ve artık zinciri, dominoyu ve hızlı çöküşü de ölçer.
 - Bloklar bina gibi görünür; yıkılacak bina ikaz bandıyla işaretlidir (#13).
 - Atölye, hurdanın artık neye yettiğini gösterir: menüde "N yeni", raporda "Atölyede şimdi" satırı, yeni ürünlerde etiket (#14).
 - Oyun açılırken ya da her karede hata verirse "Bir şeyler ters gitti" paneli ve yeniden başlat düğmesi çıkar; tek bir hata oyunu durdurmaz.
@@ -36,6 +38,8 @@ Biçim [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) düzenine yak
 
 ### Değişti
 
+- Şehir açılma eşikleri yeni yıldız kuralına göre indirildi (görev başına yaklaşık 1,8 yıldız). Hiçbir eşik yükselmedi, eski kayıtlar açık şehirlerini korur.
+- Gösteri binalı finallerde par, gösteri binasının şarjını da sayar: üçüncü yıldız ikinciye mal olmaz.
 - Şarjlar 5 piksellik ızgaraya oturur: aynı görünen yerleşim aynı yerleşimdir ve aynı sonucu verir. Kayıtlı çözümler ızgaraya taşındı; Ankara 7, Paris 9 ve New York 8'in çözümü çevresi en sağlam ızgara noktasına alındı.
 - Beş görev yakın ıskalarda fazla kırılgandı ve yeniden düzenlendi: Roma 3 (çözümü, öğretilen içe çöken şarj oldu; %59 → %82), Roma 7 (şantiye sağa genişledi; %57 → %80), Roma Finali (kulenin zemin katı uzadı, şantiye genişledi, çözüm sağlam noktalara taşındı; %48 → %74), İstanbul 2 (korunan evler uzaklaştı; %63 → %71), Berlin Finali (korunan komşu uzaklaştı; %40 → %54).
 - `npm run balance` ve CI: her görev, zorluğuna göre bir yakın ıska eşiğini tutmak zorunda (kolay %80, orta %65, zor ve uzman %50).
