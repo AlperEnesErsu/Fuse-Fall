@@ -1826,3 +1826,19 @@ h2,
     grid-column: 3;
   }
 }
+
+/* The won job's lot, renewed: a small picture beside a line of text in the report. */
+.renewal {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.renewal-art {
+  width: 96px;
+  height: auto;
+  flex: none;
+  border-radius: 4px;
+  border: 1px solid var(--edge);
+}

@@ -14,6 +14,7 @@ import { DelayTimeline, type TimelineCharge } from './timeline';
 import { TUNING } from '../core/tuning';
 import type { ChargeKind } from '../core/level';
 import { paintScene, skyAt } from './scenery';
+import { drawRenewal, paintStreet, renewalOf } from './renewal';
 import { T } from './strings';
 
 type Child = Node | string | false | undefined;
@@ -39,18 +40,45 @@ const starRow = (stars: Stars, size: 'sm' | 'lg'): HTMLElement =>
     ...[1, 2, 3].map((n) => h('span', { class: n <= stars ? 'star on' : 'star' }, '★')),
   );
 
-/** A small painting of the city's skyline for its card. */
-const cityThumbnail = (key: string, progress: number): HTMLCanvasElement => {
+/** A small painting of the city for its card: the skyline, and its street of lots, renewed where jobs are won. */
+const cityThumbnail = (key: string, progress: number, lots: CityCard['lots']): HTMLCanvasElement => {
   const canvas = document.createElement('canvas');
-  const scale = 0.32;
+  // Drawn at twice the card's size so the lots along the street stay sharp.
+  const scale = 0.64;
   canvas.width = Math.round(WORLD.width * scale);
   canvas.height = Math.round((WORLD.groundY + 30) * scale);
   const c = canvas.getContext('2d');
   if (c) {
     c.setTransform(scale, 0, 0, scale, 0, 0);
     paintScene(c, key, skyAt(progress));
+    paintStreet(c, key, lots, WORLD.width, WORLD.groundY);
   }
   canvas.className = 'thumb';
+  return canvas;
+};
+
+/** The won job's lot, renewed: a little picture for the report. */
+const renewalPicture = (city: string, levelId: string): HTMLCanvasElement => {
+  const canvas = document.createElement('canvas');
+  const scale = 2;
+  const world = { w: 120, h: 84, ground: 80 };
+  canvas.width = world.w * scale;
+  canvas.height = world.h * scale;
+  const c = canvas.getContext('2d');
+  if (c) {
+    c.setTransform(scale, 0, 0, scale, 0, 0);
+    const sky = skyAt(0.3);
+    const gradient = c.createLinearGradient(0, 0, 0, world.ground);
+    gradient.addColorStop(0, sky.top);
+    gradient.addColorStop(1, sky.bottom);
+    c.fillStyle = gradient;
+    c.fillRect(0, 0, world.w, world.ground);
+    c.fillStyle = '#2b2d4a';
+    c.fillRect(0, world.ground, world.w, world.h - world.ground);
+    drawRenewal(c, city, levelId, 12, world.ground, 96);
+  }
+  canvas.className = 'renewal-art';
+  canvas.setAttribute('aria-hidden', 'true');
   return canvas;
 };
 
@@ -62,6 +90,8 @@ export interface CityCard {
   readonly stars: number;
   readonly maxStars: number;
   readonly previousCity: string | undefined;
+  /** The city's jobs in order: each one's lot, renewed once the job has been won. */
+  readonly lots: readonly { readonly id: string; readonly cleared: boolean }[];
 }
 
 export interface LevelCard {
@@ -109,6 +139,8 @@ export interface ReportInfo {
   readonly onDouble: (() => void) | undefined;
   /** Something new the player can now afford, with the way to the workshop. */
   readonly workshopPick: { readonly name: string; readonly cost: number; readonly onOpen: () => void } | undefined;
+  /** A won job: whose lot it was, so the report can show what it became. */
+  readonly renewal?: { readonly city: string; readonly levelId: string } | undefined;
 }
 
 /** What the offer store has: rewarded ads (with today's count) and packs; `demo` marks the development stand-in. */
@@ -721,7 +753,7 @@ export class Ui {
             ...(open ? {} : { 'aria-disabled': 'true' }),
             click: () => (open ? this.tap(() => onPick(card.world.world)) : this.toast(lockText ?? '')),
           },
-          cityThumbnail(card.world.key, 0.55),
+          cityThumbnail(card.world.key, 0.55, card.lots),
           h('span', { class: 'city-part' }, T.site(card.world.world)),
           h('span', { class: 'city-name' }, card.city),
           h('span', { class: 'city-country' }, card.country),
@@ -1018,6 +1050,14 @@ export class Ui {
             h('div', { class: 'stamp' }, perfect ? R.perfect : r.cleared ? R.success : R.failure),
             reason ? h('p', { class: 'reason' }, reason) : undefined,
             starRow(r.stars, 'lg'),
+            r.cleared && info.renewal
+              ? h(
+                  'div',
+                  { class: 'renewal' },
+                  renewalPicture(info.renewal.city, info.renewal.levelId),
+                  h('span', {}, R.renewal(T.renewals[renewalOf(info.renewal.levelId)])),
+                )
+              : undefined,
             h(
               'div',
               { class: 'payout' },
