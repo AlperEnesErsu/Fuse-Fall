@@ -46,7 +46,7 @@ Kayıtlı çözümler gerçek fizikle oynatılarak ölçüldü (`tests/play.ts` 
 |---|---|---|---|
 | Dikey ekranda kamerayı yapıya yaklaştır; son hedefte yakın çekim | Yapı ekran genişliğinin çoğunu dolduruyor | O | Yapıldı; kamera dikeyde 90 görevin 21'inde (ortanca 1,38 kat), yatayda 67'sinde (ortanca 1,43 kat) yaklaşıyor. Kalanlarda yerleştirme çerçevesi zaten dar |
 | Simge yapı korunan komşu olsun | Her şehirde en az 2 görev | O | Yapıldı (20 görev; testle doğrulanır) |
-| Şehre özgü bina oranları ve dokular | Ekran görüntüsünden şehir anlaşılıyor | B | |
+| Şehre özgü bina oranları ve dokular | Ekran görüntüsünden şehir anlaşılıyor | B | Çatı, kat süsü ve pencere yapıldı (9 şehir). Bina oranları (dikeye göre dar ve yüksek yapılar) yapılmadı: görev düzeni ve denge işi |
 | Yıkım sonrası yenilenen arsa | Raporda ve şehir haritasında görünüyor | O | |
 | Şehir sonu gösteri görevi | 25+ blok, ölçülen FPS hedefin üstünde | O | |
 

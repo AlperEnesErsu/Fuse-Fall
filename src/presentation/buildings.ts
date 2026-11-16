@@ -1,6 +1,7 @@
 import { WORLD } from '../core/level';
 import { hashString } from '../core/math';
 import type { EntityView } from '../core/session';
+import { cityRoof, cityTrim, cityWindow, drawWindow, type WindowStyle } from './city-style';
 
 /**
  * Blocks read as parts of buildings, not as boxes. When a job starts, blocks
@@ -71,7 +72,11 @@ export const planBuildings = (entities: readonly EntityView[]): Map<string, Buil
 };
 
 /** Dresses one block for its part, in the body's own (rotated) frame, over its material fill. */
-export const drawPart = (c: CanvasRenderingContext2D, part: BuildingPart, w: number, h: number, glass: boolean): void => {
+/** Floors wider than this are bridge decks and viaducts, not storeys: they get no domestic trim or roof. */
+const HOUSE_WIDTH = 200;
+
+/** `city` picks the roof, the trim along the floors and the windows (see city-style.ts). */
+export const drawPart = (c: CanvasRenderingContext2D, part: BuildingPart, w: number, h: number, glass: boolean, city = ''): void => {
   if (part.condemned) {
     // Weathered: a dull wash and soot streaks running down from the top.
     c.fillStyle = 'rgba(52, 44, 38, 0.22)';
@@ -86,8 +91,12 @@ export const drawPart = (c: CanvasRenderingContext2D, part: BuildingPart, w: num
   }
   if (part.role === 'column') column(c, part, w, h);
   else if (part.role === 'slab') slab(c, w, h);
-  else if (!glass) room(c, part, w, h);
-  if (part.roof && part.role !== 'column') roofLine(c, part, w, h);
+  else if (!glass) room(c, part, w, h, cityWindow(city));
+  if (part.role === 'slab' && w <= HOUSE_WIDTH && !glass) cityTrim(c, city, w, -h / 2, h / 2, part.seed);
+  if (part.roof && part.role !== 'column') {
+    roofLine(c, part, w, h);
+    if (w <= HOUSE_WIDTH && !glass) cityRoof(c, city, w, -h / 2, part.seed);
+  }
   if (part.condemned && part.role === 'room') cautionTape(c, part, w, h);
 };
 
@@ -140,7 +149,7 @@ const slab = (c: CanvasRenderingContext2D, w: number, h: number): void => {
 };
 
 /** A storey: a window grid, lit and curtained, or boarded up on the condemned building. */
-const room = (c: CanvasRenderingContext2D, part: BuildingPart, w: number, h: number): void => {
+const room = (c: CanvasRenderingContext2D, part: BuildingPart, w: number, h: number, style: WindowStyle): void => {
   const nx = Math.max(1, Math.floor((w - 6) / 22));
   const ny = Math.max(1, Math.floor((h - 8) / 30));
   const cw = (w - 6) / nx;
@@ -153,32 +162,27 @@ const room = (c: CanvasRenderingContext2D, part: BuildingPart, w: number, h: num
     for (let ix = 0; ix < nx; ix++) {
       const x = -w / 2 + 3 + cw * (ix + 0.5) - ww / 2;
       const y = -h / 2 + 4 + ch * (iy + 0.5) - wh / 2;
+      if (!part.condemned) {
+        drawWindow(c, style, x, y, ww, wh, rnd() < 0.6);
+        continue;
+      }
       // Frame and sill.
       c.fillStyle = 'rgba(28, 24, 22, 0.55)';
       c.fillRect(x - 1.5, y - 1.5, ww + 3, wh + 3);
       c.fillStyle = 'rgba(240, 232, 214, 0.5)';
       c.fillRect(x - 2.5, y + wh + 1, ww + 5, 2);
-      if (part.condemned) {
-        c.fillStyle = '#1b1715';
-        c.fillRect(x, y, ww, wh);
-        // Boards nailed across, one slightly askew.
-        c.fillStyle = '#9a7449';
-        const tilt = (rnd() - 0.5) * 0.5;
-        c.save();
-        c.translate(x + ww / 2, y + wh / 2);
-        c.rotate(tilt);
-        c.fillRect(-ww / 2 - 2, -wh * 0.22 - 2, ww + 4, 4);
-        c.rotate(-tilt * 2 + 0.2);
-        c.fillRect(-ww / 2 - 2, wh * 0.18 - 2, ww + 4, 4);
-        c.restore();
-      } else {
-        c.fillStyle = rnd() < 0.6 ? '#ffd98a' : '#9cc4dd';
-        c.fillRect(x, y, ww, wh);
-        c.fillStyle = 'rgba(120, 60, 40, 0.55)';
-        c.fillRect(x, y, ww * 0.35, wh);
-        c.fillStyle = 'rgba(30, 26, 22, 0.5)';
-        c.fillRect(x + ww / 2 - 0.5, y, 1, wh);
-      }
+      c.fillStyle = '#1b1715';
+      c.fillRect(x, y, ww, wh);
+      // Boards nailed across, one slightly askew.
+      c.fillStyle = '#9a7449';
+      const tilt = (rnd() - 0.5) * 0.5;
+      c.save();
+      c.translate(x + ww / 2, y + wh / 2);
+      c.rotate(tilt);
+      c.fillRect(-ww / 2 - 2, -wh * 0.22 - 2, ww + 4, 4);
+      c.rotate(-tilt * 2 + 0.2);
+      c.fillRect(-ww / 2 - 2, wh * 0.18 - 2, ww + 4, 4);
+      c.restore();
     }
   }
 };
