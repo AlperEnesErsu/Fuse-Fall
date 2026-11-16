@@ -711,6 +711,12 @@
   "bonusCollapse": 0.5,
   "zones": [
    {
+    "x": 0,
+    "y": 400,
+    "w": 137,
+    "h": 80
+   },
+   {
     "x": 249,
     "y": 366,
     "w": 461,
@@ -721,21 +727,21 @@
    {
     "x": 380.0,
     "y": 420.0,
-    "w": 26,
+    "w": 20,
     "h": 120,
-    "material": "concrete"
+    "material": "wood"
    },
    {
     "x": 460.0,
     "y": 420.0,
-    "w": 26,
+    "w": 20,
     "h": 120,
-    "material": "concrete"
+    "material": "wood"
    },
    {
     "x": 420,
     "y": 350.0,
-    "w": 126,
+    "w": 120,
     "h": 20,
     "material": "wood"
    },
@@ -778,37 +784,37 @@
    },
    {
     "x": 560.0,
-    "y": 430.0,
+    "y": 410.0,
     "w": 20,
-    "h": 100,
+    "h": 140,
     "material": "wood"
    },
    {
     "x": 620.0,
-    "y": 430.0,
+    "y": 410.0,
     "w": 20,
-    "h": 100,
+    "h": 140,
     "material": "wood"
    },
    {
     "x": 590,
-    "y": 370.0,
+    "y": 330.0,
     "w": 100,
     "h": 20,
     "material": "wood"
    },
    {
     "x": 560.0,
-    "y": 320.0,
+    "y": 300.0,
     "w": 20,
-    "h": 80,
+    "h": 40,
     "material": "wood"
    },
    {
     "x": 620.0,
-    "y": 320.0,
+    "y": 300.0,
     "w": 20,
-    "h": 80,
+    "h": 40,
     "material": "wood"
    },
    {
@@ -827,13 +833,125 @@
     "target": true
    },
    {
-    "x": 150,
-    "y": 430.0,
-    "w": 80,
-    "h": 100,
+    "x": 905,
+    "y": 440.0,
+    "w": 60,
+    "h": 80,
     "material": "concrete",
     "protected": true,
     "landmark": true
+   },
+   {
+    "x": 20.0,
+    "y": 425.0,
+    "w": 16,
+    "h": 110,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 60.0,
+    "y": 425.0,
+    "w": 16,
+    "h": 110,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 100.0,
+    "y": 425.0,
+    "w": 16,
+    "h": 110,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 60.0,
+    "y": 361.0,
+    "w": 112.0,
+    "h": 18,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 40.0,
+    "y": 337.0,
+    "w": 22.0,
+    "h": 30,
+    "material": "brick",
+    "showpiece": true
+   },
+   {
+    "x": 40.0,
+    "y": 307.0,
+    "w": 22.0,
+    "h": 30,
+    "material": "brick",
+    "showpiece": true
+   },
+   {
+    "x": 80.0,
+    "y": 337.0,
+    "w": 22.0,
+    "h": 30,
+    "material": "brick",
+    "showpiece": true
+   },
+   {
+    "x": 80.0,
+    "y": 307.0,
+    "w": 22.0,
+    "h": 30,
+    "material": "brick",
+    "showpiece": true
+   },
+   {
+    "x": 20.0,
+    "y": 322.0,
+    "w": 16,
+    "h": 60,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 60.0,
+    "y": 322.0,
+    "w": 16,
+    "h": 60,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 100.0,
+    "y": 322.0,
+    "w": 16,
+    "h": 60,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 60.0,
+    "y": 283.0,
+    "w": 112.0,
+    "h": 18,
+    "material": "wood",
+    "showpiece": true
+   },
+   {
+    "x": 60.0,
+    "y": 266.5,
+    "w": 70.0,
+    "h": 15,
+    "material": "brick",
+    "showpiece": true
+   },
+   {
+    "x": 60.0,
+    "y": 251.5,
+    "w": 70.0,
+    "h": 15,
+    "material": "brick",
+    "showpiece": true
    }
   ],
   "barrels": [
@@ -847,7 +965,7 @@
    "charges": [
     {
      "x": 420,
-     "y": 470
+     "y": 460
     },
     {
      "x": 600,
@@ -856,6 +974,6 @@
    ],
    "fireAt": 0
   },
-  "hint": "Üç hedef, bir korunan bina. Sıralamayı iyi planla."
+  "hint": "Üç hedef, bir korunan anıt. Sıralamayı iyi planla; yedek şarj soldaki gösteri binası için."
  }
 ]

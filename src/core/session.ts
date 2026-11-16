@@ -830,7 +830,8 @@ export class LevelSession {
         angle: s.angle,
         material: e.material,
         motion: { velocity: s.velocity, angularVelocity: s.angularVelocity },
-        fromStructure: e.structural,
+        // A showpiece stands on its own lot, outside any debris site: its rubble is not judged.
+        fromStructure: e.structural && !e.showpiece,
       });
     }
   }
@@ -1127,13 +1128,15 @@ export class LevelSession {
    * out of the world counts as outside.
    */
   private containment(): number {
+    // The site is the structure the client wants kept on it. A finale's showpiece stands on its own lot
+    // and is not part of that: neither where it stands nor where its rubble lands counts.
     const total = this.level.blocks
-      .filter((b) => !b.protected && !b.anchored)
+      .filter((b) => !b.protected && !b.anchored && !b.showpiece)
       .reduce((sum, b) => sum + b.w * b.h, 0);
     if (total === 0) return 1;
     let inside = this.retiredInside;
     for (const e of this.entities.values()) {
-      if (!e.structural && !e.fromStructure) continue;
+      if ((!e.structural || e.showpiece) && !e.fromStructure) continue;
       const s = this.physics.state(e.id);
       if (s && this.insideFootprint(s.position.x)) inside += area(e.shape);
     }

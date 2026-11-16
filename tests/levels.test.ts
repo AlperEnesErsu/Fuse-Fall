@@ -190,11 +190,15 @@ describe('campaign content', () => {
   });
 
   // Train-window puzzles: with the train overhead, the same placement voids the contract.
+  // Fire moments a quarter second apart over six seconds, stopping at the first that voids the contract.
+  // Each try plays the whole collapse, and a finale is big: allow for the slower coverage run.
   it.each(cases.filter(([, l]) => ['w5-01', 'w5-02', 'w5-04', 'w5-07', 'w5-10'].includes(l.id)))(
     '%s needs the train window',
+    { timeout: 30_000 },
     (_id, level) => {
-      const outcomes = Array.from({ length: 24 }, (_, i) => playSolution(level, i * 0.25).result?.failure);
-      expect(outcomes).toContain('collateral-damage');
+      let voided = false;
+      for (let i = 0; i < 24 && !voided; i++) voided = playSolution(level, i * 0.25).result?.failure === 'collateral-damage';
+      expect(voided).toBe(true);
     },
   );
 
@@ -219,6 +223,14 @@ describe('city finale showpieces', () => {
     for (const l of finales) {
       expect(l.order, l.id).toBe(10);
       expect(structural(l), l.id).toBeGreaterThanOrEqual(25);
+    }
+  });
+
+  // Every city ends on its biggest collapse: a showpiece where the finale itself is small.
+  it('make every city finale at least 25 blocks of structure', () => {
+    for (const world of campaign.worlds) {
+      const finale = levelsOf(campaign, world.world).at(-1);
+      expect(finale && structural(finale), world.key).toBeGreaterThanOrEqual(25);
     }
   });
 

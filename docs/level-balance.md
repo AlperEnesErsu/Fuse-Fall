@@ -119,6 +119,26 @@ falling target up (Paris, on the right) or its blast changes the chain that brin
 the old charges no longer topple. A tall stack of bodies settles 3-5 px under its own weight before
 anything is fired, which the stand-still test rejects: build wide, not tall.
 
+## 2026-11-16: every finale gets its showpiece
+
+The other five finales were rearranged so a showpiece fits, each measured with the recorded solution,
+the spare charge at five spots and placed first, and the near-miss probe:
+
+| Finale | Change | Near misses |
+|---|---|---|
+| w1-10 Ankara | Monument to the right edge; showpiece on the left; left tower on timber posts (its concrete ones held the deck as a cantilever); middle tower on a tall ground floor; left charge at (420, 460) | 57% → 68% |
+| w4-10 Rome | Showpiece left of the site; site ratio 0.88 → 0.97, so standard charges really lose (0.79 kept on site) and precision ones win (0.87) | 74% → 59% |
+| w5-10 Tokyo | Showpiece under the viaduct on the left, on a 80 px ground floor to clear the deck, 190 px from the kiosk | 77% → 77% |
+| w8-10 Madrid | City gate to the left between the piers; three-bay showpiece on the right (it cannot rise: the viaduct) | 80% → 94% |
+| w9-10 New York | The two neighbours and the block between them 100 px to the right; showpiece on the far left | 89% → 87% |
+
+Placement rules learnt: the spare charge's contract core (127 px for a standard charge) must stay
+clear of protected property from anywhere in its zone; the showpiece must stand further from a target
+than the target's fall, or it props it up; a three-bay showpiece needs bays of about 34 px, or one
+charge cuts the joints but the outer posts keep carrying the floor. Placing the spare charge first
+shifts the other charges' default delays: harmless in Tokyo, Madrid and New York, a lost job in Rome
+and in one Ankara order, which the hints cover by saying the showpiece charge goes last.
+
 ## Results
 
 ✱ = changed in this pass. Before/after use the same probe.
