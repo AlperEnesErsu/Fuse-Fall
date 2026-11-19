@@ -17,6 +17,10 @@ export const en: Strings = {
   dailyInfo: (name: string, streak: number, done: boolean) =>
     `${name}${done ? ' · done today' : ''}${streak > 0 ? ` · ${streak}-day streak` : ''}`,
   dailyRule: (par: number) => `Daily rule: ${par} ${par === 1 ? 'charge' : 'charges'} only. No spares.`,
+  dailyTwists: {
+    mirror: { name: 'Mirrored', rule: 'Today the site is mirrored: everything on the other side.' },
+    lean: { name: 'Lean', rule: 'Lean day: one charge fewer than par.' },
+  },
   achievementsTitle: 'Achievements',
   achievementsCount: (n: number, total: number) => `${n} / ${total}`,
   achievementUnlocked: (titles: string) => `Achievement unlocked: ${titles}`,

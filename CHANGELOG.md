@@ -8,6 +8,7 @@ Biçim [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) düzenine yak
 
 ### Eklendi
 
+- Günlük görevde günün değiştiricisi: bazı günler saha aynalanır (her şey ters tarafta), nadiren de tasarruf günüdür (par'dan bir şarj eksik). Değiştirici menüde ve görev başında yazar. Her biri yalnız kanıtlanmış görevlerde çıkar: aynalı çözüm her aynalı görevi kazanır, tasarruf yalnız bir şarj eksiğiyle kazanılmış görevlerde (testle doğrulanır). Trafikli görevler aynalanmaz.
 - Ayarlar › Geri bildirim gönder: oyuncunun notu ve oyunla ilgili birkaç bilgi (sürüm, platform türü, dil, şehirlerdeki yıldızlar, en çok takılınan görevler, toplam sayılar, erişilebilirlik ayarları) sistemin paylaşım menüsüne metin olarak gider. Metnin tamamı göndermeden önce gösterilir; oyun hiçbir şeyi kendisi göndermez. Paylaşım menüsü olmayan tarayıcıda metin panoya kopyalanır. Gizlilik sayfası buna göre güncellendi.
 - Yıldızlar ustalığı ölçer: görevi kazanmak 1 yıldız, par içinde kazanmak 1 yıldız, görevin kendi hedefi 1 yıldız. Hedef görev kartında ve raporda yazar: bir şarj eksiğiyle kazan, domino, bütün varilleri patlat, enkazı alanda tut ya da yapının belirli bir oranını indir. Her görevin hedefi bir aramayla seçildi: kayıtlı çözümün kendiliğinden tutturmadığı, ama daha iyi bir oyunun tutturduğu hedef; o oyun `src/content/mastery.json` içinde saklanır ve her test koşusunda yeniden oynatılır. Kazanılmış yıldızlar düşmez.
 - Puan yalnız günlük görevde gösterilir ve artık zinciri, dominoyu ve hızlı çöküşü de ölçer.
@@ -39,6 +40,7 @@ Biçim [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) düzenine yak
 
 ### Değişti
 
+- Günlük görev, temel görevinin rastgelelik tohumunu kullanır: aynı görev her gün aynı fizikle oynar. Önceden tohum günün kimliğinden geliyordu, yani kayıtlı çözüm her gün biraz farklı davranabiliyordu.
 - Şehir açılma eşikleri yeni yıldız kuralına göre indirildi (görev başına yaklaşık 1,8 yıldız). Hiçbir eşik yükselmedi, eski kayıtlar açık şehirlerini korur.
 - Gösteri binalı finallerde par, gösteri binasının şarjını da sayar: üçüncü yıldız ikinciye mal olmaz.
 - Şarjlar 5 piksellik ızgaraya oturur: aynı görünen yerleşim aynı yerleşimdir ve aynı sonucu verir. Kayıtlı çözümler ızgaraya taşındı; Ankara 7, Paris 9 ve New York 8'in çözümü çevresi en sağlam ızgara noktasına alındı.

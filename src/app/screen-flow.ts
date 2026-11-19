@@ -1,3 +1,4 @@
+import { DAILY_OPTIONS } from '../content/daily';
 import { feedbackReport, type FeedbackContext } from '../core/feedback';
 import type { Draft } from '../core/editor';
 import { decodeLevel, type ShareError } from '../core/share-code';
@@ -91,7 +92,7 @@ export class ScreenFlow implements Navigator {
     const progress = ledger.get();
     const text = this.d.text();
     const today = dayOf(this.d.now());
-    const daily = dailyChallenge(campaign, today);
+    const daily = dailyChallenge(campaign, today, DAILY_OPTIONS);
     const next = access.nextMission();
     const nextWorld = next && campaign.worlds.find((w) => w.world === next.world);
     const contracts = contractViews(progress, this.d.now());
@@ -101,6 +102,7 @@ export class ScreenFlow implements Navigator {
       onContinue: () => next && play.startLevel(next.id),
       daily: daily && {
         name: text.levelName(daily.base),
+        modifier: daily.modifier,
         streak: currentStreak(progress, today),
         wonToday: progress.daily.lastWon === today,
       },
@@ -351,7 +353,7 @@ export class ScreenFlow implements Navigator {
 
   private startDaily(): void {
     const today = dayOf(this.d.now());
-    const daily = dailyChallenge(this.d.campaign, today);
-    if (daily) this.d.play.play(daily.level, { kind: 'daily', day: today, baseId: daily.base.id });
+    const daily = dailyChallenge(this.d.campaign, today, DAILY_OPTIONS);
+    if (daily) this.d.play.play(daily.level, { kind: 'daily', day: today, baseId: daily.base.id, modifier: daily.modifier });
   }
 }

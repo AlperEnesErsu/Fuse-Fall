@@ -1,3 +1,4 @@
+import type { DailyModifier } from '../core/daily-modifiers';
 import { newAchievements, type AchievementDef, type AttemptStats } from '../core/achievements';
 import { weekOf, type ContractDef } from '../core/contracts';
 import { dayOf } from '../core/daily';
@@ -25,7 +26,7 @@ import type { SandboxVariant } from '../content/sandbox';
 
 export type Mode =
   | { readonly kind: 'campaign' }
-  | { readonly kind: 'daily'; readonly day: string; readonly baseId: string }
+  | { readonly kind: 'daily'; readonly day: string; readonly baseId: string; readonly modifier?: DailyModifier | undefined }
   | { readonly kind: 'sandbox'; readonly template: string; readonly variant: SandboxVariant; readonly traffic: boolean }
   /** A mission pasted as a code: played, reported and shared, but it never touches campaign progress. */
   | { readonly kind: 'shared' }

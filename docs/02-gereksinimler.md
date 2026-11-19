@@ -155,7 +155,7 @@ Yapıyı incele → Patlayıcı yerleştir → Ateşle → Yıkımı izle → Pu
 | FR-36 | Tek yönlü trafik (`flow`) ve sabit altyapı blokları (`anchored`: hareketsiz, yıkılmaz, görev dışı). | M |
 | FR-37 | Android uygulaması (Capacitor): iki yönde de çalışır (kullanıcının döndürme kilidine uyar), tam ekran, ağ izni yok, titreşim izni var. | M |
 | FR-38 | Yeni bir fikir getiren görevlerde adım adım eğitim (ilk görev, ilk korunan yapı, ilk araç, ilk gecikme görevi); görev bir kez geçilene kadar gösterilir, atlanabilir. | S |
-| FR-39 | Günlük görev: yalnızca tarihten seçilir (oyuncunun ilerlemesinden bağımsız, gün içinde değişmez), tüm şehirlerin kolay ve orta görevlerinden; çevrimdışı; yalnızca par kadar şarj. Görevdeki yeni mekaniklerin tanıtım kartları günlükte de gösterilir. Tüm çözümlerin par içinde kaldığı testle doğrulanır. Günlük seri (takvim günüyle). | S |
+| FR-39 | Günlük görev: yalnızca tarihten seçilir (oyuncunun ilerlemesinden bağımsız, gün içinde değişmez), tüm şehirlerin kolay ve orta görevlerinden; çevrimdışı; yalnızca par kadar şarj. Görevdeki yeni mekaniklerin tanıtım kartları günlükte de gösterilir. Tüm çözümlerin par içinde kaldığı testle doğrulanır. Günlük seri (takvim günüyle). Günün değiştiricisi (aynalı saha ya da bir şarj eksik) tarihten seçilir ve yalnız testle kanıtlanmış görevlerde çıkar. Günlük görev temel görevinin rastgelelik tohumunu kullanır. | S |
 | FR-40 | Başarımlar (9 adet): kayda işlenir, açıldığında bildirilir, menüden listelenir. | S |
 | FR-41 | Tekrar izle: aynı girişimin fiziği yeniden simüle edilir ve yavaş çekimde gösterilir. Fizik deterministik olduğu için kayıt gerekmez (testle doğrulanır). | S |
 

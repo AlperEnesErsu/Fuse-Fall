@@ -255,7 +255,7 @@ export class LevelSession {
     private readonly physics: PhysicsWorld,
     private readonly events: EventBus<GameEvents>,
   ) {
-    this.rng = createRng(hashString(level.id));
+    this.rng = createRng(hashString(level.seed ?? level.id));
     physics.add({
       id: GROUND_ID,
       shape: { kind: 'rect', w: WORLD.width + TUNING.outOfBoundsMargin * 4, h: 120 },
