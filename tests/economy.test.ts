@@ -3,7 +3,7 @@ import { ADS, PAYOUT, RANK_THRESHOLDS, adsToday, payout, rankOf, salvageOf } fro
 import { addBoughtScrap, buyItem, earnScrap, emptyProgress, markWorkshopSeen, parseProgress, recordCareer, recordOneShot, rewardAd } from '../src/core/progress';
 import { scoreLevel } from '../src/core/scoring';
 import { loadCampaign } from '../src/content/levels';
-import { WORKSHOP, activeLook, cityStyleId, cityThemeId, isOwned, newlyAffordable, onSale, structureItemId, workshopItem } from '../src/content/workshop';
+import { WORKSHOP, activeLook, builderItemId, cityStyleId, cityThemeId, isOwned, newlyAffordable, onSale, structureItemId, workshopItem } from '../src/content/workshop';
 import { BLAST_STYLE_IDS } from '../src/presentation/blast-styles';
 import { BLOCK_THEME_IDS } from '../src/presentation/materials-art';
 import { DEFAULT_BLOCK_THEME } from '../src/core/progress';
@@ -100,6 +100,15 @@ describe('career and workshop', () => {
     for (const t of SANDBOX_TEMPLATES) expect(workshopItem(structureItemId(t.id))).toBeDefined();
     expect(WORKSHOP.filter((i) => i.kind === 'structure' && isOwned([], i)).length).toBeGreaterThan(0);
     expect(new Set(WORKSHOP.map((i) => i.id)).size).toBe(WORKSHOP.length);
+  });
+
+  it('sells the mission builder extra parts, never a look one wears', () => {
+    for (const part of ['brick', 'glass', 'barrel']) {
+      const item = workshopItem(builderItemId(part));
+      expect(item).toMatchObject({ kind: 'builder' });
+      expect(item && isOwned([], item)).toBe(false);
+    }
+    expect(activeLook([builderItemId('barrel')], builderItemId('barrel'), 'blast-style')).toBe('classic');
   });
 });
 

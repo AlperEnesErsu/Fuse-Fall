@@ -4,7 +4,9 @@ import type { ChargeKind, LevelDefinition } from '../core/level';
 import { levelsOf, type Campaign } from '../core/progress';
 import { SHARED_ID, encodeLevel } from '../core/share-code';
 import {
+  addBarrel,
   addBlock,
+  BASIC_MATERIALS,
   addZone,
   draftProblem,
   draftToLevel,
@@ -29,7 +31,7 @@ import type { ContentText } from '../content/text';
 import { tutorialFor } from '../content/tutorials';
 import { featureCard, featuresOf, newFeatures, type FeatureId } from '../content/features';
 import { markFeaturesSeen } from '../core/progress';
-import { activeLook, newlyAffordable } from '../content/workshop';
+import { activeLook, builderItemId, newlyAffordable } from '../content/workshop';
 import type { SoundDirector } from '../presentation/audio';
 import { FULL_VIEW, actionOf, focusOf } from '../presentation/camera';
 import { ClipRecorder } from '../presentation/clip-recorder';
@@ -727,22 +729,37 @@ export class PlayController implements Launcher {
     this.showEditorBar();
   }
 
+  /** The builder parts bought in the workshop: brick and glass blocks, barrels. */
+  private builderOwns(part: string): boolean {
+    return this.d.ledger.get().workshop.owned.includes(builderItemId(part));
+  }
+
   private showEditorBar(): void {
     const e = this.editing;
     if (!e) return;
+    const materials = DRAFT_MATERIALS.filter((m) => BASIC_MATERIALS.includes(m) || this.builderOwns(m));
     this.d.ui.showEditor({
       tool: e.tool,
       material: e.material,
       blocks: e.draft.blocks.length,
       zones: e.draft.zones.length,
+      barrels: e.draft.barrels.length,
+      hasBarrels: this.builderOwns('barrel'),
       onTool: (tool) => {
+        if (tool === 'barrel' && !this.builderOwns('barrel')) {
+          this.d.sound.denied();
+          this.d.ui.toast(T.editor.inWorkshop, 2600);
+          return;
+        }
         if (this.editing) this.editing = { ...this.editing, tool };
         this.showEditorBar();
       },
       onMaterial: () => {
         if (!this.editing) return;
-        const next = DRAFT_MATERIALS[(DRAFT_MATERIALS.indexOf(this.editing.material) + 1) % DRAFT_MATERIALS.length] ?? 'wood';
+        const next = materials[(materials.indexOf(this.editing.material) + 1) % materials.length] ?? 'wood';
         this.editing = { ...this.editing, material: next };
+        // The first press after only the basics: say where the others are.
+        if (materials.length === BASIC_MATERIALS.length && next === materials[0]) this.d.ui.toast(T.editor.moreInWorkshop, 2400);
         this.showEditorBar();
       },
       onTest: () => this.testDraft(),
@@ -756,7 +773,11 @@ export class PlayController implements Launcher {
     if (!e) return;
     let draft = e.draft;
     if (a.type === 'remove') draft = removeAt(draft, a.at);
-    else if (a.type === 'zone') {
+    else if (a.type === 'barrel') {
+      const r = addBarrel(draft, a.at);
+      if (!r.ok) return this.d.ui.toast(T.editor.errors[r.error]);
+      draft = r.value;
+    } else if (a.type === 'zone') {
       const r = addZone(draft, a.rect);
       if (!r.ok) return this.d.ui.toast(T.editor.errors[r.error]);
       draft = r.value;

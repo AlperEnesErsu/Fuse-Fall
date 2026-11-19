@@ -12,12 +12,13 @@ import { err, ok, type Result } from './result';
 export type DraftKind = 'block' | 'target' | 'protected';
 
 /** What the editor's toolbar does with a tap or a drag. */
-export type EditorTool = 'block' | 'target' | 'protected' | 'zone' | 'remove';
+export type EditorTool = 'block' | 'target' | 'protected' | 'zone' | 'barrel' | 'remove';
 
 /** One thing a tap or drag asks for, before the draft's rules decide whether it happens. */
 export type EditAction =
   | { readonly type: 'block'; readonly kind: DraftKind; readonly at: Vec2 }
   | { readonly type: 'zone'; readonly rect: Rect }
+  | { readonly type: 'barrel'; readonly at: Vec2 }
   | { readonly type: 'remove'; readonly at: Vec2 };
 
 export interface DraftBlock {
@@ -32,22 +33,30 @@ export interface DraftBlock {
 export interface Draft {
   readonly blocks: readonly DraftBlock[];
   readonly zones: readonly Rect[];
+  /** Explosive barrels, by their centre: each rests on the ground or on a block top. */
+  readonly barrels: readonly Vec2[];
 }
 
 /** Limits that keep a player's mission small enough to share and to simulate quickly. */
 export const DRAFT_LIMITS = {
   blocks: 60,
   zones: 4,
+  barrels: 8,
   minZone: { w: 60, h: 30 },
   maxSize: 240,
   minSize: 16,
 } as const;
 
-export const emptyDraft = (): Draft => ({ blocks: [], zones: [] });
+export const emptyDraft = (): Draft => ({ blocks: [], zones: [], barrels: [] });
 
 /** The block materials a player can choose, in the order the builder cycles them. */
-export type DraftMaterial = 'wood' | 'concrete' | 'metal';
-export const DRAFT_MATERIALS: readonly DraftMaterial[] = ['wood', 'concrete', 'metal'];
+export type DraftMaterial = 'wood' | 'concrete' | 'metal' | 'brick' | 'glass';
+export const DRAFT_MATERIALS: readonly DraftMaterial[] = ['wood', 'concrete', 'metal', 'brick', 'glass'];
+/** Everyone's from the start; the others are workshop parts. */
+export const BASIC_MATERIALS: readonly DraftMaterial[] = ['wood', 'concrete', 'metal'];
+
+/** A barrel's radius, as the session builds it. */
+const BARREL_R = 16;
 
 /** Blocks are placed on a 10 px grid, so the mission lines up when shared. */
 export const snap = (v: number): number => Math.round(v / 10) * 10;
@@ -79,8 +88,29 @@ export const addZone = (draft: Draft, zone: Rect): Result<Draft, 'full' | 'size'
 
 const contains = (r: Rect, p: Vec2): boolean => p.x >= r.x && p.x <= r.x + r.w && p.y >= r.y && p.y <= r.y + r.h;
 
-/** Removes what is under the tap: the top-most block first, then a zone. */
+/**
+ * A barrel for a tap: it drops onto the first surface below the tap, the ground or the top
+ * of a block wide enough to hold it, so it stands still until something sets it off.
+ */
+export const addBarrel = (draft: Draft, at: Vec2): Result<Draft, 'full' | 'outside' | 'overlap'> => {
+  if (draft.barrels.length >= DRAFT_LIMITS.barrels) return err('full');
+  if (at.x < BARREL_R || at.x > WORLD.width - BARREL_R || at.y > WORLD.groundY) return err('outside');
+  const x = snap(at.x);
+  const holders = draft.blocks.filter((b) => b.x <= x - BARREL_R / 2 && x + BARREL_R / 2 <= b.x + b.w && b.y >= at.y - BARREL_R);
+  const surface = Math.min(WORLD.groundY, ...holders.map((b) => b.y));
+  const p = { x, y: surface - BARREL_R };
+  if (p.y - BARREL_R < 0) return err('outside');
+  // A barrel may sit on a block, never inside one or another barrel.
+  const inBlock = draft.blocks.some((b) => p.x + BARREL_R > b.x && p.x - BARREL_R < b.x + b.w && p.y + BARREL_R > b.y + 0.5 && p.y - BARREL_R < b.y + b.h);
+  const crowded = draft.barrels.some((o) => Math.hypot(o.x - p.x, o.y - p.y) < BARREL_R * 2);
+  if (inBlock || crowded) return err('overlap');
+  return ok({ ...draft, barrels: [...draft.barrels, p] });
+};
+
+/** Removes what is under the tap: a barrel first, then the top-most block, then a zone. */
 export const removeAt = (draft: Draft, p: Vec2): Draft => {
+  const barrel = draft.barrels.findIndex((b) => Math.hypot(b.x - p.x, b.y - p.y) <= BARREL_R);
+  if (barrel >= 0) return { ...draft, barrels: draft.barrels.filter((_, j) => j !== barrel) };
   for (let i = draft.blocks.length - 1; i >= 0; i--) {
     const b = draft.blocks[i];
     if (b && contains(b, p)) return { ...draft, blocks: draft.blocks.filter((_, j) => j !== i) };
@@ -117,6 +147,7 @@ export const draftToLevel = (
     bonusCollapse: 0.5,
     zones: draft.zones,
     blocks,
+    barrels: draft.barrels,
     solution: { charges: solution, detonateAt: [], fireAt: 0 },
   });
   if (!parsed.ok) return err(parsed.error.message);
@@ -137,7 +168,7 @@ const isDraftMaterial = (m: string): m is DraftMaterial => (DRAFT_MATERIALS as r
 export const levelToDraft = (level: LevelDefinition): Result<Draft, 'not-editable'> => {
   const plain =
     level.balls.length === 0 &&
-    level.barrels.length === 0 &&
+    level.barrels.length <= DRAFT_LIMITS.barrels &&
     level.cars.length === 0 &&
     level.dropZones.length === 0 &&
     level.footprint === undefined &&
@@ -152,7 +183,7 @@ export const levelToDraft = (level: LevelDefinition): Result<Draft, 'not-editabl
     w: b.w,
     h: b.h,
   }));
-  return ok({ blocks, zones: level.zones.map((z) => ({ x: z.x, y: z.y, w: z.w, h: z.h })) });
+  return ok({ blocks, zones: level.zones.map((z) => ({ x: z.x, y: z.y, w: z.w, h: z.h })), barrels: level.barrels.map((b) => ({ x: b.x, y: b.y })) });
 };
 
 /** How the editor draws a draft before it is valid: the same shapes, without the rules a finished mission must pass.
@@ -180,7 +211,7 @@ export const previewLevel = (draft: Draft): LevelDefinition => {
     zones: draft.zones,
     dropZones: [],
     blocks,
-    barrels: [],
+    barrels: draft.barrels,
     cars: [],
     balls: [],
     chargeKinds: ['standard'],

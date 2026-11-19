@@ -175,7 +175,7 @@ export interface WorkshopView {
   readonly rank: Rank;
   readonly items: readonly {
     readonly id: string;
-    readonly kind: 'blast-style' | 'block-theme' | 'structure';
+    readonly kind: 'blast-style' | 'block-theme' | 'structure' | 'builder';
     readonly name: string;
     readonly description: string;
     readonly cost: number;
@@ -374,7 +374,7 @@ export class Ui {
             { class: `btn small${v.scrap >= item.cost ? ' primary' : ' short'}`, click: () => this.tap(() => a.onBuy(item.id)) },
             W.buy(item.cost),
           )
-        : item.kind !== 'structure'
+        : item.kind === 'blast-style' || item.kind === 'block-theme'
           ? item.active
             ? h('span', { class: 'tag active' }, W.inUse)
             : h('button', { class: 'btn small', click: () => this.tap(() => a.onEquip(item.id)) }, W.use)
@@ -382,7 +382,7 @@ export class Ui {
       return h(
         'li',
         { class: `shop-item${item.owned ? ' owned' : ''}${item.active ? ' active' : ''}${item.lockedUntil !== undefined ? ' locked' : ''}` },
-        item.kind !== 'structure' ? h('span', { class: `swatch style-${item.id.replace(':', '-')}` }) : undefined,
+        item.kind === 'blast-style' || item.kind === 'block-theme' ? h('span', { class: `swatch style-${item.id.replace(':', '-')}` }) : undefined,
         h(
           'div',
           { class: 'shop-text' },
@@ -416,6 +416,7 @@ export class Ui {
         section(W.styles, 'blast-style'),
         section(W.themes, 'block-theme'),
         section(W.structures, 'structure'),
+        section(W.builder, 'builder'),
       ),
     );
     const panel = this.screen.querySelector('.panel.workshop');
@@ -697,25 +698,33 @@ export class Ui {
     readonly onMaterial: () => void;
     readonly blocks: number;
     readonly zones: number;
+    readonly barrels: number;
+    /** Barrels are a workshop part: without them the tool shows locked. */
+    readonly hasBarrels: boolean;
     readonly onTool: (tool: EditorTool) => void;
     readonly onTest: () => void;
     readonly onBack: () => void;
   }): void {
     this.hideHud();
     const E = T.editor;
-    const tools: EditorTool[] = ['block', 'target', 'protected', 'zone', 'remove'];
+    const tools: EditorTool[] = ['block', 'target', 'protected', 'zone', 'barrel', 'remove'];
     this.hud.replaceChildren(
       h(
         'div',
         { class: 'hud-top' },
-        h('div', { class: 'hud-info' }, h('div', { class: 'hud-name' }, E.title), h('div', { class: 'hud-stats' }, E.counts(s.blocks, s.zones))),
+        h('div', { class: 'hud-info' }, h('div', { class: 'hud-name' }, E.title), h('div', { class: 'hud-stats' }, E.counts(s.blocks, s.zones, s.barrels))),
         h('div', { class: 'hud-actions' }, this.button(E.back, s.onBack)),
       ),
       h(
         'div',
         { class: 'editor-tools' },
         ...tools.map((t) =>
-          h('button', { class: `btn small${t === s.tool ? ' primary' : ''}`, click: () => this.tap(() => s.onTool(t)) }, E.tools[t]),
+          h(
+            'button',
+            { class: `btn small${t === s.tool ? ' primary' : ''}${t === 'barrel' && !s.hasBarrels ? ' locked' : ''}`, click: () => this.tap(() => s.onTool(t)) },
+            t === 'barrel' && !s.hasBarrels ? ICONS.lock(12) : undefined,
+            E.tools[t],
+          ),
         ),
         h('button', { class: 'btn small', click: () => this.tap(s.onMaterial) }, E.materials[s.material]),
         this.button(E.test, s.onTest, 'primary'),
