@@ -221,6 +221,14 @@ export const en: Strings = {
   music: 'Music volume',
   testSound: 'Hear an explosion',
   skip: 'Skip',
+  challenge: {
+    copied: (charges: number, collapse: number) => `Code copied: ${charges} charge${charges === 1 ? '' : 's'}, ${collapse}% down. Send it and let them try to beat it.`,
+    open: (charges: number, collapse: number, s: number) =>
+      `Challenge: ${charges} charge${charges === 1 ? '' : 's'}, ${collapse}% down, ${s.toFixed(1)} s. Can you do better?`,
+    theirs: (charges: number, collapse: number, s: number) => ` Theirs: ${charges} charge${charges === 1 ? '' : 's'} · ${collapse}% · ${s.toFixed(1)} s`,
+    verdict: { beaten: 'Challenge beaten!', tied: 'A tie.', missed: 'Challenge not beaten.' },
+    send: 'Challenge',
+  },
   feedback: {
     open: 'Send feedback',
     title: 'Feedback',
