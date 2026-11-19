@@ -142,6 +142,11 @@ export class ScreenFlow implements Navigator {
     if (!this.d.play.editFrom(decoded.value)) return this.shareCode('not-editable');
   }
 
+  /** The game opened from a mission link: straight into the mission. */
+  openLinked(code: string): void {
+    void this.playCode(code);
+  }
+
   private async playCode(code: string): Promise<void> {
     const decoded = await decodeShared(code);
     if (!decoded.ok) return this.shareCode(decoded.error);

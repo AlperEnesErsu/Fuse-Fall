@@ -3,7 +3,7 @@
   "short_name": "Fuse & Fall",
   "description": "Çevrimdışı, hızlı oynanan fizik tabanlı yıkım bulmacası.",
   "lang": "tr",
-  "start_url": "./",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "fullscreen",
   "orientation": "any",

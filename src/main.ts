@@ -8,6 +8,8 @@ import { combineOffers, demoOffers, noOffers } from './infrastructure/offers';
 import { admobRewarded, rewardedAds, TEST_REWARDED_ID } from './infrastructure/rewarded-ads';
 import { playBilling, playPacks } from './infrastructure/play-billing';
 import { showCrashScreen } from './presentation/crash-screen';
+import { showUpdateNotice } from './presentation/update-notice';
+import { takeLinkedCode } from './infrastructure/mission-link';
 import { resolveLanguage, setLanguage } from './presentation/strings';
 
 const memoryStore = (): KeyValueStore => {
@@ -52,7 +54,7 @@ installCrashGuard(crash);
 try {
   new Game(canvas, uiRoot, loadCampaign(), new LocalSaveRepository(deviceStore()), (ms) => {
     navigator.vibrate?.(ms);
-  }, offers).start();
+  }, offers).start(takeLinkedCode());
 } catch (error) {
   // The game never started, so no settings chose a language: follow the device.
   setLanguage(resolveLanguage('auto', navigator.languages ?? [navigator.language]));
@@ -62,7 +64,17 @@ try {
 
 // Offline support (NFR-02) for the web build. The native app already ships its files, so it needs none.
 if (import.meta.env.PROD && 'serviceWorker' in navigator && !Capacitor.isNativePlatform()) {
+  // A page the old worker served: when a new release takes over, say so and let the player reload when it suits them.
+  const updating = Boolean(navigator.serviceWorker.controller);
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (updating) showUpdateNotice(uiRoot, () => location.reload());
+  });
   window.addEventListener('load', () => {
-    void navigator.serviceWorker.register('./sw.js');
+    void navigator.serviceWorker.register('./sw.js').then((registration) => {
+      // A tab left open for days still hears about a release: look again whenever it comes back.
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') void registration.update().catch(() => undefined);
+      });
+    });
   });
 }

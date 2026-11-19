@@ -34,8 +34,11 @@ const offlineServiceWorker = (): Plugin => ({
   name: 'offline-service-worker',
   apply: 'build',
   generateBundle(_options, bundle) {
-    const publicFiles = readdirSync('public');
-    const files = ['./', ...publicFiles, ...Object.keys(bundle)].map((f) => (f.startsWith('./') ? f : `./${f}`));
+    // The link-preview card is for chat apps, not the game: it stays out of the offline cache.
+    const publicFiles = readdirSync('public').filter((f) => f !== 'social.jpg');
+    // The page by its file name, not './': some hosts (a Next.js site) drop the trailing slash of a folder address.
+    // index.html is written after this hook runs, so it is not in `bundle` yet: listed by name.
+    const files = ['index.html', ...publicFiles, ...Object.keys(bundle).filter((f) => f !== 'index.html')].map((f) => (f.startsWith('./') ? f : `./${f}`));
     const version = createHash('sha256').update(files.join('\n')).digest('hex').slice(0, 12);
     this.emitFile({
       type: 'asset',
@@ -61,7 +64,8 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request, { ignoreSearch: true }).then((hit) => {
       if (hit) return hit;
-      if (event.request.mode === 'navigate') return caches.match('./');
+      // A page the cache does not have yet falls back to the network, never to nothing.
+      if (event.request.mode === 'navigate') return caches.match('./index.html').then((page) => page || fetch(event.request));
       return fetch(event.request);
     }),
   );
@@ -95,14 +99,39 @@ const buildInfo = (mode: string): Plugin => {
   };
 };
 
+/**
+ * The game's public address (its folder, no trailing slash), when the build knows it:
+ * VITE_SITE_URL. Shared links from the app point there, and link previews need it absolute.
+ */
+const siteUrl = (mode: string): string => {
+  const env = loadEnv(mode, process.cwd(), 'VITE_');
+  const url = env.VITE_SITE_URL || '';
+  return url.replace(/\/+$/, '');
+};
+
+/** The card a chat app shows for a link to the game. Its image must be an absolute address. */
+const socialCard = (site: string): Plugin => ({
+  name: 'social-card',
+  transformIndexHtml() {
+    const tags = [
+      { property: 'og:type', content: 'website' },
+      { property: 'og:title', content: 'Fuse & Fall' },
+      { property: 'og:description', content: 'Doğru şarj, doğru yer. Gerisini fizik halleder. Tarayıcıda, kurulumsuz.' },
+      ...(site ? [{ property: 'og:url', content: `${site}/index.html` }, { property: 'og:image', content: `${site}/social.jpg` }] : []),
+      { name: 'twitter:card', content: site ? 'summary_large_image' : 'summary' },
+    ];
+    return tags.map((attrs) => ({ tag: 'meta', attrs, injectTo: 'head' as const }));
+  },
+});
+
 /** The version players see in feedback and the store sees in the build: package.json's. */
 const APP_VERSION = JSON.parse(readFileSync('package.json', 'utf8')).version as string;
 
 export default defineConfig(({ mode }) => ({
   base: './',
-  define: { __APP_VERSION__: JSON.stringify(APP_VERSION) },
+  define: { __APP_VERSION__: JSON.stringify(APP_VERSION), __SITE_URL__: JSON.stringify(siteUrl(mode)) },
   build: { target: 'es2022' },
-  plugins: [cleanOutDir(), buildInfo(mode), offlineServiceWorker()],
+  plugins: [cleanOutDir(), buildInfo(mode), socialCard(siteUrl(mode)), offlineServiceWorker()],
   test: {
     environment: 'node',
     // `.claude` holds agent worktrees: other checkouts of this repo, tested from their own folders.

@@ -18,6 +18,20 @@ export const SHARED_ID = 'shared';
 
 export type ShareError = 'format' | 'too-large' | 'invalid-level' | 'not-editable';
 
+/**
+ * The code inside whatever was pasted or opened: a bare code, a link to the game
+ * (`https://…/#FF1-…`) or a message with the code in it. Undefined when there is none.
+ */
+export const codeIn = (text: string): string | undefined => {
+  const at = text.indexOf(PREFIX);
+  if (at < 0) return undefined;
+  const body = /^[A-Za-z0-9_-]*/.exec(text.slice(at + PREFIX.length))?.[0] ?? '';
+  return PREFIX + body;
+};
+
+/** A link that opens the mission in the web game: the code rides in the fragment, which no server sees. */
+export const missionLink = (base: string, code: string): string => `${base.split('#')[0]}#${code}`;
+
 const toBase64Url = (bytes: Uint8Array): string => {
   let binary = '';
   for (const b of bytes) binary += String.fromCharCode(b);
@@ -95,9 +109,10 @@ export const decodeLevel = async (code: string): Promise<Result<LevelDefinition,
 
 /** A pasted code's mission and its challenge. A challenge that does not make sense is dropped, not fatal. */
 export const decodeShared = async (code: string): Promise<Result<SharedMission, ShareError>> => {
-  const text = code.trim();
+  if (code.length > MAX_CODE * 2) return err('too-large');
+  const text = codeIn(code);
+  if (text === undefined) return err('format');
   if (text.length > MAX_CODE) return err('too-large');
-  if (!text.startsWith(PREFIX)) return err('format');
   const bytes = fromBase64Url(text.slice(PREFIX.length));
   if (!bytes) return err('format');
   const json = await inflate(bytes);
