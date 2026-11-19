@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { readdirSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { rm } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { loadEnv, type Plugin } from 'vite';
@@ -95,8 +95,12 @@ const buildInfo = (mode: string): Plugin => {
   };
 };
 
+/** The version players see in feedback and the store sees in the build: package.json's. */
+const APP_VERSION = JSON.parse(readFileSync('package.json', 'utf8')).version as string;
+
 export default defineConfig(({ mode }) => ({
   base: './',
+  define: { __APP_VERSION__: JSON.stringify(APP_VERSION) },
   build: { target: 'es2022' },
   plugins: [cleanOutDir(), buildInfo(mode), offlineServiceWorker()],
   test: {

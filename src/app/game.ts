@@ -1,3 +1,5 @@
+import { Capacitor } from '@capacitor/core';
+import { shareText } from '../infrastructure/share-text';
 import { EventBus, type GameEvents } from '../core/events';
 import type { OfferStore, SaveRepository } from '../core/ports';
 import type { Campaign, Progress, Settings } from '../core/progress';
@@ -120,6 +122,8 @@ export class Game {
         if (patch.language !== undefined) this.text = this.applyLanguage();
       },
       now: () => new Date(),
+      shareText,
+      build: () => ({ version: __APP_VERSION__, platform: Capacitor.getPlatform(), language }),
     });
     this.loop = new FixedStepLoop({
       timeScale: (dt) => this.juice.simDelta(dt) * this.play.speed,

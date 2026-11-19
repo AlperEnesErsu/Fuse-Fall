@@ -29,8 +29,10 @@ const setup = (start: Progress = emptyProgress()) => {
     levelSelect: vi.fn(),
     settings: vi.fn(),
     codeEntry: vi.fn(),
+    feedback: vi.fn(),
     toast: vi.fn(),
   };
+  const shareText = vi.fn<(text: string, title: string) => Promise<'shared' | 'saved' | 'cancelled' | 'failed'>>(() => Promise.resolve('shared'));
   const play = { leave: vi.fn(), play: vi.fn(), startLevel: vi.fn(), openEditor: vi.fn(), editFrom: vi.fn(() => true) };
   const deps: ScreenDeps = {
     campaign,
@@ -45,11 +47,39 @@ const setup = (start: Progress = emptyProgress()) => {
     play,
     settingsChanged: vi.fn(),
     now: () => new Date(2026, 9, 18, 12),
+    shareText,
+    build: () => ({ version: '9.9.9', platform: 'web', language: 'en' }),
   };
-  return { screens: new ScreenFlow(deps), deps, ui, play, ledger, progress: () => progress };
+  return { screens: new ScreenFlow(deps), deps, ui, play, ledger, shareText, progress: () => progress };
 };
 
 describe('screen flow', () => {
+  it('opens feedback from the settings and shares exactly the text it showed', async () => {
+    const { screens, ui, shareText } = setup();
+    screens.settings();
+    const onFeedback = must(ui.settings.mock.calls[0])[5] as () => void;
+    onFeedback();
+    const panel = must(ui.feedback.mock.calls[0])[0] as { preview: (n: string) => string; onSend: (n: string) => void };
+    const shown = panel.preview('Ankara 10 was hard');
+    expect(shown).toContain('Ankara 10 was hard');
+    expect(shown).toContain('version 9.9.9');
+    panel.onSend('Ankara 10 was hard');
+    await vi.waitFor(() => expect(ui.toast).toHaveBeenCalled());
+    expect(must(shareText.mock.calls[0])[0]).toBe(shown);
+    // Shared: back to the settings it was opened from.
+    expect(ui.settings).toHaveBeenCalledTimes(2);
+  });
+
+  it('stays on the feedback panel when the player closes the share sheet', async () => {
+    const { screens, ui, shareText } = setup();
+    shareText.mockResolvedValueOnce('cancelled');
+    screens.feedback();
+    must(ui.feedback.mock.calls[0])[0].onSend('');
+    await new Promise((r) => setTimeout(r, 0));
+    expect(ui.toast).not.toHaveBeenCalled();
+    expect(ui.settings).not.toHaveBeenCalled();
+  });
+
   it('leaves the job for the menu, whose Continue starts the next mission', () => {
     const { screens, ui, play } = setup();
     screens.menu();

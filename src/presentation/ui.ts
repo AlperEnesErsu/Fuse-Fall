@@ -628,6 +628,29 @@ export class Ui {
   }
 
   /** Pasting a mission code: a box for it, play and back, and why the last code did not load. */
+  /**
+   * Feedback: a note, and everything that will go with it shown in full before anything leaves.
+   * `preview` turns the note into the text to share, so the preview is exactly what is sent.
+   */
+  feedback(a: { preview: (note: string) => string; onSend: (note: string) => void; onBack: () => void }): void {
+    this.hideHud();
+    const F = T.feedback;
+    const note = h('textarea', { rows: '4', maxlength: '1000', placeholder: F.placeholder, 'aria-label': F.placeholder }) as HTMLTextAreaElement;
+    const shown = h('pre', { class: 'feedback-preview' }, a.preview(''));
+    note.addEventListener('input', () => (shown.textContent = a.preview(note.value)));
+    this.show(
+      h(
+        'div',
+        { class: 'panel feedback' },
+        h('h2', {}, F.title),
+        h('p', { class: 'meta' }, F.hint),
+        note,
+        h('details', {}, h('summary', {}, F.preview), shown),
+        h('div', { class: 'actions' }, this.button(F.send, () => a.onSend(note.value), 'primary'), this.button(F.back, a.onBack)),
+      ),
+    );
+  }
+
   codeEntry(
     a: { onPlay: (code: string) => void; onEdit: (code: string) => void; onBack: () => void; onBuild?: () => void },
     error?: ShareError,
@@ -841,6 +864,7 @@ export class Ui {
     onTestSound: () => void,
     onBack: () => void,
     onPrivacyChoices?: () => void,
+    onFeedback?: () => void,
   ): void {
     const toggle = (label: string, value: boolean, key: 'screenShake' | 'flashes' | 'haptics' | 'leftHanded' | 'reducedMotion' | 'largeText') => {
       const input = h('input', {
@@ -905,6 +929,7 @@ export class Ui {
         toggle(T.access.reducedMotion, s.reducedMotion, 'reducedMotion'),
         toggle(T.access.largeText, s.largeText, 'largeText'),
         onPrivacyChoices ? this.button(T.offers.privacyChoices, onPrivacyChoices) : undefined,
+        onFeedback ? this.button(T.feedback.open, onFeedback) : undefined,
         this.button(T.back, onBack),
       ),
     );
