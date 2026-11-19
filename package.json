@@ -9,6 +9,7 @@
     "build": "tsc --noEmit && vite build",
     "build:release": "tsc --noEmit && vite build --mode release",
     "preview": "vite preview",
+    "portfolio": "node tools/publish-portfolio.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",

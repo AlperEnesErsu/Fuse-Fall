@@ -8,7 +8,7 @@ Biçim [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) düzenine yak
 
 ### Eklendi
 
-- Web sitesi için hazırlık (Netlify): her PR'a önizleme, canlı yayın elle (bkz. [docs/web.md](docs/web.md)). `sw.js` ve sayfa hiç önbelleğe alınmaz, `assets/` bir yıl önbellekte kalır; temel güvenlik başlıkları eklendi.
+- Web sürümü portfolyo sitesinde: `/oyunlar/fuse-and-fall/index.html`. `npm run portfolio` oyunu derleyip portfolyonun `public/` klasörüne kopyalar; canlıya çıkış portfolyo PR'ının onayıyla olur (bkz. [docs/web.md](docs/web.md)). Service worker sayfayı `index.html` adıyla önbelleğe alır; Next.js klasör adresinin sonundaki `/`'ı sildiği için. Önbellekte olmayan bir sayfa artık boş kalmaz, ağdan gelir.
 - Yeni sürüm yayımlanınca açık oyunda "Yeni sürüm hazır · Yenile · Sonra" çubuğu çıkar. Oyun kendi kendine yenilenmez, süren görev kaybolmaz. Uzun süre açık kalan sekme, öne gelince yeni sürüme bakar.
 - Görev bağlantıları: web'de görev kodu bağlantı olarak kopyalanır (`…/#FF1-…`); bağlantıyı açan doğrudan göreve girer, adres temizlenir. Kodla oyna ekranına bağlantı ya da içinde kod geçen bir mesaj da yapıştırılabilir.
 - Bağlantı paylaşılınca görünen kart: başlık, açıklama ve görsel (`social.jpg`, çevrimdışı önbelleğe girmez).

@@ -2,11 +2,11 @@ import { Capacitor } from '@capacitor/core';
 
 /**
  * Where a mission link points, or undefined to share the bare code. The web game links to
- * itself (a deploy preview to the preview); the app links to the public site when the build
- * knows it (VITE_SITE_URL), so a friend without the app can play the mission in a browser.
+ * itself (a deploy preview to the preview); the app links to the public game when the build
+ * knows its address (VITE_SITE_URL), so a friend without the app can play the mission in a browser.
  */
 export const linkBase = (): string | undefined => {
-  if (Capacitor.isNativePlatform()) return __SITE_URL__ || undefined;
+  if (Capacitor.isNativePlatform()) return __SITE_URL__ ? `${__SITE_URL__}/index.html` : undefined;
   if (location.protocol !== 'https:' && location.protocol !== 'http:') return undefined;
   return location.origin + location.pathname;
 };

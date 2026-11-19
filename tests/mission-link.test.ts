@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const native = vi.hoisted(() => ({ on: false }));
 vi.mock('@capacitor/core', () => ({ Capacitor: { isNativePlatform: () => native.on } }));
-vi.stubGlobal('__SITE_URL__', 'https://site.test/');
+vi.stubGlobal('__SITE_URL__', 'https://site.test/game');
 
 const { linkBase, takeLinkedCode } = await import('../src/infrastructure/mission-link');
 
@@ -31,7 +31,7 @@ describe('mission links', () => {
 
   it('in the app, link to the public site the build knows', () => {
     native.on = true;
-    expect(linkBase()).toBe('https://site.test/');
+    expect(linkBase()).toBe('https://site.test/game/index.html');
   });
 
   it('take the code from the address once, and clean the address', () => {

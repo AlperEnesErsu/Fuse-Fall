@@ -2,7 +2,7 @@
 
 Çevrimdışı, hızlı oynanan, fizik tabanlı bir yıkım bulmacası. Tek fitil, tek patlama, sonsuz zincir.
 
-**Tarayıcıda oyna:** _site yayına çıkınca bağlantı buraya gelecek._ Telefonda da bilgisayarda da açılır, kurulum gerekmez; bir kez açıldıktan sonra internetsiz de çalışır. Ana ekrana eklenince uygulama gibi açılır.
+**[Tarayıcıda oyna](https://alperenesersu.netlify.app/oyunlar/fuse-and-fall/index.html)** Telefonda da bilgisayarda da açılır, kurulum gerekmez; bir kez açıldıktan sonra internetsiz de çalışır. Ana ekrana eklenince uygulama gibi açılır.
 
 <p>
   <img src="docs/media/menu.jpg" alt="Ana menü" width="200" />
@@ -82,5 +82,5 @@ Bağımlılıklar içe doğru akar ve ESLint ile zorlanır. `core` Matter.js'i y
 - [Gereksinimler ve mühendislik ilkeleri](docs/02-gereksinimler.md)
 - [Eylem planı](docs/eylem-plani.md)
 - [Yayın kontrol listesi](docs/release.md)
-- [Web sitesi (Netlify)](docs/web.md)
+- [Web sürümü (portfolyoda)](docs/web.md)
 - [Mağaza sayfası metinleri](docs/store-listing.md)
