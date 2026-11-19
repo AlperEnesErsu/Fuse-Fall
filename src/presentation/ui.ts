@@ -16,6 +16,7 @@ import type { ChargeKind } from '../core/level';
 import { paintScene, skyAt } from './scenery';
 import { drawRenewal, paintStreet, renewalOf } from './renewal';
 import { masteryMet, type MasteryGoal } from '../core/mastery';
+import type { DailyModifier } from '../core/daily-modifiers';
 import { T } from './strings';
 
 type Child = Node | string | false | undefined;
@@ -191,7 +192,7 @@ export interface MenuState {
   /** The next mission to play, for the Continue button. */
   readonly next: { readonly label: string } | undefined;
   readonly onContinue: () => void;
-  readonly daily: { readonly name: string; readonly streak: number; readonly wonToday: boolean } | undefined;
+  readonly daily: { readonly name: string; readonly modifier?: DailyModifier | undefined; readonly streak: number; readonly wonToday: boolean } | undefined;
   readonly achievements: { readonly unlocked: number; readonly total: number };
   readonly onPlay: () => void;
   readonly onDaily: () => void;
@@ -305,7 +306,7 @@ export class Ui {
               'button',
               { class: `btn daily${m.daily.wonToday ? ' done' : ''}`, click: () => this.tap(m.onDaily) },
               h('span', {}, T.daily),
-              h('small', {}, T.dailyInfo(m.daily.name, m.daily.streak, m.daily.wonToday)),
+              h('small', {}, T.dailyInfo(m.daily.modifier ? `${m.daily.name} · ${T.dailyTwists[m.daily.modifier].name}` : m.daily.name, m.daily.streak, m.daily.wonToday)),
             ),
           h(
             'button',

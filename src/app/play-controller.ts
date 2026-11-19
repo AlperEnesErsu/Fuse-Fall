@@ -280,7 +280,8 @@ export class PlayController implements Launcher {
       ui.toast(T.freeSiteModes[mode.variant].hint, 3600);
       if (mode.variant === 'smash') ui.setFireVisible(false);
     } else if (mode.kind === 'daily') {
-      ui.toast(T.dailyRule(level.charges.par), 3200);
+      const twist = mode.modifier ? `${T.dailyTwists[mode.modifier].rule} ` : '';
+      ui.toast(twist + T.dailyRule(level.charges.par), 3600);
     } else if (!tutorial && !cleared) {
       const fallback = level.chargeKinds.includes('bomb')
         ? T.bombHint

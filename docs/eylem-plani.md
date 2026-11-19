@@ -62,7 +62,7 @@ Kayıtlı çözümler gerçek fizikle oynatılarak ölçüldü (`tests/play.ts` 
 | Her görev için 3 yıldızlı çözüm ve testi | 90 görevde 3 yıldız kanıtlı | B | Yapıldı: arama aracı `tests/mastery-search.test.ts`, sonuç `src/content/mastery.json` |
 | Şehir açılma eşiklerini yeni kurala göre ayarla | Eski kayıtlar şehir kaybetmiyor | K | Yapıldı: görev başına ~1,8 yıldız; hiçbir eşik yükselmedi (testle doğrulanır) |
 | Puanı kaldır ya da günlüğe bağla | Karar uygulanmış | K | Yapıldı: yalnız günlük görevde, zincir, domino ve hızı da ölçen puan |
-| Günlük görev değiştiricileri | Aynalanmış çözüm testle doğrulanıyor | O | |
+| Günlük görev değiştiricileri | Aynalanmış çözüm testle doğrulanıyor | O | Yapıldı: aynalı (28 görev, testle kanıtlı) ve tasarruf (2 görev; nadir). Trafikli görevler aynalanmaz |
 | Kodla meydan okuma | Kod gönderenin sonucunu taşıyor | O | |
 | Hurdaya yeni harcama alanları; destekçi paketi | Oynanışı satın alınır kılmıyor | O | Destekçi paketi: şimdilik yok (karar 2026-11-16). Harcama alanları açık |
 | Gönüllü geri bildirim düğmesi | Veri yalnız oyuncu gönderirse çıkıyor | K | Yapıldı: paylaşım menüsü üzerinden, gönderilecek metnin tamamı önceden gösterilir |

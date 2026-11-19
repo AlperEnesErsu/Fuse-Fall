@@ -135,6 +135,11 @@ export interface LevelDefinition {
   readonly footprint: Footprint | undefined;
   /** Smash play (Free Site only): a tap sets off a blast at once, and the job never ends by itself. */
   readonly instantBlasts?: true;
+  /**
+   * What seeds the job's randomness (debris spin, shard shapes), when it is not the id. A daily
+   * carries its base job's id here: the same job plays the same every day, so a proof holds for all.
+   */
+  readonly seed?: string;
   /** A known winning placement and timing, used by tests to prove the level is solvable. */
   readonly solution: LevelSolution;
 }

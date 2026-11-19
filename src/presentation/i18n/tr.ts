@@ -20,6 +20,10 @@ export const tr = {
   dailyInfo: (name: string, streak: number, done: boolean) =>
     `${name}${done ? ' · bugün tamam' : ''}${streak > 0 ? ` · ${streak} gün seri` : ''}`,
   dailyRule: (par: number) => `Günlük kural: yalnızca ${par} şarj. Fazlası yok.`,
+  dailyTwists: {
+    mirror: { name: 'Aynalı', rule: 'Bugün saha aynalı: her şey ters tarafta.' },
+    lean: { name: 'Tasarruf', rule: 'Tasarruf günü: par\'dan bir şarj eksik.' },
+  },
   achievementsTitle: 'Başarımlar',
   achievementsCount: (n: number, total: number) => `${n} / ${total}`,
   achievementUnlocked: (titles: string) => `Başarım açıldı: ${titles}`,
