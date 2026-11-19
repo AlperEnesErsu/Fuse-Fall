@@ -17,6 +17,7 @@
     "check": "tsc --noEmit && eslint . && vitest run",
     "levels": "python tools/genlevels.py src/content/levels",
     "balance": "vitest run tests/level-balance.test.ts",
+    "mastery": "vitest run tests/mastery-search.test.ts",
     "store-shots": "node tools/store-shots.mjs",
     "smoke": "node tools/smoke-check.mjs",
     "e2e": "playwright test",

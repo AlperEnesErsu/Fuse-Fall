@@ -1133,6 +1133,11 @@ for name, levels in (('ankara', ankara()), ('paris', paris()), ('london', london
         if 'footprint' in l.d and 'implosion' not in l.d.get('chargeKinds', ['standard']):
             l.d['chargeKinds'] = l.d.get('chargeKinds', ['standard']) + ['implosion']
         scale_zones(l)
+        # A finale's showpiece charge is part of a full job: par counts it, so the third star
+        # (the whole structure, showpiece included) does not cost the second.
+        if any(b.get('showpiece') for b in l.d['blocks']):
+            c = l.d['charges']
+            c['par'] = max(c['par'], min(c['max'], len(l.d['solution']['charges']) + 1))
     json.dump([l.d for l in levels], open(os.path.join(outdir, f'{name}.json'), 'w', encoding='utf-8'),
               ensure_ascii=False, indent=1)
 print('ok')

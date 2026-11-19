@@ -1842,3 +1842,14 @@ h2,
   border-radius: 4px;
   border: 1px solid var(--edge);
 }
+
+/* A job's third-star goal on its card: what the best play asks for. */
+.level-card .mastery {
+  font-size: 0.7rem;
+  line-height: 1.25;
+  color: var(--muted);
+  text-align: left;
+}
+.level-card .mastery.done {
+  color: var(--accent);
+}

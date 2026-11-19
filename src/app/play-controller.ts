@@ -654,6 +654,8 @@ export class PlayController implements Launcher {
             ? () => void this.d.desk.watchAd(job.payout.total).then((ok) => ok && attempt.report?.())
             : undefined,
           workshopPick: pick && { name: pick.name[language], cost: pick.cost, onOpen: () => nav.workshop() },
+          mastery: level.mastery,
+          showScore: daily,
           // A daily is one of the campaign's jobs: its lot is that job's lot.
           renewal: booked.cleared && world ? { city: world.key, levelId: attempt.mode.kind === 'daily' ? attempt.mode.baseId : level.id } : undefined,
         },

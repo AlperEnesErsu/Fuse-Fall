@@ -11,6 +11,7 @@ import istanbul from './levels/istanbul.json';
 import berlin from './levels/berlin.json';
 import madrid from './levels/madrid.json';
 import newyork from './levels/newyork.json';
+import { withMastery } from './mastery';
 
 /** Level packs in campaign order. A city listed in cities.json without a pack shows as "coming soon". */
 const PACKS: readonly unknown[][] = [ankara, paris, london, rome, tokyo, istanbul, berlin, madrid, newyork];
@@ -23,5 +24,5 @@ export const loadCampaign = (): Campaign => {
   if (!levels.ok) throw new Error(`Level data invalid at ${levels.error.path}: ${levels.error.message}`);
   const orphan = levels.value.find((l) => !worlds.value.some((w) => w.world === l.world));
   if (orphan) throw new Error(`Level ${orphan.id} belongs to unknown world ${orphan.world}`);
-  return { worlds: worlds.value, levels: levels.value };
+  return { worlds: worlds.value, levels: withMastery(levels.value) };
 };

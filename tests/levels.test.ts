@@ -5,6 +5,7 @@ import { levelsOf } from '../src/core/progress';
 import { LevelSession } from '../src/core/session';
 import { TUNING } from '../src/core/tuning';
 import { loadCampaign } from '../src/content/levels';
+import { MASTERY } from '../src/content/mastery';
 import { LANDMARK_CITIES } from '../src/presentation/landmarks';
 import { MatterPhysicsWorld } from '../src/infrastructure/matter-physics';
 import { playSolution } from './play';
@@ -211,6 +212,36 @@ describe('campaign content', () => {
     if (!level) throw new Error(`missing ${id}`);
     const result = playSolution(level, 0, [wrong]).result;
     expect(result?.failure, JSON.stringify(result)).toBe('collateral-damage');
+  });
+});
+
+describe('third-star goals', () => {
+  it('gives every campaign job a goal of its own', () => {
+    expect(levels.filter((l) => !l.mastery).map((l) => l.id)).toEqual([]);
+  });
+
+  // The proof each goal can be met: a play that wins within par and meets it.
+  it.each(cases)('%s: its three-star play earns three stars', (id, level) => {
+    const entry = MASTERY[id];
+    if (!entry) throw new Error(`no mastery entry for ${id}`);
+    const result = playSolution(level, entry.solution.fireAt, entry.solution.charges, entry.solution.detonateAt).result;
+    expect(result, JSON.stringify(result)).toMatchObject({ cleared: true, underPar: true, masteryMet: true, stars: 3 });
+  });
+
+  // The third star asks for a better play than the recorded one, on most jobs.
+  // Plays all 90 recorded solutions: allow for the slower coverage run.
+  it('does not hand out the third star for the recorded play on more than half the jobs', { timeout: 60_000 }, () => {
+    const free = levels.filter((l) => playSolution(l).result?.stars === 3);
+    expect(free.length, free.map((l) => l.id).join(' ')).toBeLessThanOrEqual(levels.length / 2);
+  });
+
+  // Saves from the old rule keep every city they had: no threshold went up, and two stars a job is always enough.
+  it('opens each city with about two stars a job, never asking more than before', () => {
+    const before: Record<string, number> = { ankara: 0, paris: 18, london: 40, rome: 62, tokyo: 84, istanbul: 110, berlin: 135, madrid: 160, newyork: 185 };
+    campaign.worlds.forEach((w, i) => {
+      expect(w.unlockStars, w.key).toBeLessThanOrEqual(before[w.key] ?? 0);
+      expect(w.unlockStars, w.key).toBeLessThanOrEqual(i * 10 * 2);
+    });
   });
 });
 

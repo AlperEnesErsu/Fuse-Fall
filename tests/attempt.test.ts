@@ -26,10 +26,11 @@ const outcome: LevelOutcome = {
   protectedDamaged: 0,
   duration: 3,
   footprint: undefined,
+  barrels: { blown: 0, total: 0 },
   dominoes: 0,
   demolished: { wood: 4000 },
 };
-const won = scoreLevel(outcome, { par: 1, bonusCollapse: 0.5 });
+const won = scoreLevel(outcome, { par: 1, bonusCollapse: 0.5, mastery: { kind: 'whole' } });
 const lost = scoreLevel({ ...outcome, targetsDown: 0, blocksCollapsed: 0 }, { par: 1, bonusCollapse: 0.5 });
 
 describe('settling a campaign job', () => {

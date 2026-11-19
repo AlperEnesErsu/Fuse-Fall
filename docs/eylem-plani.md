@@ -58,14 +58,14 @@ Kayıtlı çözümler gerçek fizikle oynatılarak ölçüldü (`tests/play.ts` 
 
 | İş | Bitiş ölçütü | Efor | Durum |
 |---|---|---|---|
-| Yıldız kuralı: kazanç, par, görevin kendi ustalık hedefi | Kayıtlı çözüm görevlerin en çok yarısında 3 yıldız | B | Karar bekleniyor |
-| Her görev için 3 yıldızlı çözüm ve testi | 90 görevde 3 yıldız kanıtlı | B | |
-| Şehir açılma eşiklerini yeni kurala göre ayarla | Eski kayıtlar şehir kaybetmiyor | K | |
-| Puanı kaldır ya da günlüğe bağla | Karar uygulanmış | K | Karar bekleniyor |
+| Yıldız kuralı: kazanç, par, görevin kendi ustalık hedefi | Kayıtlı çözüm görevlerin en çok yarısında 3 yıldız | B | Yapıldı (testle doğrulanır) |
+| Her görev için 3 yıldızlı çözüm ve testi | 90 görevde 3 yıldız kanıtlı | B | Yapıldı: arama aracı `tests/mastery-search.test.ts`, sonuç `src/content/mastery.json` |
+| Şehir açılma eşiklerini yeni kurala göre ayarla | Eski kayıtlar şehir kaybetmiyor | K | Yapıldı: görev başına ~1,8 yıldız; hiçbir eşik yükselmedi (testle doğrulanır) |
+| Puanı kaldır ya da günlüğe bağla | Karar uygulanmış | K | Yapıldı: yalnız günlük görevde, zincir, domino ve hızı da ölçen puan |
 | Günlük görev değiştiricileri | Aynalanmış çözüm testle doğrulanıyor | O | |
 | Kodla meydan okuma | Kod gönderenin sonucunu taşıyor | O | |
-| Hurdaya yeni harcama alanları; destekçi paketi | Oynanışı satın alınır kılmıyor | O | Karar bekleniyor |
-| Gönüllü geri bildirim düğmesi | Veri yalnız oyuncu gönderirse çıkıyor | K | |
+| Hurdaya yeni harcama alanları; destekçi paketi | Oynanışı satın alınır kılmıyor | O | Destekçi paketi: şimdilik yok (karar 2026-11-16). Harcama alanları açık |
+| Gönüllü geri bildirim düğmesi | Veri yalnız oyuncu gönderirse çıkıyor | K | Karar: paylaşım menüsü üzerinden |
 
 ## Faz 4 — Kod sağlığı (diğer fazlarla paralel)
 

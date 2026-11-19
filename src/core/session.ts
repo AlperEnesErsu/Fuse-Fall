@@ -239,6 +239,8 @@ export class LevelSession {
   private compromisedCount = 0;
   /** Targets brought down without a blast reaching them. */
   private dominoes = 0;
+  /** Explosive barrels that went off. */
+  private barrelsBlown = 0;
   /** Footprint material area from debris removed by the debris budget while inside the site. */
   private retiredInside = 0;
   private finishedAt = 0;
@@ -714,6 +716,7 @@ export class LevelSession {
     const spec = BLASTS[blast];
     const source = sourceOf(blast);
     this.lastBlastAt = this.time;
+    if (blast === 'barrel') this.barrelsBlown++;
     const radius = spec.radius;
     // A rolling charge caught in a blast goes off with it.
     for (const [id, r] of this.rollers) {
@@ -1047,13 +1050,14 @@ export class LevelSession {
         protectedDamaged: this.compromisedCount,
         duration: this.finishedAt - this.firedAt,
         dominoes: this.dominoes,
+        barrels: { blown: this.barrelsBlown, total: this.level.barrels.length },
         demolished: { ...this.demolished },
         footprint: this.level.footprint && {
           achieved: this.containment(),
           required: this.level.footprint.ratio * TUNING.footprintSlack,
         },
       },
-      { par: this.level.charges.par, bonusCollapse: this.level.bonusCollapse },
+      { par: this.level.charges.par, bonusCollapse: this.level.bonusCollapse, mastery: this.level.mastery },
     );
     this.events.emit('levelFinished', { result: this.finalResult });
   }

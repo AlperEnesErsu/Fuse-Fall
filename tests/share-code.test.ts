@@ -14,7 +14,10 @@ describe('share codes', () => {
     const back = await decodeLevel(code);
     expect(back.ok).toBe(true);
     if (!back.ok) return;
-    expect(back.value).toEqual({ ...sample, id: SHARED_ID });
+    // The campaign's third-star goal stays with the campaign: a shared copy is played, never booked.
+    const { mastery, ...plays } = sample;
+    expect(mastery).toBeDefined();
+    expect(back.value).toEqual({ ...plays, id: SHARED_ID });
   });
 
   it('gives the shared copy a neutral id, so a campaign mission keeps its progress apart', async () => {
