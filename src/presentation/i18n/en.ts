@@ -46,10 +46,11 @@ export const en: Strings = {
   career: (next: number | undefined) => (next === undefined ? 'Top rank' : `Next rank: ${next} scrap lifetime`),
   workshop: {
     title: 'Workshop',
-    tagline: 'Spend scrap on blast styles, block themes and new structures. Each city brings its own set. Jobs stay just as hard.',
+    tagline: 'Spend scrap on blast styles, block themes, new structures and mission builder parts. Each city brings its own set. Jobs stay just as hard.',
     styles: 'Blast styles',
     themes: 'Block themes',
     structures: 'Free Site structures',
+    builder: 'Mission builder parts',
     use: 'Use',
     inUse: 'In use',
     owned: 'Owned',
@@ -126,9 +127,11 @@ export const en: Strings = {
   editor: {
     title: 'Build a mission',
     name: 'My mission',
-    tools: { block: 'Block', target: 'Target', protected: 'Protected', zone: 'Charge zone', remove: 'Remove' },
-    materials: { wood: 'Wood', concrete: 'Concrete', metal: 'Steel' },
-    counts: (blocks: number, zones: number) => `${blocks} blocks · ${zones} zones`,
+    tools: { block: 'Block', target: 'Target', protected: 'Protected', zone: 'Charge zone', barrel: 'Barrel', remove: 'Remove' },
+    materials: { wood: 'Wood', concrete: 'Concrete', metal: 'Steel', brick: 'Brick', glass: 'Glass' },
+    counts: (blocks: number, zones: number, barrels = 0) => `${blocks} blocks · ${zones} zones${barrels > 0 ? ` · ${barrels} barrel${barrels === 1 ? '' : 's'}` : ''}`,
+    inWorkshop: 'Barrels are in the Workshop: buy them with scrap, add them to your missions.',
+    moreInWorkshop: 'Brick and glass are in the Workshop.',
     test: 'Test',
     back: 'Menu',
     problems: {

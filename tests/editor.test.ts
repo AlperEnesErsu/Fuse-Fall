@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   DRAFT_LIMITS,
+  DRAFT_MATERIALS,
+  addBarrel,
   addBlock,
   addZone,
   draftProblem,
@@ -15,7 +17,7 @@ import {
 } from '../src/core/editor';
 import { decodeLevel, encodeLevel } from '../src/core/share-code';
 import { loadCampaign } from '../src/content/levels';
-import type { SolutionCharge } from '../src/core/level';
+import { WORLD, type SolutionCharge } from '../src/core/level';
 
 const block = (x: number, y: number, kind: DraftBlock['kind'] = 'block', w = 40, h = 40): DraftBlock => ({
   kind,
@@ -101,7 +103,7 @@ describe('draft to mission', () => {
 
   it('says what is missing before a test run', () => {
     expect(draftProblem(emptyDraft())).toBe('zone');
-    expect(draftProblem({ blocks: [block(100, 400)], zones: [{ x: 0, y: 400, w: 80, h: 40 }] })).toBe('target');
+    expect(draftProblem({ blocks: [block(100, 400)], zones: [{ x: 0, y: 400, w: 80, h: 40 }], barrels: [] })).toBe('target');
     expect(draftProblem(playable())).toBeUndefined();
   });
 
@@ -113,13 +115,13 @@ describe('draft to mission', () => {
     expect(addBlock(emptyDraft(), block(500, 440)).ok).toBe(true);
     expect(addBlock(emptyDraft(), block(500, 390, 'target')).ok).toBe(true);
     // A draft from elsewhere is checked before its test run, in words the player reads.
-    const low: Draft = { blocks: [block(500, 440, 'target')], zones: [{ x: 300, y: 430, w: 120, h: 50 }] };
+    const low: Draft = { blocks: [block(500, 440, 'target')], zones: [{ x: 300, y: 430, w: 120, h: 50 }], barrels: [] };
     expect(draftProblem(low)).toBe('low-target');
   });
 
   it('refuses a draft the level rules reject, with the rule as the reason', () => {
     // A target inside the ground strip cannot start clear of the ground.
-    const bad: Draft = { blocks: [{ ...block(500, 470, 'target') }], zones: [{ x: 300, y: 430, w: 120, h: 50 }] };
+    const bad: Draft = { blocks: [{ ...block(500, 470, 'target') }], zones: [{ x: 300, y: 430, w: 120, h: 50 }], barrels: [] };
     const level = draftToLevel(bad, [shot(360, 455)], {
       id: 'shared',
       name: 'x',
@@ -147,7 +149,7 @@ describe('draft to mission', () => {
 
 describe('preview', () => {
   it('draws whatever is placed, even before the draft is a mission', () => {
-    const p = previewLevel({ blocks: [block(100, 400, 'target')], zones: [] });
+    const p = previewLevel({ blocks: [block(100, 400, 'target')], zones: [], barrels: [] });
     expect(p.blocks).toHaveLength(1);
     expect(p.blocks[0]?.target).toBe(true);
     expect(p.zones).toEqual([]);
@@ -163,6 +165,7 @@ describe('opening a mission in the builder', () => {
         { kind: 'block', material: 'concrete', x: 600, y: 440, w: 40, h: 40 },
       ],
       zones: [{ x: 300, y: 430, w: 120, h: 50 }],
+      barrels: [],
     };
     const level = draftToLevel(draft, [shot(360, 455)], { id: 'shared', name: 'x', world: 9 });
     if (!level.ok) throw new Error('setup');
@@ -177,11 +180,80 @@ describe('opening a mission in the builder', () => {
     ]);
   });
 
-  it('a mission with vehicles, barrels or a ball is not opened there', () => {
+  it('a mission with vehicles or a ball is not opened there', () => {
     const campaign = loadCampaign();
     const withCars = campaign.levels.find((l) => l.cars.length > 0);
     const withBall = campaign.levels.find((l) => l.balls.length > 0);
     expect(withCars && levelToDraft(withCars)).toEqual({ ok: false, error: 'not-editable' });
     expect(withBall && levelToDraft(withBall)).toEqual({ ok: false, error: 'not-editable' });
+  });
+});
+
+describe('barrels (a workshop part)', () => {
+  it('drop onto the ground under the tap', () => {
+    const r = addBarrel(emptyDraft(), { x: 203, y: 250 });
+    expect(r.ok && r.value.barrels).toEqual([{ x: 200, y: WORLD.groundY - 16 }]);
+  });
+
+  it('rest on the top of the block under the tap', () => {
+    const a = addBlock(emptyDraft(), block(500, 400));
+    if (!a.ok) throw new Error('setup');
+    const r = addBarrel(a.value, { x: 520, y: 350 });
+    expect(r.ok && r.value.barrels).toEqual([{ x: 520, y: 384 }]);
+  });
+
+  it('never sit inside a block, another barrel or outside the world', () => {
+    const a = addBlock(emptyDraft(), block(500, 440));
+    if (!a.ok) throw new Error('setup');
+    // Under this tap is the block itself, standing on the ground: no room.
+    expect(addBarrel(a.value, { x: 520, y: 460 })).toEqual({ ok: false, error: 'overlap' });
+    const one = addBarrel(emptyDraft(), { x: 200, y: 300 });
+    if (!one.ok) throw new Error('setup');
+    expect(addBarrel(one.value, { x: 210, y: 300 })).toEqual({ ok: false, error: 'overlap' });
+    expect(addBarrel(emptyDraft(), { x: 4, y: 300 })).toEqual({ ok: false, error: 'outside' });
+    expect(addBarrel(emptyDraft(), { x: 200, y: WORLD.groundY + 10 })).toEqual({ ok: false, error: 'outside' });
+  });
+
+  it('stop at the limit', () => {
+    let d = emptyDraft();
+    for (let i = 0; i < DRAFT_LIMITS.barrels; i++) {
+      const r = addBarrel(d, { x: 60 + i * 60, y: 300 });
+      if (!r.ok) throw new Error(`setup ${i}`);
+      d = r.value;
+    }
+    expect(addBarrel(d, { x: 700, y: 300 })).toEqual({ ok: false, error: 'full' });
+  });
+
+  it('go first when something is removed under them', () => {
+    const a = addBlock(emptyDraft(), block(500, 400));
+    if (!a.ok) throw new Error('setup');
+    const b = addBarrel(a.value, { x: 520, y: 350 });
+    if (!b.ok) throw new Error('setup');
+    const once = removeAt(b.value, { x: 520, y: 390 });
+    expect(once.barrels).toEqual([]);
+    expect(once.blocks).toHaveLength(1);
+  });
+
+  it('are in the mission, its preview and its way back into the builder', () => {
+    const b = addBarrel(playable(), { x: 640, y: 300 });
+    if (!b.ok) throw new Error('setup');
+    expect(previewLevel(b.value).barrels).toEqual(b.value.barrels);
+    const level = draftToLevel(b.value, [shot(360, 455)], { id: 'shared', name: 'x', world: 9 });
+    if (!level.ok) throw new Error(String(level.error));
+    expect(level.value.barrels).toEqual(b.value.barrels);
+    const back = levelToDraft(level.value);
+    expect(back.ok && back.value.barrels).toEqual(b.value.barrels);
+  });
+});
+
+describe('builder materials', () => {
+  it('every material the builder offers makes a valid mission', () => {
+    for (const material of DRAFT_MATERIALS) {
+      const a = addBlock(playable(), { ...block(600, 440), material });
+      if (!a.ok) throw new Error(material);
+      const level = draftToLevel(a.value, [shot(360, 455)], { id: 'shared', name: 'x', world: 9 });
+      expect(level.ok, material).toBe(true);
+      expect(level.ok && level.value.blocks.some((b) => b.material === material)).toBe(true);
+    }
   });
 });

@@ -11,8 +11,8 @@ import { SANDBOX_TEMPLATES } from './sandbox';
 
 type Text = Readonly<Record<Language, string>>;
 
-/** Blast styles and block themes are looks one of which is in use; structures are simply owned. */
-export type WorkshopKind = 'blast-style' | 'block-theme' | 'structure';
+/** Blast styles and block themes are looks one of which is in use; structures and builder parts are simply owned. */
+export type WorkshopKind = 'blast-style' | 'block-theme' | 'structure' | 'builder';
 
 export interface WorkshopItem extends ShopItem {
   readonly kind: WorkshopKind;
@@ -194,12 +194,40 @@ const STRUCTURES: readonly WorkshopItem[] = SANDBOX_TEMPLATES.map((t) => ({
   description: { tr: 'Serbest Şantiye yapısı', en: 'Free Site structure' },
 }));
 
+/** The mission builder's extra parts, for missions of the player's own to share and challenge with. */
+export const builderItemId = (part: string): string => `builder:${part}`;
+
+const BUILDER_PARTS: readonly WorkshopItem[] = [
+  {
+    id: builderItemId('brick'),
+    kind: 'builder',
+    cost: 250,
+    name: { tr: 'Tuğla', en: 'Brick' },
+    description: { tr: 'Görev editöründe tuğla bloklar: zayıf harç, bol moloz.', en: 'Brick blocks in the mission builder: weak mortar, plenty of rubble.' },
+  },
+  {
+    id: builderItemId('glass'),
+    kind: 'builder',
+    cost: 300,
+    name: { tr: 'Cam', en: 'Glass' },
+    description: { tr: 'Görev editöründe cam bloklar: uzaktan bile kırılır.', en: 'Glass blocks in the mission builder: they break from afar.' },
+  },
+  {
+    id: builderItemId('barrel'),
+    kind: 'builder',
+    cost: 450,
+    name: { tr: 'Patlayıcı varil', en: 'Explosive barrel' },
+    description: { tr: 'Görev editöründe variller: tek kıvılcımla zincirleme patlama.', en: 'Barrels in the mission builder: one spark, a chain reaction.' },
+  },
+];
+
 export const WORKSHOP: readonly WorkshopItem[] = [
   ...BLAST_STYLES,
   ...CITY_ITEMS.filter((i) => i.kind === 'blast-style'),
   ...BLOCK_THEMES,
   ...CITY_ITEMS.filter((i) => i.kind === 'block-theme'),
   ...STRUCTURES,
+  ...BUILDER_PARTS,
 ];
 
 /** Free items are everyone's from the start. */

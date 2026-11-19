@@ -215,13 +215,15 @@ export class ScreenFlow implements Navigator {
           }
           // A new look goes straight into use.
           ledger.set(
-            item.kind === 'structure' ? bought.value : equip(bought.value, item.kind === 'blast-style' ? 'blastStyle' : 'blockTheme', item.id),
+            item.kind === 'structure' || item.kind === 'builder'
+              ? bought.value
+              : equip(bought.value, item.kind === 'blast-style' ? 'blastStyle' : 'blockTheme', item.id),
           );
           this.workshop();
         },
         onEquip: (id) => {
           const item = workshopItem(id);
-          if (!item || item.kind === 'structure') return;
+          if (!item || item.kind === 'structure' || item.kind === 'builder') return;
           ledger.set(equip(ledger.get(), item.kind === 'blast-style' ? 'blastStyle' : 'blockTheme', id));
           this.workshop();
         },

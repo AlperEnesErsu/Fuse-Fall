@@ -49,10 +49,11 @@ export const tr = {
   career: (next: number | undefined) => (next === undefined ? 'En yüksek rütbe' : `Sonraki rütbe: toplam ${next} hurda`),
   workshop: {
     title: 'Atölye',
-    tagline: 'Hurdanı patlama stillerine, blok temalarına ve yeni yapılara harca. Her şehir kendi setini getirir. Görevlerin zorluğu değişmez.',
+    tagline: 'Hurdanı patlama stillerine, blok temalarına, yeni yapılara ve görev editörü parçalarına harca. Her şehir kendi setini getirir. Görevlerin zorluğu değişmez.',
     styles: 'Patlama stilleri',
     themes: 'Blok temaları',
     structures: 'Serbest Şantiye yapıları',
+    builder: 'Görev editörü parçaları',
     use: 'Kullan',
     inUse: 'Kullanılıyor',
     owned: 'Sende',
@@ -129,9 +130,11 @@ export const tr = {
   editor: {
     title: 'Bölüm kur',
     name: 'Benim Bölümüm',
-    tools: { block: 'Blok', target: 'Hedef', protected: 'Korunan', zone: 'Şarj alanı', remove: 'Sil' },
-    materials: { wood: 'Ahşap', concrete: 'Beton', metal: 'Çelik' },
-    counts: (blocks: number, zones: number) => `${blocks} blok · ${zones} alan`,
+    tools: { block: 'Blok', target: 'Hedef', protected: 'Korunan', zone: 'Şarj alanı', barrel: 'Varil', remove: 'Sil' },
+    materials: { wood: 'Ahşap', concrete: 'Beton', metal: 'Çelik', brick: 'Tuğla', glass: 'Cam' },
+    counts: (blocks: number, zones: number, barrels = 0) => `${blocks} blok · ${zones} alan${barrels > 0 ? ` · ${barrels} varil` : ''}`,
+    inWorkshop: 'Varil Atölye’de: hurdayla al, görevlerine ekle.',
+    moreInWorkshop: 'Tuğla ve cam Atölye’de.',
     test: 'Test et',
     back: 'Menü',
     problems: {

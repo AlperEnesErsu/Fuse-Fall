@@ -39,6 +39,7 @@ export class EditorInput {
       const end = renderer.toWorld(e.clientX, e.clientY);
       const t = this.tool();
       if (t === 'remove') return this.apply({ type: 'remove', at: end });
+      if (t === 'barrel') return this.apply({ type: 'barrel', at: end });
       if (t === 'zone') {
         if (distance(start, end) < DRAG) {
           return this.apply({ type: 'zone', rect: { x: snap(end.x - TAP_ZONE.w / 2), y: snap(end.y - TAP_ZONE.h / 2), ...TAP_ZONE } });

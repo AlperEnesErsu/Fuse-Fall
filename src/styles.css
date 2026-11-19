@@ -1905,3 +1905,12 @@ h2,
   text-transform: none;
   color: var(--muted);
 }
+
+/* A builder tool that is a workshop part not yet bought: shown, dimmed, with a lock. */
+.btn.locked {
+  opacity: 0.6;
+}
+.btn.locked svg {
+  margin-right: 4px;
+  vertical-align: -1px;
+}

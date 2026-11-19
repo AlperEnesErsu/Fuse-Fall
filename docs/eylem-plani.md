@@ -64,7 +64,7 @@ Kayıtlı çözümler gerçek fizikle oynatılarak ölçüldü (`tests/play.ts` 
 | Puanı kaldır ya da günlüğe bağla | Karar uygulanmış | K | Yapıldı: yalnız günlük görevde, zincir, domino ve hızı da ölçen puan |
 | Günlük görev değiştiricileri | Aynalanmış çözüm testle doğrulanıyor | O | Yapıldı: aynalı (28 görev, testle kanıtlı) ve tasarruf (2 görev; nadir). Trafikli görevler aynalanmaz |
 | Kodla meydan okuma | Kod gönderenin sonucunu taşıyor | O | Yapıldı: kod sonucu taşır, açan görev sonunda karşılaştırılır ve sonucunu geri gönderebilir |
-| Hurdaya yeni harcama alanları; destekçi paketi | Oynanışı satın alınır kılmıyor | O | Destekçi paketi: şimdilik yok (karar 2026-11-16). Harcama alanları açık |
+| Hurdaya yeni harcama alanları; destekçi paketi | Oynanışı satın alınır kılmıyor | O | Yapıldı. Atölyede görev editörü parçaları: tuğla, cam, patlayıcı varil (1.000 hurda); yalnız oyuncunun kendi görevlerinde. Destekçi paketi: şimdilik yok (karar 2026-11-16) |
 | Gönüllü geri bildirim düğmesi | Veri yalnız oyuncu gönderirse çıkıyor | K | Yapıldı: paylaşım menüsü üzerinden, gönderilecek metnin tamamı önceden gösterilir |
 
 ## Faz 4 — Kod sağlığı (diğer fazlarla paralel)
