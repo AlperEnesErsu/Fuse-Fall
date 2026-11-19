@@ -65,7 +65,7 @@ Kayıtlı çözümler gerçek fizikle oynatılarak ölçüldü (`tests/play.ts` 
 | Günlük görev değiştiricileri | Aynalanmış çözüm testle doğrulanıyor | O | |
 | Kodla meydan okuma | Kod gönderenin sonucunu taşıyor | O | |
 | Hurdaya yeni harcama alanları; destekçi paketi | Oynanışı satın alınır kılmıyor | O | Destekçi paketi: şimdilik yok (karar 2026-11-16). Harcama alanları açık |
-| Gönüllü geri bildirim düğmesi | Veri yalnız oyuncu gönderirse çıkıyor | K | Karar: paylaşım menüsü üzerinden |
+| Gönüllü geri bildirim düğmesi | Veri yalnız oyuncu gönderirse çıkıyor | K | Yapıldı: paylaşım menüsü üzerinden, gönderilecek metnin tamamı önceden gösterilir |
 
 ## Faz 4 — Kod sağlığı (diğer fazlarla paralel)
 

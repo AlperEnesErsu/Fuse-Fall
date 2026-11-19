@@ -220,6 +220,19 @@ export const tr = {
   music: 'Müzik',
   testSound: 'Patlama sesini dinle',
   skip: 'Atla',
+  feedback: {
+    open: 'Geri bildirim gönder',
+    title: 'Geri bildirim',
+    hint: 'Ne hoşuna gitti, nerede takıldın? Yaz ve paylaş: nereye gideceğini sen seçersin. Oyun kendisi hiçbir şey göndermez.',
+    placeholder: 'Notun (isteğe bağlı)',
+    preview: 'Gönderilecek her şey',
+    send: 'Paylaş',
+    back: 'Geri',
+    shareTitle: 'Fuse & Fall geri bildirimi',
+    sent: 'Teşekkürler!',
+    copied: 'Paylaşım yok: metin panoya kopyalandı.',
+    failed: 'Paylaşılamadı.',
+  },
   /** A job's own third-star goal; `n` is a charge count or a share in percent. */
   mastery: {
     'one-less': (n: number) => `En fazla ${n} şarjla kazan`,

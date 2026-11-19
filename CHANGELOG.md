@@ -8,6 +8,7 @@ Biçim [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) düzenine yak
 
 ### Eklendi
 
+- Ayarlar › Geri bildirim gönder: oyuncunun notu ve oyunla ilgili birkaç bilgi (sürüm, platform türü, dil, şehirlerdeki yıldızlar, en çok takılınan görevler, toplam sayılar, erişilebilirlik ayarları) sistemin paylaşım menüsüne metin olarak gider. Metnin tamamı göndermeden önce gösterilir; oyun hiçbir şeyi kendisi göndermez. Paylaşım menüsü olmayan tarayıcıda metin panoya kopyalanır. Gizlilik sayfası buna göre güncellendi.
 - Yıldızlar ustalığı ölçer: görevi kazanmak 1 yıldız, par içinde kazanmak 1 yıldız, görevin kendi hedefi 1 yıldız. Hedef görev kartında ve raporda yazar: bir şarj eksiğiyle kazan, domino, bütün varilleri patlat, enkazı alanda tut ya da yapının belirli bir oranını indir. Her görevin hedefi bir aramayla seçildi: kayıtlı çözümün kendiliğinden tutturmadığı, ama daha iyi bir oyunun tutturduğu hedef; o oyun `src/content/mastery.json` içinde saklanır ve her test koşusunda yeniden oynatılır. Kazanılmış yıldızlar düşmez.
 - Puan yalnız günlük görevde gösterilir ve artık zinciri, dominoyu ve hızlı çöküşü de ölçer.
 - Bloklar bina gibi görünür; yıkılacak bina ikaz bandıyla işaretlidir (#13).

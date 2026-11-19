@@ -1,3 +1,4 @@
+import { feedbackReport, type FeedbackContext } from '../core/feedback';
 import type { Draft } from '../core/editor';
 import { decodeLevel, type ShareError } from '../core/share-code';
 import { ACHIEVEMENTS } from '../core/achievements';
@@ -55,7 +56,7 @@ export interface ScreenDeps {
   readonly text: () => ContentText;
   readonly ui: Pick<
     Ui,
-    'menu' | 'achievements' | 'workshop' | 'isShowing' | 'freeSite' | 'cityMap' | 'levelSelect' | 'settings' | 'toast' | 'codeEntry'
+    'menu' | 'achievements' | 'workshop' | 'isShowing' | 'freeSite' | 'cityMap' | 'levelSelect' | 'settings' | 'toast' | 'codeEntry' | 'feedback'
   >;
   readonly renderer: Pick<Renderer, 'setScene'>;
   readonly sound: Pick<SoundDirector, 'denied' | 'test'>;
@@ -64,6 +65,10 @@ export interface ScreenDeps {
   readonly play: Launcher;
   /** Applies saved settings to sound, display and language. */
   readonly settingsChanged: (patch: Partial<Settings>) => void;
+  /** Hands feedback text to the share sheet; absent where there is no way to share. */
+  readonly shareText?: (text: string, title: string) => Promise<'shared' | 'saved' | 'cancelled' | 'failed'>;
+  /** What the feedback says about the build: version, platform kind, language. */
+  readonly build?: () => FeedbackContext;
   readonly now: () => Date;
 }
 
@@ -323,7 +328,25 @@ export class ScreenFlow implements Navigator {
       () => this.d.sound.test(),
       () => this.menu(),
       offers.privacyChoicesRequired() ? () => void offers.showPrivacyChoices() : undefined,
+      this.d.shareText ? () => this.feedback() : undefined,
     );
+  }
+
+  /** The feedback panel: the player writes a note and shares it, with the game facts shown in full first. */
+  feedback(): void {
+    const { shareText, build } = this.d;
+    if (!shareText || !build) return;
+    const report = (note: string) => feedbackReport(this.d.ledger.get(), this.d.campaign, build(), note);
+    this.d.ui.feedback({
+      preview: report,
+      onSend: (note) =>
+        void shareText(report(note), T.feedback.shareTitle).then((outcome) => {
+          if (outcome === 'cancelled') return;
+          this.d.ui.toast(outcome === 'shared' ? T.feedback.sent : outcome === 'saved' ? T.feedback.copied : T.feedback.failed, 2400);
+          if (outcome !== 'failed') this.settings();
+        }),
+      onBack: () => this.settings(),
+    });
   }
 
   private startDaily(): void {

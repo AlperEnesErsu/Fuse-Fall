@@ -1853,3 +1853,31 @@ h2,
 .level-card .mastery.done {
   color: var(--accent);
 }
+
+/* Feedback: the note, and the full text that will be shared, open to read before sending. */
+.panel.feedback textarea {
+  width: 100%;
+  font: inherit;
+  color: var(--text);
+  background: var(--panel-2);
+  border: 1px solid var(--edge-strong);
+  border-radius: var(--radius);
+  padding: 8px;
+  pointer-events: auto;
+}
+.panel.feedback details {
+  align-self: stretch;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.feedback-preview {
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 30vh;
+  overflow: auto;
+  font-size: 0.75rem;
+  background: var(--panel-2);
+  border-radius: var(--radius);
+  padding: 8px;
+  margin: 6px 0 0;
+}
