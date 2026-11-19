@@ -110,7 +110,7 @@ export const tr = {
   shareCode: {
     menu: 'Kodla oyna',
     title: 'Kodla oyna',
-    hint: 'Bir arkadaşının bölüm kodunu buraya yapıştır.',
+    hint: 'Bir arkadaşının bölüm kodunu ya da bağlantısını buraya yapıştır.',
     placeholder: 'FF1-…',
     play: 'Oyna',
     build: 'Bölüm kur',
@@ -334,6 +334,11 @@ export const tr = {
     'not-placing': '',
     'unknown-charge': '',
     'kind-unavailable': 'Bu görevde bu şarj tipi yok',
+  },
+  update: {
+    ready: 'Yeni sürüm hazır.',
+    reload: 'Yenile',
+    later: 'Sonra',
   },
   crash: {
     title: 'Bir şeyler ters gitti',

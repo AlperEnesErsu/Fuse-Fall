@@ -2,6 +2,18 @@
 
 Çevrimdışı, hızlı oynanan, fizik tabanlı bir yıkım bulmacası. Tek fitil, tek patlama, sonsuz zincir.
 
+**Tarayıcıda oyna:** _site yayına çıkınca bağlantı buraya gelecek._ Telefonda da bilgisayarda da açılır, kurulum gerekmez; bir kez açıldıktan sonra internetsiz de çalışır. Ana ekrana eklenince uygulama gibi açılır.
+
+<p>
+  <img src="docs/media/menu.jpg" alt="Ana menü" width="200" />
+  <img src="docs/media/placing.jpg" alt="Şarj yerleştirme" width="200" />
+  <img src="docs/media/collapse.jpg" alt="Yapı çöküyor" width="200" />
+</p>
+
+<img src="docs/media/landscape.jpg" alt="Yatay ekranda bir görev" width="620" />
+
+Dokuz şehir, her birinde yıkılacak yapılar: şarjları doğru yere koy, fitili ateşle, yapı hedefleri de alarak çöksün, korunan binalar ayakta kalsın. Her gün yeni bir günlük görev, kendi görevini kurup kodla ya da bağlantıyla arkadaşına meydan okuma, sınırsız Serbest Şantiye.
+
 ## Çalıştırma
 
 Gerekenler: Node.js 22+, görev üretimi için Python 3 (`npm run levels`; 3.14 ile denendi), Android derlemesi için JDK 21.
@@ -70,4 +82,5 @@ Bağımlılıklar içe doğru akar ve ESLint ile zorlanır. `core` Matter.js'i y
 - [Gereksinimler ve mühendislik ilkeleri](docs/02-gereksinimler.md)
 - [Eylem planı](docs/eylem-plani.md)
 - [Yayın kontrol listesi](docs/release.md)
+- [Web sitesi (Netlify)](docs/web.md)
 - [Mağaza sayfası metinleri](docs/store-listing.md)

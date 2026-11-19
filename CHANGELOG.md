@@ -8,6 +8,11 @@ Biçim [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) düzenine yak
 
 ### Eklendi
 
+- Web sitesi için hazırlık (Netlify): her PR'a önizleme, canlı yayın elle (bkz. [docs/web.md](docs/web.md)). `sw.js` ve sayfa hiç önbelleğe alınmaz, `assets/` bir yıl önbellekte kalır; temel güvenlik başlıkları eklendi.
+- Yeni sürüm yayımlanınca açık oyunda "Yeni sürüm hazır · Yenile · Sonra" çubuğu çıkar. Oyun kendi kendine yenilenmez, süren görev kaybolmaz. Uzun süre açık kalan sekme, öne gelince yeni sürüme bakar.
+- Görev bağlantıları: web'de görev kodu bağlantı olarak kopyalanır (`…/#FF1-…`); bağlantıyı açan doğrudan göreve girer, adres temizlenir. Kodla oyna ekranına bağlantı ya da içinde kod geçen bir mesaj da yapıştırılabilir.
+- Bağlantı paylaşılınca görünen kart: başlık, açıklama ve görsel (`social.jpg`, çevrimdışı önbelleğe girmez).
+- README'de ekran görüntüleri ve tarayıcıda oynama bölümü.
 - Kodla meydan okuma: kazanılan görevin kodu gönderenin sonucunu taşır (şarj, yıkım oranı, süre). Kodu açan görev başında meydan okumayı görür; bitince kazanıp kazanmadığı yazar (önce daha az şarj, sonra daha çok yıkım, sonra daha kısa süre). Kazanan, "Meydan oku" ile kendi sonucunu taşıyan kodu geri gönderir. Hesap ve sunucu yok: meydan okuma kodun içindedir. Eski kodlar yeni sürümde, yeni kodlar eski sürümde açılır.
 - Günlük görevde günün değiştiricisi: bazı günler saha aynalanır (her şey ters tarafta), nadiren de tasarruf günüdür (par'dan bir şarj eksik). Değiştirici menüde ve görev başında yazar. Her biri yalnız kanıtlanmış görevlerde çıkar: aynalı çözüm her aynalı görevi kazanır, tasarruf yalnız bir şarj eksiğiyle kazanılmış görevlerde (testle doğrulanır). Trafikli görevler aynalanmaz.
 - Ayarlar › Geri bildirim gönder: oyuncunun notu ve oyunla ilgili birkaç bilgi (sürüm, platform türü, dil, şehirlerdeki yıldızlar, en çok takılınan görevler, toplam sayılar, erişilebilirlik ayarları) sistemin paylaşım menüsüne metin olarak gider. Metnin tamamı göndermeden önce gösterilir; oyun hiçbir şeyi kendisi göndermez. Paylaşım menüsü olmayan tarayıcıda metin panoya kopyalanır. Gizlilik sayfası buna göre güncellendi.

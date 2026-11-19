@@ -134,10 +134,12 @@ export class Game {
     if (import.meta.env.DEV) Object.assign(window, { __fuse: { toClient: (x: number, y: number) => this.renderer.toClient({ x, y }) } });
   }
 
-  start(): void {
+  /** `linkedCode`: the mission a link opened the game with, played straight away. */
+  start(linkedCode?: string): void {
     this.applyDisplaySettings();
     this.loop.start();
     this.screens.menu();
+    if (linkedCode) this.screens.openLinked(linkedCode);
   }
 
   /** Layout and motion preferences live on the document root, where the styles read them. */

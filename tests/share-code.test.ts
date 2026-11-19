@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { parseLevel } from '../src/core/level';
-import { decodeLevel, decodeShared, encodeLevel, SHARED_ID } from '../src/core/share-code';
+import { codeIn, decodeLevel, decodeShared, encodeLevel, missionLink, SHARED_ID } from '../src/core/share-code';
 import { loadCampaign } from '../src/content/levels';
 
 const campaign = loadCampaign();
@@ -50,6 +50,17 @@ describe('share codes', () => {
   it('accepts surrounding whitespace from a paste', async () => {
     const back = await decodeLevel(`  ${await encodeLevel(sample)}\n`);
     expect(back.ok).toBe(true);
+  });
+
+  it('opens from a link to the game, or from a message with the code in it', async () => {
+    const code = await encodeLevel(sample);
+    const link = missionLink('https://example.test/play/', code);
+    expect(link).toBe(`https://example.test/play/#${code}`);
+    expect(missionLink(`${link}`, code)).toBe(link);
+    expect((await decodeLevel(link)).ok).toBe(true);
+    expect((await decodeLevel(`Bunu geçebilir misin? ${link} 🙂`)).ok).toBe(true);
+    expect(codeIn(`see ${code}. bye`)).toBe(code);
+    expect(codeIn('no code here')).toBeUndefined();
   });
 
   it('refuses text that is not a code', async () => {

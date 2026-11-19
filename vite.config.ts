@@ -34,7 +34,8 @@ const offlineServiceWorker = (): Plugin => ({
   name: 'offline-service-worker',
   apply: 'build',
   generateBundle(_options, bundle) {
-    const publicFiles = readdirSync('public');
+    // The link-preview card is for chat apps, not the game: it stays out of the offline cache.
+    const publicFiles = readdirSync('public').filter((f) => f !== 'social.jpg');
     const files = ['./', ...publicFiles, ...Object.keys(bundle)].map((f) => (f.startsWith('./') ? f : `./${f}`));
     const version = createHash('sha256').update(files.join('\n')).digest('hex').slice(0, 12);
     this.emitFile({
@@ -95,14 +96,39 @@ const buildInfo = (mode: string): Plugin => {
   };
 };
 
+/**
+ * The public site, when the build knows it: VITE_SITE_URL, else the URL Netlify sets for
+ * its builds. Shared links from the app point there, and link previews need it absolute.
+ */
+const siteUrl = (mode: string): string => {
+  const env = loadEnv(mode, process.cwd(), 'VITE_');
+  const url = env.VITE_SITE_URL || process.env.URL || '';
+  return url.replace(/\/+$/, '');
+};
+
+/** The card a chat app shows for a link to the game. Its image must be an absolute address. */
+const socialCard = (site: string): Plugin => ({
+  name: 'social-card',
+  transformIndexHtml() {
+    const tags = [
+      { property: 'og:type', content: 'website' },
+      { property: 'og:title', content: 'Fuse & Fall' },
+      { property: 'og:description', content: 'Doğru şarj, doğru yer. Gerisini fizik halleder. Tarayıcıda, kurulumsuz.' },
+      ...(site ? [{ property: 'og:url', content: `${site}/` }, { property: 'og:image', content: `${site}/social.jpg` }] : []),
+      { name: 'twitter:card', content: site ? 'summary_large_image' : 'summary' },
+    ];
+    return tags.map((attrs) => ({ tag: 'meta', attrs, injectTo: 'head' as const }));
+  },
+});
+
 /** The version players see in feedback and the store sees in the build: package.json's. */
 const APP_VERSION = JSON.parse(readFileSync('package.json', 'utf8')).version as string;
 
 export default defineConfig(({ mode }) => ({
   base: './',
-  define: { __APP_VERSION__: JSON.stringify(APP_VERSION) },
+  define: { __APP_VERSION__: JSON.stringify(APP_VERSION), __SITE_URL__: JSON.stringify(siteUrl(mode)) },
   build: { target: 'es2022' },
-  plugins: [cleanOutDir(), buildInfo(mode), offlineServiceWorker()],
+  plugins: [cleanOutDir(), buildInfo(mode), socialCard(siteUrl(mode)), offlineServiceWorker()],
   test: {
     environment: 'node',
     // `.claude` holds agent worktrees: other checkouts of this repo, tested from their own folders.

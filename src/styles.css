@@ -1905,3 +1905,26 @@ h2,
   text-transform: none;
   color: var(--muted);
 }
+
+/* A new release is ready (web): a bar along the bottom, out of the way of the game. */
+.update-notice {
+  position: fixed;
+  left: 50%;
+  bottom: calc(12px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: max-content;
+  max-width: calc(100vw - 24px);
+  padding: 8px 10px 8px 14px;
+  border: 1px solid var(--edge-strong);
+  border-radius: var(--radius);
+  background: var(--panel);
+  color: var(--text);
+  box-shadow: 0 6px 24px rgb(0 0 0 / 0.4);
+}
+.update-notice span {
+  white-space: nowrap;
+}

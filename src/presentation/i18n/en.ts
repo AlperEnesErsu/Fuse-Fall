@@ -107,7 +107,7 @@ export const en: Strings = {
   shareCode: {
     menu: 'Play a code',
     title: 'Play a code',
-    hint: 'Paste a friend\'s mission code here.',
+    hint: 'Paste a friend\'s mission code or link here.',
     placeholder: 'FF1-…',
     play: 'Play',
     build: 'Build one',
@@ -330,6 +330,11 @@ export const en: Strings = {
     'not-placing': '',
     'unknown-charge': '',
     'kind-unavailable': 'That charge type is not available here',
+  },
+  update: {
+    ready: 'A new version is ready.',
+    reload: 'Reload',
+    later: 'Later',
   },
   crash: {
     title: 'Something went wrong',

@@ -119,3 +119,27 @@ test('the fire button and the HUD stay inside the screen', async ({ page }) => {
     expect(inside, selector).toBe(true);
   }
 });
+
+test('a mission link opens straight into the mission and leaves a clean address', async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.goto('./');
+  // The dev server serves the sources: make a real code the way the game does.
+  const code = await page.evaluate(async () => {
+    // Paths of the page's own server, not of this test: imported through a variable.
+    const from = (path: string) => import(/* @vite-ignore */ path);
+    const { loadCampaign } = await from('/src/content/levels.ts');
+    const { encodeLevel } = await from('/src/core/share-code.ts');
+    const level = loadCampaign().levels.find((l: { id: string }) => l.id === 'w1-01');
+    return (await encodeLevel(level, { charges: 1, collapse: 90, seconds: 3 })) as string;
+  });
+  // Opened as a link would be: a fresh load of the page with the code in its address.
+  await page.evaluate((c) => {
+    location.hash = c;
+    location.reload();
+  }, code);
+  await page.waitForLoadState('load');
+  await expect(page.locator('.hud')).toBeVisible();
+  await expect(page.locator('.toast')).toContainText('1');
+  expect(new URL(page.url()).hash).toBe('');
+  expect(errors).toEqual([]);
+});

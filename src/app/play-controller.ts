@@ -2,7 +2,8 @@ import { challengeOf, judgeChallenge, type Challenge } from '../core/challenge';
 import { EventBus, type GameEvents } from '../core/events';
 import type { ChargeKind, LevelDefinition } from '../core/level';
 import { levelsOf, type Campaign } from '../core/progress';
-import { SHARED_ID, encodeLevel } from '../core/share-code';
+import { SHARED_ID, encodeLevel, missionLink } from '../core/share-code';
+import { linkBase } from '../infrastructure/mission-link';
 import {
   addBlock,
   addZone,
@@ -817,7 +818,10 @@ export class PlayController implements Launcher {
   /** The mission as a code on the clipboard: whoever pastes it can play this mission, and try to beat `challenge`. */
   private async copyCode(level: LevelDefinition, challenge?: Challenge): Promise<void> {
     try {
-      await navigator.clipboard.writeText(await encodeLevel(level, challenge));
+      const code = await encodeLevel(level, challenge);
+      const base = linkBase();
+      // A link opens straight into the mission; the code inside it still pastes like a bare code.
+      await navigator.clipboard.writeText(base ? missionLink(base, code) : code);
       this.d.ui.toast(challenge ? T.challenge.copied(challenge.charges, challenge.collapse) : T.shareCode.copied, 2600);
     } catch {
       this.d.ui.toast(T.shareCode.failed);
