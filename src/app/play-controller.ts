@@ -1,3 +1,4 @@
+import { challengeOf, judgeChallenge, type Challenge } from '../core/challenge';
 import { EventBus, type GameEvents } from '../core/events';
 import type { ChargeKind, LevelDefinition } from '../core/level';
 import { levelsOf, type Campaign } from '../core/progress';
@@ -279,6 +280,8 @@ export class PlayController implements Launcher {
     if (mode.kind === 'sandbox') {
       ui.toast(T.freeSiteModes[mode.variant].hint, 3600);
       if (mode.variant === 'smash') ui.setFireVisible(false);
+    } else if (mode.kind === 'shared' && mode.challenge) {
+      ui.toast(T.challenge.open(mode.challenge.charges, mode.challenge.collapse, mode.challenge.seconds), 4200);
     } else if (mode.kind === 'daily') {
       const twist = mode.modifier ? `${T.dailyTwists[mode.modifier].rule} ` : '';
       ui.toast(twist + T.dailyRule(level.charges.par), 3600);
@@ -574,7 +577,9 @@ export class PlayController implements Launcher {
       return;
     }
     if (attempt.mode.kind === 'shared') {
-      // A pasted mission: its result is shown, but nothing is saved or paid.
+      // A pasted mission: its result is shown, but nothing is saved or paid. A challenge is judged.
+      const challenge = attempt.mode.challenge;
+      const verdict = challenge && { challenge, verdict: judgeChallenge(challenge, result) };
       attempt.report = () =>
         this.d.ui.freeSiteDone(
           result,
@@ -583,8 +588,11 @@ export class PlayController implements Launcher {
             onReplay: () => this.replay(),
             onShare: () => this.recordClip(),
             onSetup: () => this.d.nav().menu(),
+            // Won: send the mission back with this result, for the next one to beat.
+            onChallenge: result.cleared ? () => void this.copyCode(attempt.level, challengeOf(result)) : undefined,
           },
           undefined,
+          verdict,
         );
       window.setTimeout(() => {
         if (this.session === session) attempt.report?.();
@@ -661,7 +669,8 @@ export class PlayController implements Launcher {
           renewal: booked.cleared && world ? { city: world.key, levelId: attempt.mode.kind === 'daily' ? attempt.mode.baseId : level.id } : undefined,
         },
         {
-          onCopy: () => void this.copyCode(level),
+          // A won job's code carries the result: whoever pastes it plays to beat it.
+          onCopy: () => void this.copyCode(level, booked.cleared && !attempt.assisted ? challengeOf(booked) : undefined),
           onRetry: () => this.retry(),
           onReplay: () => this.replay(),
           onShare: () => this.recordClip(),
@@ -805,11 +814,11 @@ export class PlayController implements Launcher {
     }
   }
 
-  /** The mission as a code on the clipboard: whoever pastes it can play this mission. */
-  private async copyCode(level: LevelDefinition): Promise<void> {
+  /** The mission as a code on the clipboard: whoever pastes it can play this mission, and try to beat `challenge`. */
+  private async copyCode(level: LevelDefinition, challenge?: Challenge): Promise<void> {
     try {
-      await navigator.clipboard.writeText(await encodeLevel(level));
-      this.d.ui.toast(T.shareCode.copied);
+      await navigator.clipboard.writeText(await encodeLevel(level, challenge));
+      this.d.ui.toast(challenge ? T.challenge.copied(challenge.charges, challenge.collapse) : T.shareCode.copied, 2600);
     } catch {
       this.d.ui.toast(T.shareCode.failed);
     }

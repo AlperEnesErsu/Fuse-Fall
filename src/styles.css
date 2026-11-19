@@ -1881,3 +1881,27 @@ h2,
   padding: 8px;
   margin: 6px 0 0;
 }
+
+/* A pasted mission's challenge: the verdict, and the result it was judged against. */
+.challenge-verdict {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+}
+.challenge-verdict.beaten {
+  color: var(--ok);
+}
+.challenge-verdict.missed {
+  color: var(--danger);
+}
+.challenge-verdict small {
+  display: block;
+  font-family: var(--font);
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--muted);
+}

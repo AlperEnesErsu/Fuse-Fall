@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { parseLevel } from '../src/core/level';
-import { decodeLevel, encodeLevel, SHARED_ID } from '../src/core/share-code';
+import { decodeLevel, decodeShared, encodeLevel, SHARED_ID } from '../src/core/share-code';
 import { loadCampaign } from '../src/content/levels';
 
 const campaign = loadCampaign();
@@ -18,6 +18,23 @@ describe('share codes', () => {
     const { mastery, ...plays } = sample;
     expect(mastery).toBeDefined();
     expect(back.value).toEqual({ ...plays, id: SHARED_ID });
+  });
+
+  it('carries a challenge alongside the mission, and still opens codes without one', async () => {
+    const withChallenge = await decodeShared(await encodeLevel(sample, { charges: 1, collapse: 90, seconds: 3.2 }));
+    expect(withChallenge.ok && withChallenge.value.challenge).toEqual({ charges: 1, collapse: 90, seconds: 3.2 });
+    // The mission inside is the same either way: a build that knows no challenges plays it as before.
+    const plain = await decodeShared(await encodeLevel(sample));
+    expect(plain.ok && plain.value.challenge).toBeUndefined();
+    expect(withChallenge.ok && plain.ok && withChallenge.value.level).toEqual(plain.ok && plain.value.level);
+    const old = await decodeLevel(await encodeLevel(sample, { charges: 1, collapse: 90, seconds: 3.2 }));
+    expect(old.ok).toBe(true);
+  });
+
+  it('drops a challenge that makes no sense, and keeps the mission', async () => {
+    const tooMany = await decodeShared(await encodeLevel(sample, { charges: sample.charges.max + 1, collapse: 90, seconds: 3 }));
+    expect(tooMany.ok && tooMany.value.challenge).toBeUndefined();
+    expect(tooMany.ok).toBe(true);
   });
 
   it('gives the shared copy a neutral id, so a campaign mission keeps its progress apart', async () => {

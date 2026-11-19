@@ -1,7 +1,7 @@
 import { DAILY_OPTIONS } from '../content/daily';
 import { feedbackReport, type FeedbackContext } from '../core/feedback';
 import type { Draft } from '../core/editor';
-import { decodeLevel, type ShareError } from '../core/share-code';
+import { decodeLevel, decodeShared, type ShareError } from '../core/share-code';
 import { ACHIEVEMENTS } from '../core/achievements';
 import { dailyChallenge, dayOf } from '../core/daily';
 import { rankOf } from '../core/economy';
@@ -143,11 +143,11 @@ export class ScreenFlow implements Navigator {
   }
 
   private async playCode(code: string): Promise<void> {
-    const decoded = await decodeLevel(code);
+    const decoded = await decodeShared(code);
     if (!decoded.ok) return this.shareCode(decoded.error);
-    const level = decoded.value;
+    const { level, challenge } = decoded.value;
     if (!this.d.campaign.worlds.some((w) => w.world === level.world)) return this.shareCode('invalid-level');
-    this.d.play.play(level, { kind: 'shared' });
+    this.d.play.play(level, { kind: 'shared', challenge });
   }
 
   achievements(): void {

@@ -17,6 +17,7 @@ import { paintScene, skyAt } from './scenery';
 import { drawRenewal, paintStreet, renewalOf } from './renewal';
 import { masteryMet, type MasteryGoal } from '../core/mastery';
 import type { DailyModifier } from '../core/daily-modifiers';
+import type { Challenge, ChallengeVerdict } from '../core/challenge';
 import { T } from './strings';
 
 type Child = Node | string | false | undefined;
@@ -592,8 +593,9 @@ export class Ui {
   /** End of a Free Site run: a short summary and quick ways to go again. */
   freeSiteDone(
     r: LevelResult,
-    a: { onReset: () => void; onReplay: () => void; onShare: () => void; onSetup: () => void },
+    a: { onReset: () => void; onReplay: () => void; onShare: () => void; onSetup: () => void; onChallenge?: (() => void) | undefined },
     record?: { readonly best: number; readonly isNew: boolean },
+    challenge?: { readonly challenge: Challenge; readonly verdict: ChallengeVerdict },
   ): void {
     this.show(
       h(
@@ -609,6 +611,14 @@ export class Ui {
               record.isNew ? h('span', { class: 'badge' }, T.report.newBest) : h('small', {}, T.oneShotBest(record.best)),
             )
           : undefined,
+        challenge
+          ? h(
+              'p',
+              { class: `challenge-verdict ${challenge.verdict}` },
+              T.challenge.verdict[challenge.verdict],
+              h('small', {}, T.challenge.theirs(challenge.challenge.charges, challenge.challenge.collapse, challenge.challenge.seconds)),
+            )
+          : undefined,
         h(
           'div',
           { class: 'stats' },
@@ -622,6 +632,7 @@ export class Ui {
           this.button(T.reset, a.onReset, 'primary'),
           this.button(T.replay, a.onReplay),
           this.iconButton(ICONS.share(), a.onShare, T.clip.share),
+          a.onChallenge ? this.button(T.challenge.send, a.onChallenge) : undefined,
           this.button(T.structureLabel, a.onSetup),
         ),
       ),

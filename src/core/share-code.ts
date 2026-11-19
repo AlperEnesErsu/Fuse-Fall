@@ -1,3 +1,4 @@
+import { parseChallenge, type Challenge } from './challenge';
 import { parseLevel, type LevelDefinition } from './level';
 import { err, ok, type Result } from './result';
 
@@ -66,14 +67,34 @@ const inflate = async (data: Uint8Array): Promise<Result<Uint8Array, ShareError>
   return ok(out);
 };
 
-/** The code for a mission. The id is replaced, so the receiver's progress is never touched. */
-export const encodeLevel = async (level: LevelDefinition): Promise<string> => {
-  const json = new TextEncoder().encode(JSON.stringify({ ...level, id: SHARED_ID }));
+/**
+ * The code for a mission. The id is replaced, so the receiver's progress is never touched.
+ * `challenge`, when given, is the sender's result to beat. It rides as one more field, which a
+ * build that does not know it simply ignores: old codes open in new builds and new in old.
+ */
+export const encodeLevel = async (level: LevelDefinition, challenge?: Challenge): Promise<string> => {
+  // The campaign's third-star goal and seed stay with the campaign: a shared copy is played, never booked.
+  const { mastery: _goal, seed: _seed, ...plays } = level;
+  void _goal;
+  void _seed;
+  const json = new TextEncoder().encode(JSON.stringify({ ...plays, id: SHARED_ID, ...(challenge ? { challenge } : {}) }));
   return PREFIX + toBase64Url(await deflate(json));
 };
 
+/** A mission and, if the code carries one, the result to beat. */
+export interface SharedMission {
+  readonly level: LevelDefinition;
+  readonly challenge: Challenge | undefined;
+}
+
 /** A mission from a pasted code, validated like any shipped level. */
 export const decodeLevel = async (code: string): Promise<Result<LevelDefinition, ShareError>> => {
+  const shared = await decodeShared(code);
+  return shared.ok ? ok(shared.value.level) : shared;
+};
+
+/** A pasted code's mission and its challenge. A challenge that does not make sense is dropped, not fatal. */
+export const decodeShared = async (code: string): Promise<Result<SharedMission, ShareError>> => {
   const text = code.trim();
   if (text.length > MAX_CODE) return err('too-large');
   if (!text.startsWith(PREFIX)) return err('format');
@@ -88,5 +109,7 @@ export const decodeLevel = async (code: string): Promise<Result<LevelDefinition,
     return err('format');
   }
   const level = parseLevel(raw);
-  return level.ok ? ok(level.value) : err('invalid-level');
+  if (!level.ok) return err('invalid-level');
+  const challenge = typeof raw === 'object' && raw !== null ? parseChallenge((raw as { challenge?: unknown }).challenge, level.value.charges.max) : undefined;
+  return ok({ level: level.value, challenge });
 };

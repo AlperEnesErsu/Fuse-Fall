@@ -224,6 +224,14 @@ export const tr = {
   music: 'Müzik',
   testSound: 'Patlama sesini dinle',
   skip: 'Atla',
+  challenge: {
+    copied: (charges: number, collapse: number) => `Kod kopyalandı: ${charges} şarj, %${collapse} yıkım. Gönder, geçmeyi denesinler.`,
+    open: (charges: number, collapse: number, s: number) =>
+      `Meydan okuma: ${charges} şarj, %${collapse} yıkım, ${s.toFixed(1).replace('.', ',')} sn. Daha azıyla geçebilir misin?`,
+    theirs: (charges: number, collapse: number, s: number) => ` Rakip: ${charges} şarj · %${collapse} · ${s.toFixed(1).replace('.', ',')} sn`,
+    verdict: { beaten: 'Meydan okumayı geçtin!', tied: 'Berabere.', missed: 'Meydan okumayı geçemedin.' },
+    send: 'Meydan oku',
+  },
   feedback: {
     open: 'Geri bildirim gönder',
     title: 'Geri bildirim',
